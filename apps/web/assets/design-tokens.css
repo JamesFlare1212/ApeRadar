@@ -1,0 +1,64 @@
+/* Primitive tokens: raw values are confined to this layer. */
+:root {
+  --p-white: 0 0% 100%;
+  --p-slate-50: 215 28% 97.5%; --p-slate-100: 215 24% 95%; --p-slate-200: 214 21% 90%;
+  --p-slate-300: 214 18% 81%; --p-slate-400: 214 13% 63%; --p-slate-500: 215 13% 50%;
+  --p-slate-600: 215 17% 42%; --p-slate-700: 216 20% 32%; --p-slate-800: 217 26% 22%;
+  --p-slate-900: 218 31% 16%; --p-slate-950: 218 37% 12%;
+  --p-teal-50: 164 55% 95%; --p-teal-400: 165 64% 61%; --p-teal-500: 165 66% 43%;
+  --p-teal-600: 165 73% 29%; --p-teal-700: 165 78% 26%;
+  --p-blue-50: 214 85% 96%; --p-blue-400: 213 88% 73%; --p-blue-700: 214 74% 43%;
+  --p-amber-50: 38 93% 95%; --p-amber-400: 39 89% 68%; --p-amber-600: 39 85% 42%; --p-amber-700: 32 83% 33%;
+  --p-red-50: 0 80% 97%; --p-red-400: 1 90% 77%; --p-red-700: 1 65% 43%;
+  --p-purple-50: 265 75% 97%; --p-purple-400: 265 75% 78%; --p-purple-700: 263 55% 45%;
+  --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-7: 1.75rem; --space-8: 2rem; --space-10: 2.5rem;
+  --radius-sm: .375rem; --radius-md: .625rem; --radius-lg: .875rem; --radius-xl: 1.125rem;
+  --font-body: 'Inter Variable', 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  --font-numeric: 'Inter Variable', 'Segoe UI', sans-serif;
+  --text-xs: .75rem; --text-sm: .8125rem; --text-base: .875rem; --text-lg: 1rem;
+  --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
+  --duration-fast: 140ms; --duration-normal: 200ms; --ease-out: cubic-bezier(.2,.7,.2,1);
+  --shadow-primitive-sm: 0 2px 8px hsl(218 37% 12% / .025);
+  --shadow-primitive-lg: 0 16px 60px hsl(218 37% 12% / .18);
+}
+/* Semantic tokens: every purpose aliases a primitive. */
+:root {
+  color-scheme: light;
+  --background: hsl(var(--p-slate-50)); --surface: hsl(var(--p-white));
+  --surface-muted: hsl(var(--p-slate-100)); --surface-hover: hsl(var(--p-slate-50));
+  --text: hsl(var(--p-slate-950)); --text-secondary: hsl(var(--p-slate-600));
+  --text-muted: hsl(var(--p-slate-600)); --border: hsl(var(--p-slate-200));
+  --accent: var(--palette-accent-light); --accent-hover: var(--palette-accent-hover-light); --accent-soft: var(--palette-accent-soft-light);
+  --on-accent: var(--palette-on-accent-light); --success: hsl(var(--p-teal-700)); --success-soft: hsl(var(--p-teal-50));
+  --ally: hsl(var(--p-blue-700)); --ally-soft: hsl(var(--p-blue-50));
+  --enemy: hsl(var(--p-amber-600)); --enemy-text: hsl(var(--p-amber-700)); --enemy-soft: hsl(var(--p-amber-50));
+  --danger: hsl(var(--p-red-700)); --danger-soft: hsl(var(--p-red-50));
+  --elite: hsl(var(--p-purple-700)); --elite-soft: hsl(var(--p-purple-50));
+  --sidebar-bg: hsl(var(--p-slate-950)); --sidebar-text: hsl(var(--p-slate-300));
+  --sidebar-active: var(--accent); --sidebar-active-bg: var(--accent-soft);
+  --sidebar-border: hsl(var(--p-slate-700) / .65); --scrim: hsl(var(--p-slate-950) / .48);
+  --shadow-sm: var(--shadow-primitive-sm); --shadow-dialog: var(--shadow-primitive-lg);
+}
+:root.dark {
+  color-scheme: dark;
+  --background: hsl(var(--p-slate-950)); --surface: hsl(var(--p-slate-900));
+  --surface-muted: hsl(var(--p-slate-800)); --surface-hover: hsl(var(--p-slate-800) / .5);
+  --text: hsl(var(--p-slate-100)); --text-secondary: hsl(var(--p-slate-300)); --text-muted: hsl(var(--p-slate-300));
+  --border: hsl(var(--p-slate-700)); --accent: var(--palette-accent-dark); --accent-hover: var(--palette-accent-hover-dark);
+  --accent-soft: var(--palette-accent-soft-dark); --on-accent: var(--palette-on-accent-dark);
+  --success: hsl(var(--p-teal-400)); --success-soft: hsl(var(--p-teal-500) / .13);
+  --ally: hsl(var(--p-blue-400)); --ally-soft: hsl(var(--p-blue-700) / .15);
+  --enemy: hsl(var(--p-amber-400)); --enemy-text: hsl(var(--p-amber-400)); --enemy-soft: hsl(var(--p-amber-700) / .15);
+  --danger: hsl(var(--p-red-400)); --danger-soft: hsl(var(--p-red-700) / .15);
+  --elite: hsl(var(--p-purple-400)); --elite-soft: hsl(var(--p-purple-700) / .18);
+}
+/* Component tokens: explicit states, independent of the chosen palette. */
+:root {
+  --button-bg: var(--accent); --button-fg: var(--on-accent); --button-hover-bg: var(--accent-hover);
+  --button-radius: var(--radius-md); --button-height: 2.5rem;
+  --card-bg: var(--surface); --card-border: var(--border); --card-radius: var(--radius-lg); --card-padding: var(--space-5);
+  --input-bg: var(--surface); --input-border: var(--border); --input-focus: var(--accent);
+  --table-row-height: 3.2rem; --table-row-hover: var(--surface-hover); --table-header-bg: var(--surface-muted);
+  --sidebar-width: 13.5rem; --dialog-radius: var(--radius-xl);
+}

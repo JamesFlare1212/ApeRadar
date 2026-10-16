@@ -1,0 +1,153 @@
+{
+  "viewport": {
+    "width": 677,
+    "height": 850
+  },
+  "scenario": "Open and dismiss the watch menu, select a watch status with the keyboard, then remove the temporary mark.",
+  "open": {
+    "before": {
+      "scrollY": 430,
+      "lock": null,
+      "bodyOverflow": "visible",
+      "bodyStyle": null,
+      "body": {
+        "x": 0,
+        "y": -430,
+        "width": 677,
+        "height": 2719.1484375,
+        "top": -430,
+        "right": 677,
+        "bottom": 2289.1484375,
+        "left": 0
+      },
+      "teams": {
+        "x": 79,
+        "y": -105.0703125,
+        "width": 581,
+        "height": 1552.296875,
+        "top": -105.0703125,
+        "right": 660,
+        "bottom": 1447.2265625,
+        "left": 79
+      },
+      "anchor": {
+        "x": 627,
+        "y": 206.328125,
+        "width": 27,
+        "height": 31,
+        "top": 206.328125,
+        "right": 654,
+        "bottom": 237.328125,
+        "left": 627
+      },
+      "row": {
+        "x": 80,
+        "y": 194.578125,
+        "width": 579,
+        "height": 54.5,
+        "top": 194.578125,
+        "right": 659,
+        "bottom": 249.078125,
+        "left": 80
+      }
+    },
+    "open": {
+      "scrollY": 430,
+      "lock": null,
+      "bodyOverflow": "visible",
+      "bodyStyle": null,
+      "body": {
+        "x": 0,
+        "y": -430,
+        "width": 677,
+        "height": 2719.1484375,
+        "top": -430,
+        "right": 677,
+        "bottom": 2289.1484375,
+        "left": 0
+      },
+      "teams": {
+        "x": 79,
+        "y": -105.0703125,
+        "width": 581,
+        "height": 1552.296875,
+        "top": -105.0703125,
+        "right": 660,
+        "bottom": 1447.2265625,
+        "left": 79
+      },
+      "anchor": {
+        "x": 627,
+        "y": 206.328125,
+        "width": 27,
+        "height": 31,
+        "top": 206.328125,
+        "right": 654,
+        "bottom": 237.328125,
+        "left": 627
+      },
+      "row": {
+        "x": 80,
+        "y": 194.578125,
+        "width": 579,
+        "height": 54.5,
+        "top": 194.578125,
+        "right": 659,
+        "bottom": 249.078125,
+        "left": 80
+      }
+    },
+    "shifts": []
+  },
+  "selected": {
+    "selected": {
+      "scrollY": 430,
+      "lock": null,
+      "bodyOverflow": "visible",
+      "bodyStyle": null,
+      "body": {
+        "x": 0,
+        "y": -430,
+        "width": 677,
+        "height": 2719.1484375,
+        "top": -430,
+        "right": 677,
+        "bottom": 2289.1484375,
+        "left": 0
+      },
+      "teams": {
+        "x": 79,
+        "y": -105.0703125,
+        "width": 581,
+        "height": 1552.296875,
+        "top": -105.0703125,
+        "right": 660,
+        "bottom": 1447.2265625,
+        "left": 79
+      },
+      "anchor": {
+        "x": 627,
+        "y": 206.328125,
+        "width": 27,
+        "height": 31,
+        "top": 206.328125,
+        "right": 654,
+        "bottom": 237.328125,
+        "left": 627
+      },
+      "row": {
+        "x": 80,
+        "y": 194.578125,
+        "width": 579,
+        "height": 54.5,
+        "top": 194.578125,
+        "right": 659,
+        "bottom": 249.078125,
+        "left": 80
+      }
+    },
+    "focus": "关注 HarborFox",
+    "shifts": [],
+    "watched": "icon-button watch-positive"
+  }
+}

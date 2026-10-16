@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-electron/
+release/
+.cache/
+.data/
+.test-data/
+*.log
+*.tsbuildinfo
+analysis/tools/
+analysis/probe/bin/
+analysis/probe/obj/
+analysis/probe-sandbox/
+ApeRadar/
+analysis/

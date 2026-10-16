@@ -1,0 +1,19 @@
+{
+  "name": "@aperadar/server",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aperadar/shared": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

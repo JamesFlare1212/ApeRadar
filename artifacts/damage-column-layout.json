@@ -1,0 +1,138 @@
+{
+  "cardThreshold": 470,
+  "prioritizedMetric": "当前舰船场均伤害",
+  "results": [
+    {
+      "width": 1250,
+      "scrollWidth": 1250,
+      "teams": [
+        {
+          "width": 499,
+          "damageVisible": true,
+          "battlesVisible": true,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        },
+        {
+          "width": 499,
+          "damageVisible": true,
+          "battlesVisible": true,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        }
+      ]
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "teams": [
+        {
+          "width": 386,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        },
+        {
+          "width": 386,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        }
+      ]
+    },
+    {
+      "width": 760,
+      "scrollWidth": 760,
+      "teams": [
+        {
+          "width": 662,
+          "damageVisible": true,
+          "battlesVisible": true,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        },
+        {
+          "width": 662,
+          "damageVisible": true,
+          "battlesVisible": true,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        }
+      ]
+    },
+    {
+      "width": 480,
+      "scrollWidth": 480,
+      "teams": [
+        {
+          "width": 446,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        },
+        {
+          "width": 446,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        }
+      ]
+    },
+    {
+      "width": 375,
+      "scrollWidth": 375,
+      "teams": [
+        {
+          "width": 341,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        },
+        {
+          "width": 341,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "teams": [
+        {
+          "width": 286,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        },
+        {
+          "width": 286,
+          "damageVisible": true,
+          "battlesVisible": false,
+          "damageCellsVisible": true,
+          "actionInTable": true,
+          "rowCount": 12
+        }
+      ]
+    }
+  ]
+}

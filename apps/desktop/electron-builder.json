@@ -1,0 +1,57 @@
+{
+  "npmRebuild": false,
+  "appId": "org.aperadar.next",
+  "productName": "ApeRadar Next",
+  "asar": true,
+  "publish": null,
+  "directories": {
+    "output": "../../release",
+    "buildResources": "build"
+  },
+  "files": [
+    {
+      "from": "../web/dist",
+      "to": "dist",
+      "filter": [
+        "**/*"
+      ]
+    },
+    "dist-electron/**/*",
+    "resources/**/*",
+    {
+      "from": "../server/resources",
+      "to": "resources",
+      "filter": [
+        "**/*"
+      ]
+    },
+    {
+      "from": "../..",
+      "to": ".",
+      "filter": [
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.txt"
+      ]
+    },
+    "package.json",
+    "!node_modules/**/*"
+  ],
+  "win": {
+    "icon": "build/icon.ico",
+    "target": [
+      "nsis",
+      "portable"
+    ],
+    "signExecutable": false
+  },
+  "portable": {
+    "artifactName": "ApeRadar-Next-${version}-${arch}.exe"
+  },
+  "nsis": {
+    "artifactName": "ApeRadar-Next-Setup-${version}-${arch}.${ext}",
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "differentialPackage": true
+  },
+  "electronDist": "node_modules/electron/dist"
+}

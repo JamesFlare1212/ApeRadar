@@ -1,0 +1,678 @@
+{
+  "startedAt": "2026-10-16T11:51:18.745Z",
+  "applicationIdSuffix": "56a0b8",
+  "health": {
+    "status": "degraded",
+    "checking": false,
+    "checkedAt": "2026-10-16T11:51:23.538Z",
+    "intervalMs": 60000,
+    "checks": [
+      {
+        "source": "VORTEX",
+        "region": "NA",
+        "endpoint": "https://vortex.worldofwarships.com/api/accounts/search/ApeRadarHealthCheck",
+        "active": false,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 192,
+        "httpStatus": null,
+        "message": "网络连接失败",
+        "failure": "network"
+      },
+      {
+        "source": "WG_PUBLIC",
+        "region": "NA",
+        "endpoint": "https://api.worldofwarships.com/wows/account/list/",
+        "active": true,
+        "ok": true,
+        "status": "healthy",
+        "latencyMs": 980,
+        "httpStatus": 200,
+        "message": "连接正常",
+        "failure": null
+      },
+      {
+        "source": "WG_PROXY",
+        "region": "NA",
+        "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/na/",
+        "active": false,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 742,
+        "httpStatus": 200,
+        "message": "接口未返回成功状态",
+        "failure": "api"
+      },
+      {
+        "source": "VORTEX",
+        "region": "EU",
+        "endpoint": "https://vortex.worldofwarships.eu/api/accounts/search/ApeRadarHealthCheck",
+        "active": false,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 415,
+        "httpStatus": null,
+        "message": "网络连接失败",
+        "failure": "network"
+      },
+      {
+        "source": "WG_PUBLIC",
+        "region": "EU",
+        "endpoint": "https://api.worldofwarships.eu/wows/account/list/",
+        "active": true,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 384,
+        "httpStatus": 200,
+        "message": "SOURCE_NOT_AVAILABLE",
+        "failure": "api"
+      },
+      {
+        "source": "WG_PROXY",
+        "region": "EU",
+        "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/eu/",
+        "active": false,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 753,
+        "httpStatus": 200,
+        "message": "接口未返回成功状态",
+        "failure": "api"
+      },
+      {
+        "source": "VORTEX",
+        "region": "ASIA",
+        "endpoint": "https://vortex.worldofwarships.asia/api/accounts/search/ApeRadarHealthCheck",
+        "active": false,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 871,
+        "httpStatus": null,
+        "message": "网络连接失败",
+        "failure": "network"
+      },
+      {
+        "source": "WG_PUBLIC",
+        "region": "ASIA",
+        "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
+        "active": true,
+        "ok": true,
+        "status": "healthy",
+        "latencyMs": 4009,
+        "httpStatus": 200,
+        "message": "连接正常",
+        "failure": null
+      },
+      {
+        "source": "WG_PROXY",
+        "region": "ASIA",
+        "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/asia/",
+        "active": false,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 252,
+        "httpStatus": 200,
+        "message": "接口未返回成功状态",
+        "failure": "api"
+      },
+      {
+        "source": "VORTEX",
+        "region": "RU",
+        "endpoint": "https://vortex.korabli.su/api/accounts/search/ApeRadarHealthCheck",
+        "active": true,
+        "ok": true,
+        "status": "healthy",
+        "latencyMs": 480,
+        "httpStatus": 200,
+        "message": "连接正常",
+        "failure": null
+      },
+      {
+        "source": "WG_PUBLIC",
+        "region": "RU",
+        "endpoint": "https://api.korabli.su/wows/account/list/",
+        "active": false,
+        "ok": false,
+        "status": "unsupported",
+        "latencyMs": null,
+        "httpStatus": null,
+        "message": "此区服使用 Vortex 接口",
+        "failure": null
+      },
+      {
+        "source": "WG_PROXY",
+        "region": "RU",
+        "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/ru/",
+        "active": false,
+        "ok": false,
+        "status": "unsupported",
+        "latencyMs": null,
+        "httpStatus": null,
+        "message": "此区服使用 Vortex 接口",
+        "failure": null
+      },
+      {
+        "source": "VORTEX",
+        "region": "CN",
+        "endpoint": "https://vortex.wowsgame.cn/api/accounts/search/ApeRadarHealthCheck",
+        "active": true,
+        "ok": false,
+        "status": "error",
+        "latencyMs": 885,
+        "httpStatus": null,
+        "message": "网络连接失败",
+        "failure": "network"
+      },
+      {
+        "source": "WG_PUBLIC",
+        "region": "CN",
+        "endpoint": "https://api.wowsgame.cn/wows/account/list/",
+        "active": false,
+        "ok": false,
+        "status": "unsupported",
+        "latencyMs": null,
+        "httpStatus": null,
+        "message": "此区服使用 Vortex 接口",
+        "failure": null
+      },
+      {
+        "source": "WG_PROXY",
+        "region": "CN",
+        "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/cn/",
+        "active": false,
+        "ok": false,
+        "status": "unsupported",
+        "latencyMs": null,
+        "httpStatus": null,
+        "message": "此区服使用 Vortex 接口",
+        "failure": null
+      }
+    ]
+  },
+  "functional": [
+    {
+      "region": "NA",
+      "source": "WG_PUBLIC",
+      "ok": true,
+      "pipelineRequests": 4,
+      "accountBattles": 1,
+      "accountWinrate": 0,
+      "shipBattles": 1,
+      "shipAverageDamage": 4863,
+      "shipAvailable": true,
+      "clanTagPresent": false,
+      "verifiedModes": [
+        "pvp",
+        "pvp_solo",
+        "pvp_div2",
+        "pvp_div3"
+      ],
+      "totalRequests": 7
+    },
+    {
+      "region": "EU",
+      "source": "WG_PUBLIC",
+      "ok": false,
+      "error": "战绩服务暂不可用：SOURCE_NOT_AVAILABLE",
+      "totalRequests": 1
+    },
+    {
+      "region": "ASIA",
+      "source": "WG_PUBLIC",
+      "ok": true,
+      "pipelineRequests": 4,
+      "accountBattles": 160,
+      "accountWinrate": 52.5,
+      "shipBattles": 30,
+      "shipAverageDamage": 44239.23333333333,
+      "shipAvailable": true,
+      "clanTagPresent": false,
+      "verifiedModes": [
+        "pvp",
+        "pvp_solo",
+        "pvp_div2",
+        "pvp_div3"
+      ],
+      "totalRequests": 7
+    },
+    {
+      "region": "RU",
+      "source": "VORTEX",
+      "ok": false,
+      "error": "No public Vortex sample with random-battle statistics found",
+      "totalRequests": 6
+    }
+  ],
+  "negative": {
+    "httpStatus": 200,
+    "apiStatus": "error",
+    "error": {
+      "code": 402,
+      "message": "ACCOUNT_ID_NOT_SPECIFIED",
+      "field": "account_id",
+      "value": null
+    },
+    "ok": true
+  },
+  "requests": [
+    {
+      "endpoint": "https://vortex.worldofwarships.com/api/accounts/search/:nickname",
+      "parameters": [],
+      "httpStatus": null,
+      "error": {
+        "message": "fetch failed",
+        "code": null,
+        "cause": "unexpected redirect"
+      },
+      "latencyMs": 192
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/account/list/",
+      "parameters": [
+        "search",
+        "type",
+        "limit",
+        "application_id"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 980
+    },
+    {
+      "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/na/",
+      "parameters": [
+        "search",
+        "type",
+        "limit"
+      ],
+      "httpStatus": 200,
+      "apiStatus": null,
+      "error": null,
+      "topLevelKeys": [
+        "code",
+        "message",
+        "data",
+        "time",
+        "support"
+      ],
+      "latencyMs": 742
+    },
+    {
+      "endpoint": "https://vortex.worldofwarships.eu/api/accounts/search/:nickname",
+      "parameters": [],
+      "httpStatus": null,
+      "error": {
+        "message": "fetch failed",
+        "code": null,
+        "cause": "unexpected redirect"
+      },
+      "latencyMs": 415
+    },
+    {
+      "endpoint": "https://api.worldofwarships.eu/wows/account/list/",
+      "parameters": [
+        "search",
+        "type",
+        "limit",
+        "application_id"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "error",
+      "error": {
+        "code": 504,
+        "message": "SOURCE_NOT_AVAILABLE",
+        "field": null,
+        "value": null
+      },
+      "topLevelKeys": [
+        "status",
+        "error"
+      ],
+      "latencyMs": 383
+    },
+    {
+      "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/eu/",
+      "parameters": [
+        "search",
+        "type",
+        "limit"
+      ],
+      "httpStatus": 200,
+      "apiStatus": null,
+      "error": null,
+      "topLevelKeys": [
+        "code",
+        "message",
+        "data",
+        "time",
+        "support"
+      ],
+      "latencyMs": 753
+    },
+    {
+      "endpoint": "https://vortex.worldofwarships.asia/api/accounts/search/:nickname",
+      "parameters": [],
+      "httpStatus": null,
+      "error": {
+        "message": "fetch failed",
+        "code": null,
+        "cause": "unexpected redirect"
+      },
+      "latencyMs": 871
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
+      "parameters": [
+        "search",
+        "type",
+        "limit",
+        "application_id"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 4009
+    },
+    {
+      "endpoint": "https://dev-proxy.wows.shinoaki.com:7700/dev/wows/search/asia/",
+      "parameters": [
+        "search",
+        "type",
+        "limit"
+      ],
+      "httpStatus": 200,
+      "apiStatus": null,
+      "error": null,
+      "topLevelKeys": [
+        "code",
+        "message",
+        "data",
+        "time",
+        "support"
+      ],
+      "latencyMs": 252
+    },
+    {
+      "endpoint": "https://vortex.korabli.su/api/accounts/search/:nickname",
+      "parameters": [],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 480
+    },
+    {
+      "endpoint": "https://vortex.wowsgame.cn/api/accounts/search/:nickname",
+      "parameters": [],
+      "httpStatus": null,
+      "error": {
+        "message": "fetch failed",
+        "code": null,
+        "cause": "unexpected redirect"
+      },
+      "latencyMs": 885
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/account/info/",
+      "parameters": [
+        "application_id"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "error",
+      "error": {
+        "code": 402,
+        "message": "ACCOUNT_ID_NOT_SPECIFIED",
+        "field": "account_id",
+        "value": null
+      },
+      "topLevelKeys": [
+        "status",
+        "error"
+      ],
+      "latencyMs": 43
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/account/list/",
+      "parameters": [
+        "application_id",
+        "search",
+        "limit"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 409
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/account/info/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 309
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/ships/stats/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 260
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/account/list/",
+      "parameters": [
+        "application_id",
+        "type",
+        "search"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 264
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/account/info/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 244
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/clans/accountinfo/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra",
+        "fields"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 252
+    },
+    {
+      "endpoint": "https://api.worldofwarships.com/wows/ships/stats/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "ship_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 245
+    },
+    {
+      "endpoint": "https://api.worldofwarships.eu/wows/account/list/",
+      "parameters": [
+        "application_id",
+        "search",
+        "limit"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "error",
+      "error": {
+        "code": 504,
+        "message": "SOURCE_NOT_AVAILABLE",
+        "field": null,
+        "value": null
+      },
+      "topLevelKeys": [
+        "status",
+        "error"
+      ],
+      "latencyMs": 364
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
+      "parameters": [
+        "application_id",
+        "search",
+        "limit"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 597
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/account/info/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 1168
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/ships/stats/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 658
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
+      "parameters": [
+        "application_id",
+        "type",
+        "search"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 598
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/account/info/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 852
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/clans/accountinfo/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "extra",
+        "fields"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 605
+    },
+    {
+      "endpoint": "https://api.worldofwarships.asia/wows/ships/stats/",
+      "parameters": [
+        "application_id",
+        "account_id",
+        "ship_id",
+        "extra"
+      ],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 613
+    },
+    {
+      "endpoint": "https://vortex.korabli.su/api/accounts/search/:nickname",
+      "parameters": [],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 641
+    },
+    {
+      "endpoint": "https://vortex.korabli.su/api/accounts/:id/",
+      "parameters": [],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 537
+    },
+    {
+      "endpoint": "https://vortex.korabli.su/api/accounts/:id/",
+      "parameters": [],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 187
+    },
+    {
+      "endpoint": "https://vortex.korabli.su/api/accounts/:id/",
+      "parameters": [],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 177
+    },
+    {
+      "endpoint": "https://vortex.korabli.su/api/accounts/:id/",
+      "parameters": [],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 176
+    },
+    {
+      "endpoint": "https://vortex.korabli.su/api/accounts/:id/",
+      "parameters": [],
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "error": null,
+      "latencyMs": 182
+    }
+  ],
+  "officialPassed": false,
+  "finishedAt": "2026-10-16T11:51:32.925Z"
+}

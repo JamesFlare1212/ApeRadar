@@ -1,0 +1,43 @@
+{
+  "source": "SVG redrawings based on official World of Warships Wiki UI ship-class icons",
+  "sourcePage": "https://wiki.worldofwarships.com/Ship:Consumables",
+  "retrievedAt": "2026-10-16",
+  "format": "Hand-reconstructed SVG paths with a 27x27 viewBox, solid fills and transparent class markings. Original PNG references are retained for provenance; referenceSha256 hashes those PNGs. These are project redrawings, not official SVG assets.",
+  "icons": [
+    {
+      "shipType": "AirCarrier",
+      "file": "aircarrier.svg",
+      "referenceFile": "aircarrier.png",
+      "url": "https://wows-media-wowswiki-prod.wgcdn.co/c/c5/Icon_default_aircarrier.png",
+      "referenceSha256": "84f55678325d4b492215390a7f0b43008f3947ab201502cd979dcf4c37633cf3"
+    },
+    {
+      "shipType": "Battleship",
+      "file": "battleship.svg",
+      "referenceFile": "battleship.png",
+      "url": "https://wows-media-wowswiki-prod.wgcdn.co/d/d0/Icon_default_battleship.png",
+      "referenceSha256": "01624cacb82f39f77a4e677a7b9fdf4df20dafd61f971f4b2d3e54c3065e2892"
+    },
+    {
+      "shipType": "Cruiser",
+      "file": "cruiser.svg",
+      "referenceFile": "cruiser.png",
+      "url": "https://wows-media-wowswiki-prod.wgcdn.co/3/37/Icon_default_cruiser.png",
+      "referenceSha256": "874a3bdc3134b8da4fd6f52186f1b2b682f13ef78688732d3016785c0649a424"
+    },
+    {
+      "shipType": "Destroyer",
+      "file": "destroyer.svg",
+      "referenceFile": "destroyer.png",
+      "url": "https://wows-media-wowswiki-prod.wgcdn.co/4/46/Icon_default_destroyer.png",
+      "referenceSha256": "357acc9fc0e2f7d98f047c99edffad359a8c45f2093024400fef2b9abbaf3a59"
+    },
+    {
+      "shipType": "Submarine",
+      "file": "submarine.svg",
+      "referenceFile": "submarine.png",
+      "url": "https://wows-media-wowswiki-prod.wgcdn.co/0/07/Icon_default_submarine.png",
+      "referenceSha256": "261525e5aae827700eaad3b5c3ab72d1721446ecab80226394fd30e9186d8a2d"
+    }
+  ]
+}

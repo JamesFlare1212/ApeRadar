@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "provider": "T3 collaborative preview",
+  "environment": "Actual React/Vite UI with Node service and SQLite",
+  "checks": [
+    { "name": "Nickname search", "result": "Northbound yields 1 row; clearing restores 24" },
+    { "name": "Ship filter", "result": "Battleship filter yields 6 rows" },
+    { "name": "Winrate mode", "result": "Weighted selection persists to settings and changes displayed data" },
+    { "name": "Player details", "result": "Actual account/ship statistics render in a focus-trapped dialog" },
+    { "name": "Watch persistence", "result": "Positive mark and Chinese note are saved and visible on watchlist" },
+    { "name": "Settings save", "result": "Cache changes to 20 minutes and auto-query can be disabled" },
+    { "name": "Real file input", "result": "Synthetic Unicode JSON imports two pending players without making a network query" },
+    { "name": "History snapshot", "result": "Imported fixture is saved and reopened from SQLite" },
+    { "name": "Summary", "result": "Generated text is editable and reflects the selected metric" },
+    { "name": "Escape and focus", "result": "Dialog closes and focus returns to player-name-button" },
+    { "name": "Themes", "result": "Light and dark styles render; native Electron theme style assertions also pass" },
+    { "name": "Fixture cleanup", "result": "Only identity-checked synthetic validation records were removed; initial development settings restored" }
+  ],
+  "viewports": [
+    { "width": 375, "height": 812, "theme": "dark", "horizontalOverflow": false },
+    { "width": 812, "height": 375, "theme": "dark", "horizontalOverflow": false },
+    { "width": 1280, "height": 800, "theme": "light", "horizontalOverflow": false },
+    { "width": 1440, "height": 1000, "theme": "light", "horizontalOverflow": false }
+  ],
+  "limitations": [
+    "No real private player identity was sent to online APIs.",
+    "Browser DevTools shim disabled Fast Refresh, so final source was checked after full page reloads.",
+    "This is an interaction/visual check record, not a claim of comprehensive accessibility certification."
+  ]
+}

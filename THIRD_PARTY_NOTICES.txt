@@ -1,0 +1,25 @@
+ApeRadar Next is a TypeScript implementation informed by offline analysis of
+ApeRadar 2.1.0. The bundled ship catalog is from the original MIT-licensed
+ApeRadar distribution. Copyright (c) 2023 zylalx1; see LICENSE.
+
+React, Vite, Tailwind CSS, Electron, electron-updater, Node.js, SQLite, Radix UI, Font Awesome Free,
+Zod and build/test dependencies retain their respective licenses. Their
+license files are distributed with their packages.
+
+Font Awesome Free by Fonticons, Inc. https://fontawesome.com/
+Interface icons, the unknown-ship fallback and the satellite-dish application mark:
+Copyright Fonticons, Inc. Icons licensed under CC BY 4.0:
+https://creativecommons.org/licenses/by/4.0/
+Font Awesome JavaScript/React code is licensed under MIT:
+https://github.com/FortAwesome/Font-Awesome/blob/7.x/LICENSE.txt
+
+World of Warships UI ship-type icons (aircraft carrier, battleship, cruiser,
+destroyer and submarine) are project-authored SVG redrawings based on game
+artwork from the official World of Warships Wiki:
+https://wiki.worldofwarships.com/Ship:Consumables
+These are not official SVG assets. Original 27x27 PNGs are retained as source
+references. SVG filenames, reference files and exact source URLs/reference
+SHA-256 digests are recorded in apps/web/src/assets/ship-types/sources.json.
+These game assets and related names belong to their respective owners and are
+not covered by this project's MIT license or the Font Awesome icon license.
+This application is an independent community project.

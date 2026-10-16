@@ -1,0 +1,33 @@
+// Render the Font Awesome application mark into Windows application assets.
+const { app, BrowserWindow } = require('electron')
+const fs = require('node:fs/promises')
+const path = require('node:path')
+const root = path.resolve(__dirname, '../../..')
+const desktopRoot = path.resolve(__dirname, '..')
+app.setPath('userData', path.join(root, '.cache', 'icon-renderer'))
+app.disableHardwareAcceleration()
+app.whenReady().then(async () => {
+  const svg = await fs.readFile(path.join(root, 'apps', 'web', 'public', 'radar.svg'), 'utf8')
+  const win = new BrowserWindow({ show: false, width: 256, height: 256, frame: false, transparent: true, webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false } })
+  await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'"><style>html,body{margin:0;width:256px;height:256px;overflow:hidden}svg{width:256px;height:256px}</style>${svg}`))
+  // Rasterize the SVG directly so generation does not depend on a visible compositor frame.
+  const dataUrl = await win.webContents.executeJavaScript(`(async () => {
+    const image = new Image()
+    image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(document.querySelector('svg').outerHTML)
+    await image.decode()
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 256
+    canvas.getContext('2d').drawImage(image, 0, 0, 256, 256)
+    return canvas.toDataURL('image/png')
+  })()`)
+  const png = Buffer.from(dataUrl.split(',')[1], 'base64')
+  const header = Buffer.alloc(22)
+  header.writeUInt16LE(1, 2); header.writeUInt16LE(1, 4)
+  header.writeUInt16LE(1, 10); header.writeUInt16LE(32, 12)
+  header.writeUInt32LE(png.length, 14); header.writeUInt32LE(22, 18)
+  await fs.mkdir(path.join(desktopRoot, 'build'), { recursive: true })
+  await fs.writeFile(path.join(desktopRoot, 'build', 'icon.ico'), Buffer.concat([header, png]))
+  await fs.writeFile(path.join(desktopRoot, 'resources', 'icon.png'), png)
+  console.log('Generated desktop icons from apps/web/public/radar.svg')
+  app.quit()
+}).catch(error => { console.error(error); app.exit(1) })

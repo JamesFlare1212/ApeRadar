@@ -1,0 +1,38 @@
+{
+  "name": "aperadar-next",
+  "version": "3.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.6",
+  "description": "Modern local-first World of Warships battle intelligence desktop application",
+  "author": "ApeRadar Next contributors",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @aperadar/desktop dev",
+    "dev:desktop": "pnpm --filter @aperadar/desktop dev",
+    "dev:web": "pnpm --filter @aperadar/web dev",
+    "build": "pnpm run typecheck && pnpm run build:web && pnpm run build:desktop",
+    "build:web": "pnpm --filter @aperadar/web build",
+    "build:desktop": "pnpm --filter @aperadar/desktop build",
+    "preview": "pnpm --filter @aperadar/web preview",
+    "test": "vitest run --reporter=default --reporter=json --outputFile=artifacts/unit-tests.json",
+    "test:api:live": "node --experimental-transform-types scripts/probe-apis.mjs",
+    "typecheck": "pnpm -r typecheck && tsc --noEmit",
+    "check": "pnpm run typecheck && pnpm test && pnpm tokens:check",
+    "pack": "pnpm run build && pnpm --filter @aperadar/desktop run pack",
+    "dist:win": "pnpm run build && pnpm --filter @aperadar/desktop dist:win",
+    "smoke:desktop": "pnpm --filter @aperadar/desktop smoke",
+    "tokens:check": "node scripts/check-tokens.mjs",
+    "verify:package": "pnpm --filter @aperadar/desktop verify:package"
+  },
+  "devDependencies": {
+    "@aperadar/shared": "workspace:*",
+    "@aperadar/server": "workspace:*",
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2",
+    "vitest": "4.1.12"
+  }
+}
