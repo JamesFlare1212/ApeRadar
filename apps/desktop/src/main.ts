@@ -12,6 +12,7 @@ import { readArenaFile, readCatalog } from '@aperadar/server/arena'
 import { DOMAINS, WargamingApi } from '@aperadar/server/api'
 import { regionSchema } from '@aperadar/shared/settings'
 import type { QueryOptions, WatchInput } from '@aperadar/shared/types'
+import { UPDATE_RELEASES_URL } from '@aperadar/shared/updates'
 import { UpdateController } from './updates/controller'
 import { updateConfiguration } from './updates/config'
 import { readInstallRecord, writeInstallRecord } from './updates/install-record'
@@ -84,6 +85,7 @@ async function createWindow() {
   handle('radar:updates-check', () => updates!.check())
   handle('radar:updates-download', () => updates!.download())
   handle('radar:updates-install', () => updates!.install())
+  handle('radar:updates-open-download', () => shell.openExternal(UPDATE_RELEASES_URL))
   handle('radar:import', input => service!.importArena(input as never))
   handle('radar:demo', () => service!.loadDemo())
   handle('radar:history', id => service!.loadBattle(z.string().max(100).parse(id)))
@@ -129,9 +131,11 @@ async function createWindow() {
       const result = await mainWindow.webContents.executeJavaScript(`(async()=>{const api=window.aperadar;const original=await api.getState();const saved=await api.saveSettings({...original.settings,autoQuery:false,theme:'dark'});const demo=await api.loadDemo();await api.setWatch({region:'ASIA',accountId:'demo-1000',name:'Northbound',status:'positive',note:'desktop smoke'});const state=await api.getState();return {bridge:api.desktop,players:demo.battle.players.length,settings:saved.settings.theme,watchPersisted:state.watchlist.some(x=>x.accountId==='demo-1000'),heading:document.querySelector('h1')?.textContent,nodeAccess:typeof window.require};})()`) as Record<string, unknown>
       const sqlite = await readFile(path.join(dataPath, 'aperadar.sqlite'))
       if (result.bridge !== true || result.players !== 24 || result.watchPersisted !== true || result.nodeAccess !== 'undefined' || !sqlite.subarray(0, 16).equals(Buffer.from('SQLite format 3\0'))) throw new Error('Desktop integration assertion failed')
+      const updateResult = await mainWindow.webContents.executeJavaScript("(async()=>{const state=await window.aperadar.getUpdates();const button=document.querySelector('.sidebar-update button');return {mode:state.mode,version:state.currentVersion,downloadBridge:typeof window.aperadar.openUpdateDownload,control:!!button&&button.disabled};})()") as { mode: string; version: string; downloadBridge: string; control: boolean }
+      if (updateResult.mode !== 'disabled' || updateResult.version !== app.getVersion() || updateResult.downloadBridge !== 'function' || !updateResult.control) throw new Error('Desktop update bridge assertion failed')
       await new Promise(resolve => setTimeout(resolve, 400))
       const darkStyle = await mainWindow.webContents.executeJavaScript("({theme:document.documentElement.className,accent:getComputedStyle(document.documentElement).getPropertyValue('--accent'),row:getComputedStyle(document.querySelector('.self-row')).backgroundColor,button:getComputedStyle(document.querySelector('.button-primary')).backgroundColor})")
-      const report = { status: 'passed', result, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
+      const report = { status: 'passed', result, updates: updateResult, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'desktop-dark.png'), (await mainWindow.webContents.capturePage()).toPNG())
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null

@@ -10,6 +10,7 @@ import { useSettingsAutosave } from '../lib/useSettingsAutosave.js'
 import { AppearanceSettings } from '../components/AppearanceSettings.js'
 import { HealthPanel } from '../components/HealthPanel.js'
 import { UpdatePanel } from '../components/UpdatePanel.js'
+import appPackage from '../../../../package.json'
 import { Button, Badge, Modal } from '../components/ui.js'
 
 import type { SettingsSection } from '../lib/settingsNavigation.js'
@@ -46,8 +47,8 @@ export function SettingsPage({ state, section, onSave, notify }: { state: AppSta
     <section className="panel settings-panel"><div className="settings-section-heading"><span><Icon icon={faFont} size={22} /></span><div><h2>文本摘要</h2><p>按当前胜率口径生成，可编辑后手动复制。</p></div></div><div className="form-field"><label htmlFor="text-template">摘要模板</label><textarea id="text-template" className="input" rows={4} maxLength={4000} value={draft.textTemplate} onChange={e => update('textTemplate', e.target.value)} /><p>支持 {'{AllyUnicumList}'}、{'{AllyApeList}'}、{'{EnemyUnicumList}'}、{'{EnemyApeList}'}、双方 HiddenList 与 AvgAccountWinrate / AvgWeightedWinrate。</p></div><Toggle checked={draft.excludeSelf} onChange={v => update('excludeSelf', v)} label="摘要名单中排除自己" description="只影响文字名单，队伍统计仍保留自己。" /></section>
     </>}
     {section === 'about' && <>
-    <UpdatePanel notify={notify} />
-    <section className="panel settings-panel local-storage-panel"><div className="settings-section-heading"><span><Icon icon={faDatabase} size={22} /></span><div><h2>本地资料</h2><p>应用版本 3.0.0 · 船舶资料 {state.shipVersion}</p></div><Badge tone="brand"><Icon icon={faCircleCheck} size={12} />本地存储</Badge></div><p className="data-path">{state.dataLocation}</p><p className="text-xs muted">数据库包含设置、对局历史、关注名单和有时效的战绩缓存。关闭应用后再复制此文件进行备份。</p></section>
+    <UpdatePanel notify={notify} installBlocked={state.query.status === 'loading'} />
+      <section className="panel settings-panel local-storage-panel"><div className="settings-section-heading"><span><Icon icon={faDatabase} size={22} /></span><div><h2>本地资料</h2><p>应用版本 {appPackage.version} · 船舶资料 {state.shipVersion}</p></div><Badge tone="brand"><Icon icon={faCircleCheck} size={12} />本地存储</Badge></div><p className="data-path">{state.dataLocation}</p><p className="text-xs muted">数据库包含设置、对局历史、关注名单和有时效的战绩缓存。关闭应用后再复制此文件进行备份。</p></section>
     </>}
     {section === 'general' && <div className="settings-reset"><span className="settings-description">更改即时生效，并自动保存在本机。</span><Button onClick={() => setResetOpen(true)}><Icon icon={faRotateLeft} size={14} />恢复默认设置</Button></div>}
     <Modal open={resetOpen} onOpenChange={setResetOpen} title="恢复默认设置" description="将主题、游戏目录、评分参数和摘要模板恢复到初始值。"><div className="dialog-footer"><Button onClick={() => setResetOpen(false)}>取消</Button><Button variant="primary" onClick={() => { change(structuredClone(DEFAULT_SETTINGS), 0); setResetOpen(false) }}>恢复默认设置</Button></div></Modal>

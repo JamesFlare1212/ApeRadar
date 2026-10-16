@@ -137,7 +137,7 @@ describe('desktop update lifecycle', () => {
     expect(engine.quitAndInstall).not.toHaveBeenCalled()
     await vi.runOnlyPendingTimersAsync()
     expect(prepareInstall).toHaveBeenCalledWith('3.1.0')
-    expect(engine.quitAndInstall).toHaveBeenCalledWith(false, true)
+    expect(engine.quitAndInstall).toHaveBeenCalledWith(true, true)
   })
 
   it('holds installation while a query is active and allows a later click', async () => {

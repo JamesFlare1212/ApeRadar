@@ -1,6 +1,6 @@
 {
   "name": "aperadar-next",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@10.34.6",
   "description": "Modern local-first World of Warships battle intelligence desktop application",
@@ -14,7 +14,7 @@
     "dev": "pnpm --filter @aperadar/desktop dev",
     "dev:desktop": "pnpm --filter @aperadar/desktop dev",
     "dev:web": "pnpm --filter @aperadar/web dev",
-    "build": "pnpm run typecheck && pnpm run build:web && pnpm run build:desktop",
+    "build": "node scripts/verify-release-version.mjs && pnpm run typecheck && pnpm run build:web && pnpm run build:desktop",
     "build:web": "pnpm --filter @aperadar/web build",
     "build:desktop": "pnpm --filter @aperadar/desktop build",
     "preview": "pnpm --filter @aperadar/web preview",
@@ -24,9 +24,11 @@
     "check": "pnpm run typecheck && pnpm test && pnpm tokens:check",
     "pack": "pnpm run build && pnpm --filter @aperadar/desktop run pack",
     "dist:win": "pnpm run build && pnpm --filter @aperadar/desktop dist:win",
+    "dist": "pnpm run dist:win",
     "smoke:desktop": "pnpm --filter @aperadar/desktop smoke",
     "tokens:check": "node scripts/check-tokens.mjs",
-    "verify:package": "pnpm --filter @aperadar/desktop verify:package"
+    "verify:package": "pnpm --filter @aperadar/desktop verify:package",
+    "verify:updates": "node scripts/verify-update-artifacts.mjs"
   },
   "devDependencies": {
     "@aperadar/shared": "workspace:*",

@@ -1,8 +1,13 @@
 /* Settings follow the reference application's quiet, flat surface hierarchy. */
+.sidebar-main-navigation { flex: 1; min-height: 0; overflow-y: auto; }
+.sidebar-main-navigation > .nav-section-label { display: block; }
 .sidebar-support { display: flex; flex-direction: column; min-height: 0; margin-top: auto; }
 .sidebar-support > .sidebar-bottom { min-height: 0; overflow-y: auto; }
-.sidebar nav.sidebar-settings { flex-shrink: 0; margin: 0; padding: 6px 0 14px; }
+.sidebar nav.sidebar-settings { flex-shrink: 0; flex-direction: row; align-items: center; gap: 4px; margin: 0; padding: 6px 0 14px; }
+.sidebar-settings > .nav-item { flex: 1; min-width: 0; }
 @media (max-width: 480px) {
+  .sidebar-main-navigation { display: contents; }
+  .sidebar-main-navigation > .nav-section-label { display: none; }
   .sidebar-support { display: contents; }
   .sidebar nav.sidebar-settings { display: contents; padding: 0; }
 }
@@ -92,6 +97,35 @@
 .update-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 4px; }
 .update-actions > .muted { font-size: 11px; }
 .update-actions > .button { min-height: 35px; font-size: 11px; }
+.settings-update-action { flex: none; }
+.settings-update-button.button, .update-download-fallback.button { min-height: 40px; font-size: 12px; }
+.update-download-fallback.button { align-self: flex-start; }
+.sidebar-update { flex: none; }
+.button.update-button { position: relative; width: 42px; height: 42px; min-height: 42px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--sidebar-text); }
+.button.update-button:not(:disabled):is(:hover, :focus-visible) { background: var(--surface-muted); color: var(--text); }
+.button.update-button[aria-busy='true'] { opacity: 1; }
+.update-glyph, .update-symbol { display: grid; place-items: center; width: 26px; height: 26px; flex: none; }
+.update-glyph { position: relative; }
+.update-symbol > svg { display: block; transform-box: view-box; transform-origin: 50% 50%; }
+.update-ring { position: absolute; inset: -1px; width: 28px; height: 28px; opacity: 0; transform: rotate(-90deg); transition: opacity var(--duration-normal) var(--ease-out); stroke: currentColor; stroke-width: 2.2; }
+.update-glyph:is([data-state='available'], [data-state='downloading']) .update-ring { opacity: 1; }
+.update-ring-track { opacity: .2; }
+.update-ring-progress { stroke-linecap: round; transition: stroke-dashoffset var(--duration-normal) linear; }
+.update-ring-indeterminate { stroke-dasharray: 24 76; stroke-dashoffset: 0; transform-box: view-box; transform-origin: 50% 50%; }
+.update-dot { position: absolute; top: 6px; right: 6px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 2px var(--sidebar-bg); }
+@media (min-width: 481px) {
+  .app-shell[data-sidebar='collapsed'] .sidebar-main-navigation > .nav-section-label { display: none; }
+  .app-shell[data-sidebar='collapsed'] .sidebar-main-navigation > nav { margin-bottom: 20px; }
+  .sidebar.settings-sidebar .settings-sidebar-footer { display: flex; align-items: center; gap: 4px; }
+  .settings-sidebar-footer > .nav-item { flex: 1; min-width: 0; }
+  .app-shell[data-sidebar='collapsed'] .sidebar-settings, .app-shell[data-sidebar='collapsed'] .settings-sidebar-footer { flex-direction: column; }
+}
+@media (max-width: 480px) {
+  .app-shell[data-sidebar] > .sidebar { padding: 0; }
+  .sidebar-update { display: grid; place-items: center; flex: 0 0 42px; }
+  .settings-sidebar:has(.settings-sidebar-footer) { grid-template-columns: minmax(0, 1fr) 90px; grid-template-rows: minmax(0, 1fr); }
+  .sidebar.settings-sidebar .settings-sidebar-footer { min-height: 0; height: 100%; margin: 0; padding: 0; align-items: center; }
+}
 
 .appearance-modes, .color-schemes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .appearance-mode, .color-scheme {
@@ -168,7 +202,9 @@
 :root:not(.dark) .sidebar .game-connection strong, :root:not(.dark) .sidebar .sidebar-workspace strong { color: var(--text-secondary); }
 .settings-sidebar .brand strong { font-size: 18px; letter-spacing: 0; }
 .settings-sidebar .settings-brand-icon { display: grid; place-items: center; width: 26px; height: 26px; color: var(--text-secondary); }
+.settings-sidebar > nav { flex: 1; min-height: 0; overflow-y: auto; }
 .settings-sidebar .sidebar-bottom { display: block; padding-bottom: 18px; }
+.settings-sidebar .settings-sidebar-footer { flex-shrink: 0; }
 .settings-sidebar .sidebar-bottom .nav-item { color: var(--text-muted); }
 .settings-sidebar .sidebar-bottom .nav-item:hover { color: var(--text); } .team-card, .panel, .segmented button[aria-pressed='true'], .segmented button[aria-selected='true'] { box-shadow: none; } .team-card, .panel { border-color: var(--border-subtle); }
 .settings-content .settings-panel { padding: 20px; background: var(--surface-subtle); }

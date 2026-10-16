@@ -3,7 +3,12 @@
   "appId": "org.aperadar.next",
   "productName": "ApeRadar Next",
   "asar": true,
-  "publish": null,
+  "publish": {
+    "provider": "github",
+    "owner": "JamesFlare1212",
+    "repo": "ApeRadar",
+    "releaseType": "release"
+  },
   "directories": {
     "output": "../../release",
     "buildResources": "build"
@@ -39,8 +44,8 @@
   "win": {
     "icon": "build/icon.ico",
     "target": [
-      "nsis",
-      "portable"
+      { "target": "nsis", "arch": ["x64"] },
+      { "target": "portable", "arch": ["x64"] }
     ],
     "signExecutable": false
   },
@@ -51,7 +56,9 @@
     "artifactName": "ApeRadar-Next-Setup-${version}-${arch}.${ext}",
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
-    "differentialPackage": true
+    "differentialPackage": true,
+    "createDesktopShortcut": true,
+    "shortcutName": "ApeRadar Next"
   },
   "electronDist": "node_modules/electron/dist"
 }

@@ -75,6 +75,7 @@ export interface RadarBridge {
   checkUpdates(): Promise<UpdateState>
   downloadUpdate(): Promise<UpdateState>
   installUpdate(): Promise<UpdateState>
+  openUpdateDownload(): Promise<void>
   onUpdatesChanged(callback: (state: UpdateState) => void): () => void
   getState(): Promise<AppState>
   importArena(file: FilePayload): Promise<AppState>

@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "checks": [
+    "initial check action and current version",
+    "manual check offers the available version",
+    "light theme update icon has sufficient contrast",
+    "update control supports keyboard focus with a visible outline",
+    "download disables the button and prevents duplicate requests",
+    "download progress is reflected in the ring and accessible name",
+    "dark theme update icon has sufficient contrast",
+    "active player queries block installation with an explanation",
+    "installation is explicit and shows a busy state",
+    "failed checks provide retry",
+    "failed downloads provide retry",
+    "download failures surface an error notification",
+    "portable updates open the release page without starting an installer",
+    "disabled builds expose the reason and cannot check",
+    "collapsed sidebar keeps the update control visible",
+    "About and updates shares the same download action",
+    "both sidebar and settings block installation during queries",
+    "About and updates provides a manual release page fallback",
+    "settings layout and update button fit 375x812",
+    "settings layout and update button fit 812x375",
+    "settings layout and update button fit 1280x900",
+    "workspace layout and update button fit 375x812",
+    "workspace layout and update button fit 812x375",
+    "workspace layout and update button fit 1280x900",
+    "spinning state uses the shared Font Awesome animation",
+    "reduced motion disables nonessential spinning"
+  ],
+  "consoleErrors": []
+}

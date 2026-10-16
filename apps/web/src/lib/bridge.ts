@@ -1,5 +1,6 @@
 import type { AppState, RadarBridge } from '@aperadar/shared/types'
 import { isSupportedRegion } from '@aperadar/shared/types'
+import { UPDATE_RELEASES_URL } from '@aperadar/shared/updates'
 
 async function request<T>(route: string, input?: unknown): Promise<T> {
   const response = await fetch(`/api/${route}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-ApeRadar-Client': 'local' }, body: JSON.stringify(input ?? {}) })
@@ -13,6 +14,7 @@ const web: RadarBridge = {
   checkUpdates: () => request('updates/check'),
   downloadUpdate: () => request('updates/download'),
   installUpdate: () => request('updates/install'),
+  openUpdateDownload: async () => { window.open(UPDATE_RELEASES_URL, '_blank', 'noopener,noreferrer') },
   onUpdatesChanged: () => () => {},
   async getState() { const result = await fetch('/api/state'); if (!result.ok) throw new Error('无法连接本地服务，请通过 pnpm dev:web 启动'); return result.json() as Promise<AppState> },
   importArena: file => request('import', file), openFile: async () => null,

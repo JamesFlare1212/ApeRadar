@@ -8,6 +8,7 @@ const api: RadarBridge = {
   checkUpdates: () => ipcRenderer.invoke('radar:updates-check'),
   downloadUpdate: () => ipcRenderer.invoke('radar:updates-download'),
   installUpdate: () => ipcRenderer.invoke('radar:updates-install'),
+  openUpdateDownload: () => ipcRenderer.invoke('radar:updates-open-download'),
   onUpdatesChanged: callback => {
     const listener = (_event: Electron.IpcRendererEvent, state: UpdateState) => callback(state)
     ipcRenderer.on('radar:updates-changed', listener)

@@ -8,6 +8,12 @@
     "heading": "战局总览",
     "nodeAccess": "undefined"
   },
+  "updates": {
+    "mode": "disabled",
+    "version": "1.0.0",
+    "downloadBridge": "function",
+    "control": true
+  },
   "darkStyle": {
     "theme": "dark",
     "accent": "#c4ccd5",
@@ -48,5 +54,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792144806260"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792169796883"
 }

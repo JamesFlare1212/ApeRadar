@@ -2,8 +2,6 @@
 
 基于 ApeRadar 发布包机制研究，用 **React + Vite + Tailwind CSS + Electron + Node.js + TypeScript + SQLite** 实现的桌面重写版。包管理器统一为 **pnpm**。
 
-首屏的「示例对局」使用合成昵称与战绩，所有演示操作均不发起真实玩家查询。原发布包与逆向证据保留在 `ApeRadar/` 和 `analysis/`，应用不执行原 EXE 或依赖原 .NET 程序集。
-
 ![浅色桌面界面](artifacts/desktop-light.png)
 
 ## 启动
@@ -75,11 +73,14 @@ w = 20% × min(本舰场次 / 60, 1)
 | `pnpm smoke:desktop` | 隐藏真实 Electron 窗口验证，输出浅色/深色截图 |
 | `pnpm run pack` | 生成 Windows 应用目录 |
 | `pnpm dist:win` | 生成 Windows x64 安装版与单文件便携版 |
+| `pnpm verify:updates` | 校验更新清单、安装包哈希、大小及配套发布文件 |
 | `pnpm verify:package` | 对实际便携版执行隐藏集成验证 |
 
-便携版输出：`release/ApeRadar-Next-3.0.0-x64.exe`；安装版输出：`release/ApeRadar-Next-Setup-3.0.0-x64.exe`；应用目录输出：`release/win-unpacked/`。当前产物未做数字签名。缓存与打包目录已从 Vite 文件监听中排除，避免 Windows 目录占用和打包触发无关页面重载。
+便携版输出：`release/ApeRadar-Next-1.0.0-x64.exe`；安装版输出：`release/ApeRadar-Next-Setup-1.0.0-x64.exe`；应用目录输出：`release/win-unpacked/`。当前产物未做数字签名。缓存与打包目录已从 Vite 文件监听中排除，避免 Windows 目录占用和打包触发无关页面重载。
 
-桌面更新支持启动后台检查、周期检查、手动下载与确认安装。当前未配置发布源，会明确显示不可用原因；浏览器预览也不会执行应用更新。启用正式发布源与验证要求见 [Application updates](docs/application-updates.md)。
+打包、安装和更新流程沿用 [brokenarrow-log-maggot](https://github.com/JamesFlare1212/brokenarrow-log-maggot)，发布源为本项目的 GitHub Releases。桌面版启动 15 秒后检查更新，此后每 4 分钟检查一次；左下角按钮依次提供检查、下载、圆环进度和重启安装，便携版发现更新后打开下载页。查询期间暂缓安装，浏览器预览和开发版会显示不可用原因。
+
+所有工作区包使用一致的正式版本号，推送匹配的 `v<版本>` 标签后，GitHub Actions 自动检查、打包、验证并发布 EXE、`latest.yml` 和 `.blockmap`；手动运行工作流仅生成可下载产物。本地打包不会上传。发布步骤与验证范围见 [Application updates](docs/application-updates.md)。
 
 Windows 目录打包使用 `pnpm run pack`；`pnpm pack` 是 pnpm 自带的 npm tarball 打包命令。
 

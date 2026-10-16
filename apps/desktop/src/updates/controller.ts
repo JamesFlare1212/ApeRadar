@@ -132,7 +132,7 @@ export class UpdateController {
       await this.options.prepareInstall(this.state.availableVersion!)
       if (this.disposed || this.action !== 'install') return
       if (!this.options.canInstall()) throw new Error('查询已开始，请完成后重新安装更新')
-      this.options.engine!.quitAndInstall(false, true)
+      this.options.engine!.quitAndInstall(true, true)
     } catch (error) { this.installFailure(error) }
   }
 

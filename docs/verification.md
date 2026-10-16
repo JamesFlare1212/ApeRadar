@@ -1,5 +1,22 @@
 # 验证记录
 
+## v1.0.0 发布检查（2026-10-16）
+
+- 根包、desktop、server、web 与 shared 统一为 `1.0.0`；首页、关于和帮助页均从包元数据读取版本。`node scripts/verify-release-version.mjs v1.0.0` 通过。
+- `pnpm check`：12 个文件、91 项测试、全工作区类型检查与设计令牌检查全部通过。更新按钮的 26 项隐藏 Electron 界面检查通过，模拟版本为 `1.0.0 → 1.1.0`。
+- `pnpm dist:win`、`pnpm verify:updates`、`pnpm smoke:desktop`、`pnpm verify:package` 均通过。实际 v1.0.0 桌面与便携版验证了更新桥、版本、禁用状态、隔离 preload、本地 SQLite 与关注保存。
+- 发布产物为 `ApeRadar-Next-Setup-1.0.0-x64.exe`、`ApeRadar-Next-1.0.0-x64.exe`、安装包 `.blockmap` 和 `latest.yml`；元数据版本、安装包 SHA-512 与大小一致，发布源指向本项目 GitHub Releases。
+- 发布流程由 `v1.0.0` 标签触发，在 Windows runner 重跑检查、构建、产物校验与便携版烟雾验证后上传 Release；本地验证不执行系统安装或跨版本替换。
+
+## 沿用打包、安装与左下角更新入口（2026-10-16）
+
+- 对照 `brokenarrow-log-maggot` 的 `b3b51a4`，接入本项目 GitHub Releases 发布源、NSIS 与便携版双产物、版本标签发布工作流，以及安装包 SHA-512、大小和配套文件校验。推送标签前检查所有工作区包版本一致。
+- `pnpm check`：12 个测试文件、91 项测试、全工作区类型检查与设计令牌检查通过。新增覆盖错误的便携版更新链接、安装包损坏、旧版本清单、文件大小错误及缺失发布文件。
+- `pnpm dist:win` 与 `pnpm verify:updates`：实际生成安装版、便携版、`latest.yml` 及 NSIS blockmap；清单只指向 NSIS 安装版，哈希与大小匹配，应用资源中的 `app-update.yml` 指向 `JamesFlare1212/ApeRadar`。
+- 隐藏 Electron 以模拟更新服务完成 26 项实际界面检查：检查、下载、43% 圆环、失败重试、便携版打开发布页、查询期间暂缓安装、关于页共享动作、折叠侧栏、浅深色对比度、键盘焦点和减少动态效果。工作区和设置页在 375×812、812×375、1280×900 均保留完整更新按钮；短窗口的导航可滚动。报告见 `artifacts/update-button-validation.json`。
+- 协作浏览器连续两次快照超时后，改用项目既有的隐藏 Electron 验证方式。更新状态交互使用模拟服务，没有联网下载或执行安装；实际桌面与便携版烟雾测试另行验证真实隔离桥、更新入口、版本、SQLite 和资源加载。
+- 本次没有推送版本标签、创建线上 Release 或执行系统安装；真实跨版本替换仍需在正式发布后验证。
+
 ## 移除第三方代理与国服在线查询（2026-10-16）
 
 - 删除第三方 WG 代理 URL、请求分支、来源选项与健康检查；删除国服 API 域名、主/次区服选项和在线探测。运行时仅保留亚、美、欧、俄服，俄服继续走 Vortex。
