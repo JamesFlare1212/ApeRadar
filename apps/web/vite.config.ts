@@ -16,7 +16,7 @@ export default defineConfig({
     async configureServer(server) {
       // Transform workspace TypeScript through Vite, including constructor parameter properties.
       const { createDevApi } = await server.ssrLoadModule('@aperadar/server/dev-api') as typeof import('@aperadar/server/dev-api')
-      const api = await createDevApi(path.join(workspaceRoot, 'apps/server/resources/ships.json'), path.join(workspaceRoot, '.data/web'))
+      const api = await createDevApi(path.join(workspaceRoot, 'apps/server/resources/ships.json'), path.join(workspaceRoot, '.data/web'), path.join(workspaceRoot, 'config/api.json'))
       server.middlewares.use((req, res, next) => { void api.handler(req, res, next) })
       server.httpServer?.once('close', () => api.dispose())
     },

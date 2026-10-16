@@ -1,19 +1,24 @@
 import assert from 'node:assert/strict'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { DOMAINS, normalizeProfile, parseCombat, WargamingApi } from '@aperadar/server/api'
+import { fileURLToPath } from 'node:url'
+import { normalizeProfile, parseCombat, WargamingApi } from '@aperadar/server/api'
+import { loadApiConfig } from '@aperadar/server/config'
+import { vortexApiUrl, wgApiUrl } from '@aperadar/shared/api-config'
 import { getShip } from '@aperadar/server/arena'
 import { probeApiHealth } from '@aperadar/server/health'
 import { DEFAULT_SETTINGS } from '@aperadar/shared/settings'
 
 // Opt-in live checks. Never reads game logs, changes settings, or writes player caches.
-const applicationId = process.env.WG_APPLICATION_ID
-assert.match(applicationId ?? '', /^[a-zA-Z0-9]{1,64}$/, 'Set WG_APPLICATION_ID before running this probe')
+const runtimeConfig = await loadApiConfig(fileURLToPath(new URL('../config/api.json', import.meta.url)))
+const config = runtimeConfig.config
+const applicationId = config.wgApplicationId
+assert.match(applicationId, /^[a-zA-Z0-9]{1,64}$/, 'Set wgApplicationId in the API configuration or WG_APPLICATION_ID before running this probe')
 const settings = { ...DEFAULT_SETTINGS, api: 'WG_PUBLIC', wgApplicationId: applicationId, retryAttempts: 0 }
 const catalog = JSON.parse(await readFile(new URL('../apps/server/resources/ships.json', import.meta.url), 'utf8'))
 const signal = AbortSignal.timeout(120_000)
 const requests = []
 const samples = new Map()
-const report = { startedAt: new Date().toISOString(), applicationIdSuffix: applicationId.slice(-6), health: null, functional: [], negative: null, requests }
+const report = { startedAt: new Date().toISOString(), configurationFile: runtimeConfig.filePath, applicationIdSuffix: applicationId.slice(-6), health: null, functional: [], negative: null, requests }
 
 const fetcher = async (input, options) => {
   const url = new URL(String(input))
@@ -28,7 +33,7 @@ const fetcher = async (input, options) => {
     try {
       const json = JSON.parse(text)
       entry.apiStatus = json.status ?? null
-      entry.error = json.error ?? null
+      entry.error = json.error ? { code: json.error.code, message: json.error.message, field: json.error.field } : null
       if (json.status !== 'ok') entry.topLevelKeys = Object.keys(json)
     } catch { entry.contentType = response.headers.get('content-type'); entry.invalidJson = true }
     return response
@@ -38,8 +43,8 @@ const fetcher = async (input, options) => {
   } finally { entry.latencyMs = Math.round(performance.now() - start) }
 }
 
-const api = new WargamingApi(settings, { fetcher, timeout: 8000 })
-const wg = (region, endpoint, parameters) => `https://api.${DOMAINS[region]}/wows/${endpoint}/?${new URLSearchParams({ application_id: applicationId, ...parameters })}`
+const api = new WargamingApi(settings, { fetcher, config })
+const wg = (region, endpoint, parameters) => wgApiUrl(config, settings, region, endpoint, parameters)
 const modes = ['pvp', 'pvp_solo', 'pvp_div2', 'pvp_div3']
 
 async function functional(region, source) {
@@ -47,7 +52,7 @@ async function functional(region, source) {
   const result = { region, source, ok: false }
   report.functional.push(result)
   try {
-    const root = `https://vortex.${DOMAINS[region]}/api/accounts`
+    const root = vortexApiUrl(config, region, '').replace(/\/$/, '')
     const sample = samples.get(region)
     const search = await api.json(source === 'WG_PUBLIC' ? wg(region, 'account/list', { search: region === 'EU' ? 'Flamu' : 'Test', limit: '20' }) : `${root}/search/${encodeURIComponent(sample?.name ?? 'Test')}/`, signal)
     assert.ok(Array.isArray(search.data) && search.data.length, 'No public sample candidates found')
@@ -79,7 +84,7 @@ async function functional(region, source) {
     const start = requests.length
     const players = []
     // Exercise the production pipeline with real HTTP, including exact nickname lookup.
-    const client = new WargamingApi({ ...settings, api: source }, { fetcher, timeout: 8000 })
+    const client = new WargamingApi({ ...settings, api: source }, { fetcher, config })
     await client.query([player], signal, value => players.push(value))
     assert.equal(players.length, 1)
     const actual = players[0]
@@ -104,7 +109,7 @@ async function functional(region, source) {
 }
 
 try {
-  report.health = await probeApiHealth(settings, ['NA', 'EU', 'ASIA', 'RU'], signal, { fetcher, timeout: 8000 })
+  report.health = await probeApiHealth(settings, ['NA', 'EU', 'ASIA', 'RU'], signal, { fetcher, config })
   for (const check of report.health.checks) console.log(`${check.region} ${check.source}: ${check.status} ${check.message}`)
   const negative = await fetcher(wg('NA', 'account/info', {}), { signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]) })
   const payload = await negative.json()

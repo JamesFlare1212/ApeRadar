@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { statSync } from 'node:fs'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import type { Activity, AppState, Battle, FilePayload, QueryOptions, Settings, WatchInput } from '@aperadar/shared/types'
 import { fileSchema, querySchema, settingsSchema, watchSchema } from '@aperadar/shared/settings'
 import { teamSummary } from '@aperadar/shared/statistics'
@@ -8,7 +8,8 @@ import { buildBattle, latestArena, parseArenaBytes, readArenaFile, resolveRegion
 import { WargamingApi, message } from './api.ts'
 import { RadarDatabase } from './database.ts'
 import { createDemo } from './demo.ts'
-import { HEALTH_INTERVAL_MS, initialApiHealth, probeApiHealth, type ApiHealthOptions } from './health.ts'
+import { initialApiHealth, probeApiHealth, type ApiHealthOptions } from './health.ts'
+import type { RuntimeApiConfig } from './config.ts'
 
 export type ProviderFactory = (settings: Settings) => Pick<WargamingApi, 'query'>
 export class RadarService extends EventEmitter {
@@ -27,17 +28,24 @@ export class RadarService extends EventEmitter {
   private healthTimer: ReturnType<typeof setInterval> | null = null
   private healthController: AbortController | null = null
   private healthPending: Promise<AppState> | null = null
-  constructor(readonly database: RadarDatabase, readonly catalog: ShipCatalog, private providerFactory: ProviderFactory = settings => new WargamingApi(settings), private healthOptions: ApiHealthOptions = {}) {
+  constructor(readonly database: RadarDatabase, readonly catalog: ShipCatalog, private providerFactory: ProviderFactory = settings => new WargamingApi(settings, { config: runtimeConfig?.config }), private healthOptions: ApiHealthOptions = {}, private runtimeConfig?: RuntimeApiConfig) {
     super()
-    this.settings = database.getSettings()
+    this.settings = this.configuredSettings(database.getSettings())
+    this.healthOptions = { ...healthOptions, config: runtimeConfig?.config ?? healthOptions.config }
+    this.health = initialApiHealth(this.healthOptions.config?.requests.healthIntervalMs)
     this.battle = database.lastBattle() ?? createDemo(catalog)
     this.log('info', '欢迎回来。导入阵容或连接游戏目录，开始查看战局。', false)
   }
   state(): AppState {
     return structuredClone({ settings: this.settings, battle: this.battle, watchlist: this.database.getWatchlist(),
       history: this.database.listBattles().map(b => ({ id: b.id, map: b.map, mode: b.mode, startedAt: b.startedAt, isDemo: b.isDemo, region: [...new Set(b.players.map(p => p.region))].join(' / '), playerCount: b.players.length, readyCount: b.players.filter(p => p.status === 'ready').length, allyWinrate: teamSummary(b, 'ally', this.settings).accountWinrate, enemyWinrate: teamSummary(b, 'enemy', this.settings).accountWinrate })),
-      query: this.queryState, monitor: this.monitorState, health: this.health, activities: this.activities, shipVersion: `${this.catalog.version} · ${this.catalog.date}`, dataLocation: this.database.filename,
+      query: this.queryState, monitor: this.monitorState, health: this.health,
+      apiConfiguration: { filePath: this.runtimeConfig?.filePath ?? null, applicationIdManaged: !!this.runtimeConfig?.config.wgApplicationId, applicationIdSource: this.runtimeConfig?.config.wgApplicationId ? this.runtimeConfig.applicationIdSource : null },
+      activities: this.activities, shipVersion: `${this.catalog.version} · ${this.catalog.date}`, dataLocation: this.database.filename,
     })
+  }
+  private configuredSettings(settings: Settings): Settings {
+    return this.runtimeConfig?.config.wgApplicationId ? { ...settings, wgApplicationId: this.runtimeConfig.config.wgApplicationId } : settings
   }
   private publish() { if (!this.disposed) this.emit('state', this.state()) }
   private log(level: Activity['level'], text: string, publish = true) {
@@ -48,7 +56,7 @@ export class RadarService extends EventEmitter {
   private stopQuery() { this.controller?.abort(); this.controller = null; this.queryState = { ...this.queryState, status: 'idle', message: '查询已取消' } }
   startHealthChecks() {
     if (this.disposed || this.healthTimer) return
-    this.healthTimer = setInterval(() => this.refreshHealth(), HEALTH_INTERVAL_MS)
+    this.healthTimer = setInterval(() => this.refreshHealth(), this.health.intervalMs)
     this.healthTimer.unref()
     this.refreshHealth()
   }
@@ -57,7 +65,7 @@ export class RadarService extends EventEmitter {
       this.healthController?.abort()
       this.healthController = null
       this.healthPending = null
-      this.health = initialApiHealth()
+      this.health = initialApiHealth(this.health.intervalMs)
     }
     void this.checkApiHealth().catch(error => { if (!this.disposed && !(error instanceof Error && error.name === 'AbortError')) this.log('warning', `API 健康检查未完成：${message(error)}`) })
   }
@@ -134,19 +142,20 @@ export class RadarService extends EventEmitter {
     const players = battle.players.filter(p => p.status !== 'bot' && (!options.failedOnly || ['unavailable', 'not-found', 'pending'].includes(p.status) || p.error))
     const done = new Set<string>()
     this.queryState = { status: 'loading', done: 0, total: players.length, message: '正在查询玩家战绩…' }
-    this.log('info', `开始查询 ${players.length} 位玩家；最多 6 个并发请求。`)
+    this.log('info', `开始查询 ${players.length} 位玩家；最多 ${this.runtimeConfig?.config.requests.concurrency ?? 6} 个并发请求。`)
+    const cachePrefix = this.runtimeConfig ? `${settings.api}:${createHash('sha256').update(JSON.stringify({ endpoints: this.runtimeConfig.config.endpoints, applicationId: settings.wgApplicationId })).digest('hex').slice(0, 16)}` : settings.api
     const pending = []
     const onPlayer = (player: Battle['players'][number]) => {
       if (controller.signal.aborted || this.controller !== controller || this.battle?.id !== id || done.has(player.key)) return
       done.add(player.key)
       const index = battle.players.findIndex(p => p.key === player.key)
       if (index >= 0) battle.players[index] = player
-      if (!player.cached) this.database.cacheSet(`${settings.api}:${player.key}`, player, settings.cacheMinutes)
+      if (!player.cached) this.database.cacheSet(`${cachePrefix}:${player.key}`, player, settings.cacheMinutes)
       this.queryState = { status: 'loading', done: done.size, total: players.length, message: `已处理 ${done.size} / ${players.length} 位玩家` }
       this.publish()
     }
     for (const player of players) {
-      const cached = !options.force && this.database.cacheGet(`${settings.api}:${player.key}`)
+      const cached = !options.force && this.database.cacheGet(`${cachePrefix}:${player.key}`)
       if (cached) onPlayer({ ...cached, key: player.key, ship: player.ship, team: player.team, isSelf: player.isSelf })
       else pending.push(player)
     }
@@ -167,12 +176,13 @@ export class RadarService extends EventEmitter {
   }
   cancelQuery(): AppState { this.stopQuery(); if (this.battle && !this.battle.isDemo) this.database.saveBattle(this.battle); this.publish(); return this.state() }
   saveSettings(input: unknown): AppState {
-    const settings = settingsSchema.parse(input)
+    const settings = this.configuredSettings(settingsSchema.parse(input))
     const old = this.settings
     const routingChanged = settings.region !== old.region || settings.secondaryEnabled !== old.secondaryEnabled || settings.secondaryRegion !== old.secondaryRegion || settings.api !== old.api || settings.wgApplicationId !== old.wgApplicationId
     if (routingChanged) this.stopQuery()
     this.settings = settings
-    this.database.saveSettings(settings)
+    // A file-managed ID must not overwrite the user's saved fallback when another preference changes.
+    this.database.saveSettings(this.runtimeConfig?.config.wgApplicationId ? { ...settings, wgApplicationId: this.database.getSettings().wgApplicationId } : settings)
     if (routingChanged && this.battle && !this.battle.isDemo) {
       this.battle.players = this.battle.players.map(player => ({ ...player, region: settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : settings.region === 'AUTO' ? player.region : settings.region, key: `${settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : settings.region === 'AUTO' ? player.region : settings.region}:${player.name}:${player.ship.id}`, status: player.status === 'bot' ? 'bot' : 'pending', stats: null, accountId: null, error: null, fetchedAt: null, cached: false }))
       this.database.saveBattle(this.battle)

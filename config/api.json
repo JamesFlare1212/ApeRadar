@@ -1,0 +1,23 @@
+{
+  "wgApplicationId": "5f42693306300848ab3293643856a0b8",
+  "endpoints": {
+    "wg": {
+      "ASIA": "https://api.worldofwarships.asia/wows/",
+      "NA": "https://api.worldofwarships.com/wows/",
+      "EU": "https://api.worldofwarships.eu/wows/"
+    },
+    "vortex": {
+      "ASIA": "https://vortex.worldofwarships.asia/api/accounts/",
+      "NA": "https://vortex.worldofwarships.com/api/accounts/",
+      "EU": "https://vortex.worldofwarships.eu/api/accounts/",
+      "RU": "https://vortex.korabli.su/api/accounts/"
+    }
+  },
+  "requests": {
+    "timeoutMs": 15000,
+    "spacingMs": 75,
+    "concurrency": 6,
+    "healthTimeoutMs": 8000,
+    "healthIntervalMs": 60000
+  }
+}

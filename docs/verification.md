@@ -1,5 +1,29 @@
 # 验证记录
 
+## API configuration and WG Application ID validation (2026-10-16)
+
+- Added `config/api.json` for the application ID, regional WG/Vortex base URLs, request timeout,
+  concurrency, spacing, and health-check timing. Desktop, development HTTP service, player queries,
+  health checks, and the live probe use the same configuration. Desktop builds initialize an editable
+  user-data configuration file on first launch and preserve subsequent edits.
+- The supplied ID ending in `56a0b8` was accepted by the ASIA, NA, and EU official WG endpoints: HTTP
+  200 and API status `ok`. `pnpm test:api:live` also passed the complete WG lookup, profile, clan, and
+  ship-statistics pipelines in all three regions. The run made 65 HTTP requests and exited with code 0.
+- Vortex health probes succeeded in all four supported regions. Its NA and RU clan-detail requests
+  returned HTTP 404, so those functional results are reported as `partial`; EU and ASIA Vortex
+  functional checks passed. RU's official WG source remains unsupported and routes through Vortex.
+- `pnpm check` passed 109 tests in 13 files, all workspace type checks, and design-token validation.
+  The 18 new configuration tests cover parsing and partial overrides, environment precedence,
+  invalid URLs and limits, startup initialization, custom routing, timing, saved-ID preservation,
+  and cache separation between endpoints.
+- `pnpm build`, `pnpm smoke:desktop`, and the desktop directory package completed successfully.
+  The native smoke test verified the effective application ID, read-only Settings field, linked
+  help text, and configuration path. Two launches of the packaged EXE verified first-run creation
+  from bundled defaults and preservation of an edited application ID and endpoint.
+- The running Vite development service returned the configured ID and file-managed metadata.
+  Reports: `artifacts/wg-application-id-validation.json`, `artifacts/live-api-probe.json`,
+  `artifacts/desktop-validation.json`, and `artifacts/api-configuration-validation.json`.
+
 ## v1.0.0 发布检查（2026-10-16）
 
 - 根包、desktop、server、web 与 shared 统一为 `1.0.0`；首页、关于和帮助页均从包元数据读取版本。`node scripts/verify-release-version.mjs v1.0.0` 通过。

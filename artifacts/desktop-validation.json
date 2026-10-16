@@ -14,6 +14,13 @@
     "downloadBridge": "function",
     "control": true
   },
+  "apiConfiguration": {
+    "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\config\\api.json",
+    "managed": true,
+    "valueMatches": true,
+    "applicationIdSuffix": "56a0b8",
+    "helpConnected": true
+  },
   "darkStyle": {
     "theme": "dark",
     "accent": "#c4ccd5",
@@ -54,5 +61,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792169796883"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792177843849"
 }

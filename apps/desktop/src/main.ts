@@ -10,6 +10,7 @@ import { RadarDatabase } from '@aperadar/server/database'
 import { RadarService } from '@aperadar/server/service'
 import { readArenaFile, readCatalog } from '@aperadar/server/arena'
 import { DOMAINS, WargamingApi } from '@aperadar/server/api'
+import { loadApiConfig } from '@aperadar/server/config'
 import { regionSchema } from '@aperadar/shared/settings'
 import type { QueryOptions, WatchInput } from '@aperadar/shared/types'
 import { UPDATE_RELEASES_URL } from '@aperadar/shared/updates'
@@ -41,6 +42,7 @@ function handle(channel: string, callback: (input: unknown) => unknown) {
 async function createWindow() {
   const root = app.getAppPath()
   const dataPath = app.getPath('userData')
+  const runtimeConfig = await loadApiConfig(app.isPackaged ? path.join(dataPath, 'api-config.json') : path.resolve(root, '../../config/api.json'), { createIfMissing: app.isPackaged })
   const updateConfig = updateConfiguration({
     packaged: app.isPackaged,
     development: smoke || !!devUrl,
@@ -60,7 +62,7 @@ async function createWindow() {
     prepareInstall: targetVersion => writeInstallRecord(installRecord, app.getVersion(), targetVersion),
   })
   const catalog = await readCatalog(path.join(root, app.isPackaged ? 'resources' : '../server/resources', 'ships.json'))
-  service = new RadarService(new RadarDatabase(path.join(dataPath, 'aperadar.sqlite')), catalog, settings => new WargamingApi(settings, { fetcher: net.fetch as typeof fetch }), { fetcher: net.fetch as typeof fetch })
+  service = new RadarService(new RadarDatabase(path.join(dataPath, 'aperadar.sqlite')), catalog, settings => new WargamingApi(settings, { fetcher: net.fetch as typeof fetch, config: runtimeConfig.config }), { fetcher: net.fetch as typeof fetch }, runtimeConfig)
   const dist = path.join(root, app.isPackaged ? 'dist' : '../web/dist')
   protocol.handle('aperadar', async request => {
     try {
@@ -135,14 +137,28 @@ async function createWindow() {
       if (updateResult.mode !== 'disabled' || updateResult.version !== app.getVersion() || updateResult.downloadBridge !== 'function' || !updateResult.control) throw new Error('Desktop update bridge assertion failed')
       await new Promise(resolve => setTimeout(resolve, 400))
       const darkStyle = await mainWindow.webContents.executeJavaScript("({theme:document.documentElement.className,accent:getComputedStyle(document.documentElement).getPropertyValue('--accent'),row:getComputedStyle(document.querySelector('.self-row')).backgroundColor,button:getComputedStyle(document.querySelector('.button-primary')).backgroundColor})")
-      const report = { status: 'passed', result, updates: updateResult, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'desktop-dark.png'), (await mainWindow.webContents.capturePage()).toPNG())
+      const apiConfigResult = await mainWindow.webContents.executeJavaScript(`(async()=>{
+        const api=window.aperadar, original=(await api.getState()).settings;
+        await api.saveSettings({...original,api:'WG_PUBLIC'});
+        location.hash='/settings/connection';
+        for(let i=0;i<40&&!document.getElementById('wg-key');i++) await new Promise(resolve=>setTimeout(resolve,50));
+        const state=await api.getState(), field=document.getElementById('wg-key');
+        const result={filePath:state.apiConfiguration.filePath,managed:field?.readOnly,valueMatches:field?.value===state.settings.wgApplicationId,applicationIdSuffix:state.settings.wgApplicationId.slice(-6),helpConnected:field?.getAttribute('aria-describedby')==='wg-key-help'};
+        await api.saveSettings(original); location.hash='/overview';
+        return result;
+      })()`) as { filePath: string; managed: boolean; valueMatches: boolean; applicationIdSuffix: string; helpConnected: boolean }
+      if (apiConfigResult.filePath !== runtimeConfig.filePath || apiConfigResult.managed !== !!runtimeConfig.config.wgApplicationId || !apiConfigResult.valueMatches || !apiConfigResult.helpConnected) throw new Error('Desktop API configuration assertion failed')
+      if (runtimeConfig.config.wgApplicationId && apiConfigResult.applicationIdSuffix !== runtimeConfig.config.wgApplicationId.slice(-6)) throw new Error('Desktop application ID assertion failed')
+      // Let the restored workspace finish its mount-time IPC requests before exiting.
+      await new Promise(resolve => setTimeout(resolve, 400))
+      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null
       app.exit(0)
     } catch (error) { await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify({ status: 'failed', error: String(error) }, null, 2)); app.exit(1) }
   }
 }
-app.whenReady().then(createWindow).catch(error => { console.error(error); app.exit(1) })
+app.whenReady().then(createWindow).catch(error => { console.error(error); if (!smoke) dialog.showErrorBox('应用启动失败', error instanceof Error ? error.message : String(error)); app.exit(1) })
 app.on('window-all-closed', () => app.quit())
 app.on('before-quit', () => { updates?.dispose(); updates = null; service?.dispose(); service = null })

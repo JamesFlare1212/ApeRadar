@@ -65,6 +65,7 @@ export interface AppState {
   query: { status: 'idle' | 'loading' | 'complete'; done: number; total: number; message: string }
   monitor: { enabled: boolean; lastFile: string | null; message: string }
   health: ApiHealth
+  apiConfiguration: { filePath: string | null; applicationIdManaged: boolean; applicationIdSource: 'environment' | 'file' | null }
   activities: Activity[]; shipVersion: string; dataLocation: string
 }
 export interface FilePayload { name: string; base64: string }

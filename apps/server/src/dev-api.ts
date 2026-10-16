@@ -7,9 +7,11 @@ import { message } from './api.ts'
 import type { FilePayload, QueryOptions, WatchInput } from '@aperadar/shared/types'
 import { initialUpdateState } from '@aperadar/shared/updates'
 import appPackage from '../../../package.json'
+import { loadApiConfig } from './config.ts'
 
-export async function createDevApi(catalogPath: string, dataDirectory: string) {
-  const service = new RadarService(new RadarDatabase(path.join(dataDirectory, 'aperadar.sqlite')), await readCatalog(catalogPath))
+export async function createDevApi(catalogPath: string, dataDirectory: string, configFile: string) {
+  const runtimeConfig = await loadApiConfig(configFile)
+  const service = new RadarService(new RadarDatabase(path.join(dataDirectory, 'aperadar.sqlite')), await readCatalog(catalogPath), undefined, {}, runtimeConfig)
   const clients = new Set<ServerResponse>()
   service.on('state', state => { const data = `data: ${JSON.stringify(state)}\n\n`; for (const response of clients) response.write(data) })
   service.startHealthChecks()

@@ -1,16 +1,17 @@
 import { performance } from 'node:perf_hooks'
 import type { ApiHealth, ApiHealthCheck, ApiSource, Region, SupportedRegion, Settings } from '@aperadar/shared/types'
 import { isSupportedRegion } from '@aperadar/shared/types'
-import { DOMAINS, object, parallel } from './api.ts'
+import { object, parallel } from './api.ts'
+import { DEFAULT_API_CONFIG, vortexApiUrl, wgApiUrl, type ApiConfig } from '@aperadar/shared/api-config'
 
-export const HEALTH_INTERVAL_MS = 60_000
-export interface ApiHealthOptions { fetcher?: typeof fetch; timeout?: number }
+export const HEALTH_INTERVAL_MS = DEFAULT_API_CONFIG.requests.healthIntervalMs
+export interface ApiHealthOptions { fetcher?: typeof fetch; timeout?: number; config?: ApiConfig }
 const sources: ApiSource[] = ['VORTEX', 'WG_PUBLIC']
 const probeName = 'ApeRadarHealthCheck'
 const maximumResponseBytes = 64 * 1024
 
-export function initialApiHealth(): ApiHealth {
-  return { status: 'unknown', checking: false, checkedAt: null, intervalMs: HEALTH_INTERVAL_MS, checks: [] }
+export function initialApiHealth(intervalMs = HEALTH_INTERVAL_MS): ApiHealth {
+  return { status: 'unknown', checking: false, checkedAt: null, intervalMs, checks: [] }
 }
 
 // RU uses Vortex in player queries even when WG is selected.
@@ -18,11 +19,9 @@ export function effectiveApiSource(source: ApiSource, region: Region): ApiSource
   return region === 'RU' ? 'VORTEX' : source
 }
 
-function searchUrl(settings: Settings, source: ApiSource, region: SupportedRegion): URL {
-  if (source === 'VORTEX') return new URL(`https://vortex.${DOMAINS[region]}/api/accounts/search/${probeName}/`)
-  const url = new URL(`https://api.${DOMAINS[region]}/wows/account/list/`)
-  url.search = new URLSearchParams({ search: probeName, type: 'exact', limit: '1', ...(source === 'WG_PUBLIC' ? { application_id: settings.wgApplicationId } : {}) }).toString()
-  return url
+function searchUrl(settings: Settings, source: ApiSource, region: SupportedRegion, config: ApiConfig): URL | null {
+  if (source === 'VORTEX') return new URL(vortexApiUrl(config, region, `search/${probeName}/`))
+  return region === 'RU' ? null : new URL(wgApiUrl(config, settings, region, 'account/list', { search: probeName, type: 'exact', limit: '1' }))
 }
 
 async function responseJson(response: Response): Promise<unknown> {
@@ -45,12 +44,13 @@ async function responseJson(response: Response): Promise<unknown> {
 }
 
 async function check(settings: Settings, source: ApiSource, region: SupportedRegion, signal: AbortSignal, options: ApiHealthOptions): Promise<ApiHealthCheck> {
-  const url = searchUrl(settings, source, region)
-  const base: ApiHealthCheck = { source, region, endpoint: url.origin + url.pathname, active: effectiveApiSource(settings.api, region) === source, ok: false, status: 'error', latencyMs: null, httpStatus: null, message: '', failure: null }
-  if (source !== 'VORTEX' && region === 'RU') return { ...base, status: 'unsupported', message: '此区服使用 Vortex 接口' }
+  const config = options.config ?? DEFAULT_API_CONFIG
+  const url = searchUrl(settings, source, region, config)
+  const base: ApiHealthCheck = { source, region, endpoint: url ? url.origin + url.pathname : '', active: effectiveApiSource(settings.api, region) === source, ok: false, status: 'error', latencyMs: null, httpStatus: null, message: '', failure: null }
+  if (!url) return { ...base, status: 'unsupported', message: '此区服使用 Vortex 接口' }
   if (source === 'WG_PUBLIC' && !settings.wgApplicationId) return { ...base, status: 'unconfigured', message: '请先填写 WG Application ID' }
   const start = performance.now()
-  const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(options.timeout ?? 8000)])
+  const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(options.timeout ?? config.requests.healthTimeoutMs)])
   let httpStatus: number | null = null
   try {
     const response = await (options.fetcher ?? fetch)(url.href, { signal: requestSignal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, cache: 'no-store', redirect: 'error' })
@@ -79,13 +79,14 @@ async function check(settings: Settings, source: ApiSource, region: SupportedReg
 
 // Checks never use the player cache or retry policy: the result describes this connection now.
 export async function probeApiHealth(settings: Settings, regions: Region[], signal: AbortSignal, options: ApiHealthOptions = {}): Promise<ApiHealth> {
+  const config = options.config ?? DEFAULT_API_CONFIG
   const targets = [...new Set(regions)].filter(isSupportedRegion).flatMap(region => sources.map(source => ({ source, region })))
   const checks = new Array<ApiHealthCheck>(targets.length)
-  await parallel(targets.map((target, index) => ({ ...target, index })), 4, async ({ source, region, index }) => {
+  await parallel(targets.map((target, index) => ({ ...target, index })), Math.min(4, config.requests.concurrency), async ({ source, region, index }) => {
     signal.throwIfAborted()
     checks[index] = await check(settings, source, region, signal, options)
   })
   signal.throwIfAborted()
   const active = checks.filter(item => item.active)
-  return { status: active.length && active.every(item => item.ok) ? 'healthy' : active.some(item => item.ok) ? 'degraded' : 'unavailable', checking: false, checkedAt: new Date().toISOString(), intervalMs: HEALTH_INTERVAL_MS, checks }
+  return { status: active.length && active.every(item => item.ok) ? 'healthy' : active.some(item => item.ok) ? 'degraded' : 'unavailable', checking: false, checkedAt: new Date().toISOString(), intervalMs: config.requests.healthIntervalMs, checks }
 }

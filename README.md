@@ -44,6 +44,15 @@ pnpm dev:web
 - Radix 焦点管理、Escape 关闭详情并恢复焦点、固定阵容顺序、键盘操作、375px 到桌面的响应布局。
 - Electron 沙箱、隔离 preload、有限类型桥、IPC 来源检查和自定义本地资源协议。
 
+## API configuration
+
+Edit [config/api.json](config/api.json) to configure the WG Application ID, regional WG/Vortex
+endpoints, timeouts, concurrency, request spacing, and health-check interval. Restart the application
+after editing. Development uses this file directly; production desktop builds create an editable
+`api-config.json` alongside the user-data database. `APERADAR_CONFIG_FILE` selects another file and
+`WG_APPLICATION_ID` overrides its ID. See [API configuration](docs/api-configuration.md) for precedence
+and Settings behavior.
+
 ## 评分口径
 
 默认账号基线：
@@ -65,7 +74,7 @@ w = 20% × min(本舰场次 / 60, 1)
 | `pnpm dev:web` | 浏览器预览，附真实本地服务 |
 | `pnpm typecheck` | 完整 TypeScript 检查 |
 | `pnpm test` | 解析、算法、SQLite、网络边界与生命周期测试 |
-| `pnpm test:api:live` | 使用 `WG_APPLICATION_ID` 实测四个海外区服 API，报告写入 `artifacts/live-api-probe.json` |
+| `pnpm test:api:live` | Validate live regional APIs using `config/api.json`, optionally overridden by `WG_APPLICATION_ID` |
 | `pnpm check` | 类型检查、核心测试与设计令牌检查 |
 | `pnpm build` | 生产界面与 Electron 主进程/preload |
 | `pnpm build:web` | 单独构建浏览器界面 |
@@ -124,7 +133,6 @@ analysis/               既有 REA 调查，不参与应用运行或打包
 核心测试使用模拟 HTTP 响应，桌面与便携版验证使用合成阵容。线上 API 可按需单独验证：
 
 ```powershell
-$env:WG_APPLICATION_ID = '你的应用 ID'
 pnpm test:api:live
 ```
 

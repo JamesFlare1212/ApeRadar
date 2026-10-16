@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "executable": "release/win-unpacked/ApeRadar Next.exe",
+  "firstLaunch": {
+    "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-config-1792177862606\\api-config.json",
+    "managed": true,
+    "valueMatches": true,
+    "applicationIdSuffix": "56a0b8",
+    "helpConnected": true
+  },
+  "afterEdit": {
+    "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-config-1792177862606\\api-config.json",
+    "managed": true,
+    "valueMatches": true,
+    "applicationIdSuffix": "TestId",
+    "helpConnected": true
+  },
+  "initializedFromBundledDefaults": true,
+  "userEditsPreserved": true,
+  "networkRequests": false
+}

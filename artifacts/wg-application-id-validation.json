@@ -1,0 +1,29 @@
+{
+  "startedAt": "2026-10-16T18:53:28.201Z",
+  "applicationIdSuffix": "56a0b8",
+  "checks": [
+    {
+      "region": "ASIA",
+      "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "accepted": true
+    },
+    {
+      "region": "NA",
+      "endpoint": "https://api.worldofwarships.com/wows/account/list/",
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "accepted": true
+    },
+    {
+      "region": "EU",
+      "endpoint": "https://api.worldofwarships.eu/wows/account/list/",
+      "httpStatus": 200,
+      "apiStatus": "ok",
+      "accepted": true
+    }
+  ],
+  "accepted": true,
+  "finishedAt": "2026-10-16T18:53:29.427Z"
+}

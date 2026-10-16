@@ -1,6 +1,7 @@
 import { setTimeout as sleep } from 'node:timers/promises'
 import type { CombatStats, PlayerStats, RadarPlayer, SupportedRegion, Settings } from '@aperadar/shared/types'
 import { isSupportedRegion } from '@aperadar/shared/types'
+import { DEFAULT_API_CONFIG, vortexApiUrl, wgApiUrl, type ApiConfig } from '@aperadar/shared/api-config'
 
 export const DOMAINS: Record<SupportedRegion, string> = { ASIA: 'worldofwarships.asia', NA: 'worldofwarships.com', EU: 'worldofwarships.eu', RU: 'korabli.su' }
 type Json = Record<string, unknown>
@@ -28,20 +29,21 @@ export function normalizeProfile(raw: unknown): Pick<PlayerStats, 'overall' | 's
   return { overall: parseCombat(stats.pvp), solo: parseCombat(stats.pvp_solo), div2: parseCombat(stats.pvp_div2), div3: parseCombat(stats.pvp_div3), karma: object(stats.basic).karma === undefined ? null : number(object(stats.basic).karma) }
 }
 class HttpError extends Error { constructor(message: string, readonly retry: boolean, readonly wait = 0) { super(message) } }
-export interface ApiOptions { fetcher?: typeof fetch; spacing?: number; concurrency?: number; timeout?: number }
+export interface ApiOptions { fetcher?: typeof fetch; spacing?: number; concurrency?: number; timeout?: number; config?: ApiConfig }
 export class WargamingApi {
   private running = 0
   private queue: (() => void)[] = []
   private nextStart = 0
   private readonly fetcher: typeof fetch
-  constructor(private settings: Settings, private options: ApiOptions = {}) { this.fetcher = options.fetcher ?? fetch }
+  private readonly config: ApiConfig
+  constructor(private settings: Settings, private options: ApiOptions = {}) { this.fetcher = options.fetcher ?? fetch; this.config = options.config ?? DEFAULT_API_CONFIG }
   private async slot<T>(work: () => Promise<T>, signal: AbortSignal): Promise<T> {
-    if (this.running >= (this.options.concurrency ?? 6)) await new Promise<void>(resolve => this.queue.push(resolve))
+    if (this.running >= (this.options.concurrency ?? this.config.requests.concurrency)) await new Promise<void>(resolve => this.queue.push(resolve))
     else this.running++
     try {
       signal.throwIfAborted()
       const start = Math.max(Date.now(), this.nextStart)
-      this.nextStart = start + (this.options.spacing ?? 75)
+      this.nextStart = start + (this.options.spacing ?? this.config.requests.spacingMs)
       if (start > Date.now()) await sleep(start - Date.now(), undefined, { signal })
       return await work()
     } finally { const next = this.queue.shift(); if (next) next(); else this.running-- }
@@ -50,7 +52,7 @@ export class WargamingApi {
     for (let attempt = 0; ; attempt++) {
       try {
         return await this.slot(async () => {
-          const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(this.options.timeout ?? 15000)])
+          const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(this.options.timeout ?? this.config.requests.timeoutMs)])
           const response = await this.fetcher(url, { signal: requestSignal, headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }, redirect: 'error' })
           if (!response.ok) {
             const retryAfter = response.headers.get('retry-after')
@@ -89,7 +91,7 @@ export class WargamingApi {
   private finish(player: RadarPlayer, data: Partial<RadarPlayer>): RadarPlayer { return { ...player, ...data, fetchedAt: new Date().toISOString(), cached: false } }
   private async vortex(player: RadarPlayer, signal: AbortSignal): Promise<RadarPlayer> {
     if (!isSupportedRegion(player.region)) throw new Error('此区服已停止支持在线查询')
-    const root = `https://vortex.${DOMAINS[player.region]}/api/accounts`
+    const root = vortexApiUrl(this.config, player.region, '').replace(/\/$/, '')
     const search = await this.json(`${root}/search/${encodeURIComponent(player.name)}/`, signal)
     const match = array(search.data).map(object).find(item => String(item.name).toLowerCase() === player.name.toLowerCase())
     if (!match || !/^\d+$/.test(String(match.spa_id))) return this.finish(player, { status: 'not-found', error: '该区服未找到匹配账号' })
@@ -115,8 +117,7 @@ export class WargamingApi {
   }
   private wgUrl(region: SupportedRegion, endpoint: 'search' | 'account/info' | 'clans/accountinfo' | 'ships/stats', parameters: Record<string, string>) {
     const pathname = endpoint === 'search' ? 'account/list' : endpoint
-    const root = `https://api.${DOMAINS[region]}/wows/${pathname}/`
-    return `${root}?${new URLSearchParams({ application_id: this.settings.wgApplicationId, ...parameters })}`
+    return wgApiUrl(this.config, this.settings, region, pathname, parameters)
   }
   private async wgGroup(players: RadarPlayer[], signal: AbortSignal, onPlayer: (p: RadarPlayer) => void) {
     const region = players[0].region

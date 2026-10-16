@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { Settings } from './types.ts'
 import { SUPPORTED_REGIONS } from './types.ts'
+import { DEFAULT_API_CONFIG } from './api-config.ts'
 
 export const regionSchema = z.enum(SUPPORTED_REGIONS)
 export const settingsSchema = z.object({
@@ -21,7 +22,7 @@ const LEGACY_DEFAULT_TEXT_TEMPLATE = '我方精英：{AllyUnicumList}；待提�
 
 export const DEFAULT_SETTINGS: Settings = {
   gamePath: '', region: 'ASIA', secondaryRegion: 'EU', secondaryEnabled: false,
-  api: 'VORTEX', wgApplicationId: '447ec579e994976e39dec0e7d0bac644',
+  api: 'VORTEX', wgApplicationId: DEFAULT_API_CONFIG.wgApplicationId,
   theme: 'light', winrate: 'account', showNames: true, autoQuery: true, retryAttempts: 2, cacheMinutes: 15,
   lightPalette: 'graphite', darkPalette: 'graphite',
   apeThreshold: 47, unicumThreshold: 58, minUnicumBattles: 500, minApeBattles: 0,
