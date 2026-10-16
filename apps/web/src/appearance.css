@@ -1,13 +1,11 @@
 /* Settings follow the reference application's quiet, flat surface hierarchy. */
 .sidebar-main-navigation { flex: 1; min-height: 0; overflow-y: auto; }
-.sidebar-main-navigation > .nav-section-label { display: block; }
 .sidebar-support { display: flex; flex-direction: column; min-height: 0; margin-top: auto; }
 .sidebar-support > .sidebar-bottom { min-height: 0; overflow-y: auto; }
 .sidebar nav.sidebar-settings { flex-shrink: 0; flex-direction: row; align-items: center; gap: 4px; margin: 0; padding: 6px 0 14px; }
 .sidebar-settings > .nav-item { flex: 1; min-width: 0; }
 @media (max-width: 480px) {
   .sidebar-main-navigation { display: contents; }
-  .sidebar-main-navigation > .nav-section-label { display: none; }
   .sidebar-support { display: contents; }
   .sidebar nav.sidebar-settings { display: contents; padding: 0; }
 }
@@ -114,8 +112,7 @@
 .update-ring-indeterminate { stroke-dasharray: 24 76; stroke-dashoffset: 0; transform-box: view-box; transform-origin: 50% 50%; }
 .update-dot { position: absolute; top: 6px; right: 6px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 2px var(--sidebar-bg); }
 @media (min-width: 481px) {
-  .app-shell[data-sidebar='collapsed'] .sidebar-main-navigation > .nav-section-label { display: none; }
-  .app-shell[data-sidebar='collapsed'] .sidebar-main-navigation > nav { margin-bottom: 20px; }
+  .sidebar-main-navigation > nav + nav { margin-top: 6px; }
   .sidebar.settings-sidebar .settings-sidebar-footer { display: flex; align-items: center; gap: 4px; }
   .settings-sidebar-footer > .nav-item { flex: 1; min-width: 0; }
   .app-shell[data-sidebar='collapsed'] .sidebar-settings, .app-shell[data-sidebar='collapsed'] .settings-sidebar-footer { flex-direction: column; }
@@ -192,14 +189,14 @@
 /* Shared surfaces retain their original semantic text and status colors. */
 .sidebar { border-right: 1px solid var(--sidebar-border); }
 :root:not(.dark) .sidebar .brand { color: var(--text); }
-:root:not(.dark) .sidebar .brand small, :root:not(.dark) .sidebar .nav-section-label { color: var(--text-muted); }
+:root:not(.dark) .sidebar .brand small { color: var(--text-muted); }
 .sidebar .nav-item:hover { background: var(--surface-muted); }
 :root:not(.dark) .sidebar .nav-item:hover { color: var(--text); }
 .sidebar .nav-item.active { border-color: transparent; }
 .sidebar .nav-count { background: var(--surface-muted); }
 .sidebar .active .nav-count { background: var(--accent-soft); }
 .sidebar .game-connection { background: var(--surface-subtle); }
-:root:not(.dark) .sidebar .game-connection strong, :root:not(.dark) .sidebar .sidebar-workspace strong { color: var(--text-secondary); }
+:root:not(.dark) .sidebar .game-connection strong { color: var(--text-secondary); }
 .settings-sidebar .brand strong { font-size: 18px; letter-spacing: 0; }
 .settings-sidebar .settings-brand-icon { display: grid; place-items: center; width: 26px; height: 26px; color: var(--text-secondary); }
 .settings-sidebar > nav { flex: 1; min-height: 0; overflow-y: auto; }
