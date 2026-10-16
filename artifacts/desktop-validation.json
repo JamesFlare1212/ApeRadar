@@ -5,12 +5,12 @@
     "players": 24,
     "settings": "dark",
     "watchPersisted": true,
-    "heading": "战局总览",
+    "heading": "海猴雷达",
     "nodeAccess": "undefined"
   },
   "updates": {
     "mode": "disabled",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "downloadBridge": "function",
     "control": true
   },
@@ -61,5 +61,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792177843849"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792195061053"
 }

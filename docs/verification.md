@@ -1,5 +1,24 @@
 # 验证记录
 
+## v1.0.1 release validation (2026-10-16)
+
+- Root, desktop, server, web, and shared packages use `1.0.1`.
+  `node scripts/verify-release-version.mjs v1.0.1` passed.
+- `pnpm check` passed all workspace and test type checks, 109 tests in 13 files, and design-token
+  validation. `pnpm dist:win` passed, including the web and Electron production builds.
+- Generated `ApeRadar-Next-Setup-1.0.1-x64.exe`, `ApeRadar-Next-1.0.1-x64.exe`, `latest.yml`, and
+  the installer `.blockmap`. `pnpm verify:updates` confirmed the installer SHA-512, size, version,
+  and companion files.
+- `pnpm smoke:desktop` and `pnpm verify:package` passed with isolated data. The actual v1.0.1
+  portable executable verified the Electron bridge, 24-player roster, settings, persisted watch
+  entry, renamed page heading, and renderer isolation. Reports and desktop screenshots were refreshed.
+- `pnpm test:api:live` made 65 requests and exited with code 0. Official WG pipelines passed in
+  NA, EU, and ASIA; Vortex passed in EU and ASIA. NA and RU Vortex clan-detail endpoints returned
+  HTTP 404, so those results remain `partial` despite available account and ship statistics.
+- The tagged release workflow reads the English [v1.0.1 release notes](releases/v1.0.1.md).
+  Local verification covers update metadata and executable startup; no actual version-to-version
+  installation was performed.
+
 ## API configuration and WG Application ID validation (2026-10-16)
 
 - Added `config/api.json` for the application ID, regional WG/Vortex base URLs, request timeout,

@@ -1,8 +1,8 @@
 {
   "status": "passed",
-  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.0.0-x64.exe",
-  "bytes": 113148326,
-  "sha256": "ca82bc49bdd9d59d5324388c22703c08966ffb3cc379a7067ee39af75cb15433",
+  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.0.1-x64.exe",
+  "bytes": 113160110,
+  "sha256": "62b8cf55e22722b88e3a119ff1d3e4b495a06d8aa9dda2fb99a849b55110b0c6",
   "report": {
     "status": "passed",
     "result": {
@@ -10,14 +10,21 @@
       "players": 24,
       "settings": "dark",
       "watchPersisted": true,
-      "heading": "战局总览",
+      "heading": "海猴雷达",
       "nodeAccess": "undefined"
     },
     "updates": {
       "mode": "disabled",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "downloadBridge": "function",
       "control": true
+    },
+    "apiConfiguration": {
+      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792195066113\\api-config.json",
+      "managed": true,
+      "valueMatches": true,
+      "applicationIdSuffix": "56a0b8",
+      "helpConnected": true
     },
     "darkStyle": {
       "theme": "dark",
@@ -59,6 +66,6 @@
       "chrome": "152.0.7977.167"
     },
     "sqliteHeader": "SQLite format 3\u0000",
-    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792169877326"
+    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792195066113"
   }
 }
