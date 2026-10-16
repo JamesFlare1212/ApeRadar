@@ -11,6 +11,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
+    "postinstall": "pnpm --filter @aperadar/desktop exec install-electron",
     "dev": "pnpm --filter @aperadar/desktop dev",
     "dev:desktop": "pnpm --filter @aperadar/desktop dev",
     "dev:web": "pnpm --filter @aperadar/web dev",

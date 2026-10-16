@@ -3,6 +3,7 @@
 ## v1.0.0 发布检查（2026-10-16）
 
 - 根包、desktop、server、web 与 shared 统一为 `1.0.0`；首页、关于和帮助页均从包元数据读取版本。`node scripts/verify-release-version.mjs v1.0.0` 通过。
+- 干净 CI 环境确认 Electron 44 不再通过依赖的安装脚本自动下载运行时；根包 `postinstall` 显式调用 desktop 工作区的 `install-electron`，按参考仓库的方式在打包前准备 Electron。
 - `pnpm check`：12 个文件、91 项测试、全工作区类型检查与设计令牌检查全部通过。更新按钮的 26 项隐藏 Electron 界面检查通过，模拟版本为 `1.0.0 → 1.1.0`。
 - `pnpm dist:win`、`pnpm verify:updates`、`pnpm smoke:desktop`、`pnpm verify:package` 均通过。实际 v1.0.0 桌面与便携版验证了更新桥、版本、禁用状态、隔离 preload、本地 SQLite 与关注保存。
 - 发布产物为 `ApeRadar-Next-Setup-1.0.0-x64.exe`、`ApeRadar-Next-1.0.0-x64.exe`、安装包 `.blockmap` 和 `latest.yml`；元数据版本、安装包 SHA-512 与大小一致，发布源指向本项目 GitHub Releases。
