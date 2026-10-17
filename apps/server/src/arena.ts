@@ -1,11 +1,14 @@
 import { createHash } from 'node:crypto'
-import { open, readdir, readFile, stat } from 'node:fs/promises'
+import { open, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { z } from 'zod'
 import type { Battle, RadarPlayer, Region, SupportedRegion, Settings, Ship, ShipType } from '@aperadar/shared/types'
 import { isSupportedRegion } from '@aperadar/shared/types'
 import { lastLogRegion } from './game-region.ts'
 import { inspectGameClient } from './game-client.ts'
+import type { ShipCatalog } from './ship-catalog.ts'
+import { restoreShipName } from './ship-names.ts'
+export { readCatalog, type ShipCatalog } from './ship-catalog.ts'
 
 const idSchema = z.union([z.string().regex(/^\d{1,20}$/), z.number().int().nonnegative().safe()]).transform(String)
 const arenaSchema = z.object({
@@ -15,12 +18,10 @@ const arenaSchema = z.object({
 }).passthrough()
 const MAX_JSON = 4 * 1024 * 1024
 const MAGIC = Buffer.from([0x12, 0x32, 0x34, 0x11])
-export interface ShipCatalog { version: string; date: string; ships: Record<string, { 'name_zh-cn': string; 'name_en-us': string; type: string; tier: number; nation: string }> }
-export async function readCatalog(filename: string): Promise<ShipCatalog> { return JSON.parse(await readFile(filename, 'utf8')) as ShipCatalog }
 export function getShip(catalog: ShipCatalog, id: string): Ship {
   const ship = catalog.ships[id]
   const types: string[] = ['AirCarrier', 'Battleship', 'Cruiser', 'Destroyer', 'Submarine']
-  return { id, name: ship?.['name_zh-cn'] ?? '未知舰船', nameEn: ship?.['name_en-us'] ?? 'Unknown ship', type: types.includes(ship?.type) ? ship.type as ShipType : 'Unknown', tier: ship?.tier ?? 0, nation: ship?.nation ?? 'unknown' }
+  return { id, name: restoreShipName(ship?.['name_en-us'] ?? 'Unknown ship', ship?.['name_zh-cn'] ?? '未知舰船', ship?.nation ?? 'unknown', ship?.type ?? 'Unknown', id), nameEn: ship?.['name_en-us'] ?? 'Unknown ship', type: types.includes(ship?.type) ? ship.type as ShipType : 'Unknown', tier: ship?.tier ?? 0, nation: ship?.nation ?? 'unknown' }
 }
 export function parseArenaBytes(bytes: Buffer): unknown {
   let json: Buffer

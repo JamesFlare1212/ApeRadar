@@ -21,6 +21,7 @@
     "preview": "pnpm --filter @aperadar/web preview",
     "test": "vitest run --reporter=default --reporter=json --outputFile=artifacts/unit-tests.json",
     "test:api:live": "node --experimental-transform-types scripts/probe-apis.mjs",
+    "ships:update": "node --experimental-transform-types scripts/update-ships.mjs",
     "typecheck": "pnpm -r typecheck && tsc --noEmit",
     "check": "pnpm run typecheck && pnpm test && pnpm tokens:check",
     "pack": "pnpm run build && pnpm --filter @aperadar/desktop run pack",

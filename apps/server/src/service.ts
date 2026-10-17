@@ -3,13 +3,15 @@ import { createHash, randomUUID } from 'node:crypto'
 import type { Activity, AppState, Battle, FilePayload, QueryOptions, Settings, SupportedRegion, WatchInput } from '@aperadar/shared/types'
 import { fileSchema, querySchema, settingsSchema, watchSchema } from '@aperadar/shared/settings'
 import { teamSummary } from '@aperadar/shared/statistics'
-import { buildBattle, latestArena, parseArenaBytes, readArenaFile, resolveRegion, type ShipCatalog } from './arena.ts'
+import { buildBattle, getShip, latestArena, parseArenaBytes, readArenaFile, resolveRegion, type ShipCatalog } from './arena.ts'
 import { WargamingApi, message } from './api.ts'
 import { RadarDatabase } from './database.ts'
 import { createDemo } from './demo.ts'
 import { initialApiHealth, probeApiHealth, type ApiHealthOptions } from './health.ts'
 import type { RuntimeApiConfig } from './config.ts'
 import { inspectGameClient } from './game-client.ts'
+import { MissingShipLookup } from './missing-ships.ts'
+import { restoreShipName } from './ship-names.ts'
 
 export type ProviderFactory = (settings: Settings) => Pick<WargamingApi, 'query'>
 export class RadarService extends EventEmitter {
@@ -30,13 +32,19 @@ export class RadarService extends EventEmitter {
   private healthTimer: ReturnType<typeof setInterval> | null = null
   private healthController: AbortController | null = null
   private healthPending: Promise<AppState> | null = null
+  private shipLookup: MissingShipLookup
+  private shipController = new AbortController()
   constructor(readonly database: RadarDatabase, readonly catalog: ShipCatalog, private providerFactory: ProviderFactory = settings => new WargamingApi(settings, { config: runtimeConfig?.config }), private healthOptions: ApiHealthOptions = {}, private runtimeConfig?: RuntimeApiConfig) {
     super()
+    this.catalog = structuredClone(catalog)
+    this.shipLookup = new MissingShipLookup(database, this.catalog, { fetcher: healthOptions.fetcher, config: runtimeConfig?.config ?? healthOptions.config })
     this.settings = this.configuredSettings(database.getSettings())
     this.healthOptions = { ...healthOptions, config: runtimeConfig?.config ?? healthOptions.config }
     this.health = initialApiHealth(this.healthOptions.config?.requests.healthIntervalMs)
-    this.battle = database.lastBattle() ?? createDemo(catalog)
+    this.battle = database.lastBattle() ?? createDemo(this.catalog)
+    this.applyShipDetails(this.battle)
     this.log('info', '欢迎回来。导入阵容或连接游戏目录，开始查看战局。', false)
+    void this.refreshMissingShips(this.battle)
   }
   state(): AppState {
     return structuredClone({ settings: this.settings, battle: this.battle, watchlist: this.database.getWatchlist(),
@@ -119,6 +127,7 @@ export class RadarService extends EventEmitter {
     this.database.saveBattle(battle)
     this.queryState = { status: 'idle', done: 0, total: battle.players.filter(p => p.status !== 'bot').length, message: '阵容已导入，等待查询' }
     this.log('success', `阵容已导入：${battle.players.length} 位玩家`)
+    void this.refreshMissingShips(battle)
     if (autoQuery && this.settings.autoQuery) void this.query().catch(error => this.log('error', message(error)))
     return this.state()
   }
@@ -135,9 +144,11 @@ export class RadarService extends EventEmitter {
     if (!battle) throw new Error('未找到这场对局')
     this.stopQuery()
     this.battle = battle
+    this.applyShipDetails(battle)
     this.database.saveBattle(battle)
     this.queryState = { status: 'idle', done: 0, total: 0, message: '已打开历史快照' }
     this.log('info', '已打开本地保存的对局快照')
+    void this.refreshMissingShips(battle)
     return this.state()
   }
   async query(input: QueryOptions = {}): Promise<AppState> {
@@ -169,6 +180,7 @@ export class RadarService extends EventEmitter {
       throw error
     }
     const players = battle.players.filter(p => p.status !== 'bot' && (!options.failedOnly || ['unavailable', 'not-found', 'pending'].includes(p.status) || p.error))
+    void this.refreshMissingShips(battle)
     const done = new Set<string>()
     this.queryState = { status: 'loading', done: 0, total: players.length, message: '正在查询玩家战绩…' }
     this.log('info', `开始查询 ${players.length} 位玩家；最多 ${this.runtimeConfig?.config.requests.concurrency ?? 6} 个并发请求。`)
@@ -177,6 +189,7 @@ export class RadarService extends EventEmitter {
     const onPlayer = (player: Battle['players'][number]) => {
       if (controller.signal.aborted || this.controller !== controller || this.battle?.id !== id || done.has(player.key)) return
       done.add(player.key)
+      if (this.catalog.ships[player.ship.id]) player = { ...player, ship: getShip(this.catalog, player.ship.id) }
       const index = battle.players.findIndex(p => p.key === player.key)
       if (index >= 0) battle.players[index] = player
       if (!player.cached) this.database.cacheSet(`${cachePrefix}:${player.key}`, player, settings.cacheMinutes)
@@ -204,6 +217,32 @@ export class RadarService extends EventEmitter {
     return this.state()
   }
   cancelQuery(): AppState { this.stopQuery(); if (this.battle && !this.battle.isDemo) this.database.saveBattle(this.battle); this.publish(); return this.state() }
+  private applyShipDetails(battle: Battle) {
+    for (const player of battle.players) {
+      if (player.ship.type === 'Unknown' && this.catalog.ships[player.ship.id]) player.ship = getShip(this.catalog, player.ship.id)
+      else player.ship = { ...player.ship, name: restoreShipName(player.ship.nameEn, player.ship.name, player.ship.nation, player.ship.type, player.ship.id) }
+    }
+  }
+  private async refreshMissingShips(battle: Battle): Promise<void> {
+    if (battle.isDemo || this.disposed) return
+    const settings = structuredClone(this.settings)
+    const revision = this.routingRevision
+    const regions = [...new Set(battle.players.filter(player => !this.catalog.ships[player.ship.id]).map(player => player.region))]
+    if (!regions.length) return
+    await Promise.all(regions.map(async region => {
+      try {
+        await this.shipLookup.resolve(battle.players.filter(player => player.region === region).map(player => player.ship.id), region, settings, this.shipController.signal)
+      } catch {
+        if (!this.disposed && this.battle === battle && revision === this.routingRevision) this.log('warning', '部分舰船资料暂未取得，将继续使用本地资料，可稍后重试查询。')
+      }
+    }))
+    if (this.disposed || this.battle !== battle || revision !== this.routingRevision) return
+    this.applyShipDetails(battle)
+    try {
+      this.database.saveBattle(battle)
+      this.publish()
+    } catch { this.log('warning', '舰船资料已取得，但对局快照暂未保存。') }
+  }
   private routeBattle(battle: Battle, settings: Settings, primary: SupportedRegion, reset = false) {
     battle.players = battle.players.map(player => {
       const region = settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : primary
@@ -277,5 +316,5 @@ export class RadarService extends EventEmitter {
       if (generation === this.monitorGeneration && this.monitorState.enabled && this.monitorError !== text) { this.monitorError = text; this.monitorState = { ...this.monitorState, message: text }; this.log('warning', `等待可读取的阵容文件：${text}`) }
     } finally { this.scanning = false }
   }
-  dispose() { if (this.disposed) return; this.disposed = true; this.monitorState.enabled = false; this.stopQuery(); if (this.timer) clearInterval(this.timer); this.timer = null; this.healthController?.abort(); this.healthController = null; this.healthPending = null; if (this.healthTimer) clearInterval(this.healthTimer); this.healthTimer = null; this.removeAllListeners(); this.database.close() }
+  dispose() { if (this.disposed) return; this.disposed = true; this.shipController.abort(); this.monitorState.enabled = false; this.stopQuery(); if (this.timer) clearInterval(this.timer); this.timer = null; this.healthController?.abort(); this.healthController = null; this.healthPending = null; if (this.healthTimer) clearInterval(this.healthTimer); this.healthTimer = null; this.removeAllListeners(); this.database.close() }
 }

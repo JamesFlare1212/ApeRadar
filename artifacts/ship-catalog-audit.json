@@ -1,0 +1,1587 @@
+{
+  "checkedAt": "2026-10-17T07:50:34.996Z",
+  "local": {
+    "version": "15.9.0",
+    "date": "20261007",
+    "ships": 1026
+  },
+  "regions": [
+    {
+      "region": "NA",
+      "ok": true,
+      "version": "15.9.0",
+      "date": "20261007",
+      "apiShips": 1017,
+      "scopedShips": 199,
+      "missing": [],
+      "notInApi": [
+        {
+          "id": "3247387984",
+          "english": "Cordillera",
+          "chinese": "山脉",
+          "nation": "pan_america",
+          "type": "Battleship"
+        },
+        {
+          "id": "3250501424",
+          "english": "Reinhard",
+          "chinese": "莱茵哈特",
+          "nation": "germany",
+          "type": "Cruiser"
+        },
+        {
+          "id": "3340744400",
+          "english": "Taihō",
+          "chinese": "大凤",
+          "nation": "japan",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3340744688",
+          "english": "Essex",
+          "chinese": "埃塞克斯",
+          "nation": "usa",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3342841552",
+          "english": "Kikaku",
+          "chinese": "毅鹤",
+          "nation": "japan",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3342841840",
+          "english": "Concord Bridge",
+          "chinese": "康科德桥",
+          "nation": "usa",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3353294672",
+          "english": "[Richelieu]",
+          "chinese": "[黎塞留]",
+          "nation": "france",
+          "type": "Battleship"
+        },
+        {
+          "id": "3355359056",
+          "english": "[La Galissonnière]",
+          "chinese": "[拉加利索尼埃]",
+          "nation": "france",
+          "type": "Cruiser"
+        },
+        {
+          "id": "3532601296",
+          "english": "Duke of Bronte",
+          "chinese": "勃朗特公爵",
+          "nation": "united_kingdom",
+          "type": "Battleship"
+        }
+      ],
+      "differences": []
+    },
+    {
+      "region": "EU",
+      "ok": true,
+      "version": "15.9.0",
+      "date": "20261008",
+      "apiShips": 1017,
+      "scopedShips": 199,
+      "missing": [],
+      "notInApi": [
+        {
+          "id": "3247387984",
+          "english": "Cordillera",
+          "chinese": "山脉",
+          "nation": "pan_america",
+          "type": "Battleship"
+        },
+        {
+          "id": "3250501424",
+          "english": "Reinhard",
+          "chinese": "莱茵哈特",
+          "nation": "germany",
+          "type": "Cruiser"
+        },
+        {
+          "id": "3340744400",
+          "english": "Taihō",
+          "chinese": "大凤",
+          "nation": "japan",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3340744688",
+          "english": "Essex",
+          "chinese": "埃塞克斯",
+          "nation": "usa",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3342841552",
+          "english": "Kikaku",
+          "chinese": "毅鹤",
+          "nation": "japan",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3342841840",
+          "english": "Concord Bridge",
+          "chinese": "康科德桥",
+          "nation": "usa",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3353294672",
+          "english": "[Richelieu]",
+          "chinese": "[黎塞留]",
+          "nation": "france",
+          "type": "Battleship"
+        },
+        {
+          "id": "3355359056",
+          "english": "[La Galissonnière]",
+          "chinese": "[拉加利索尼埃]",
+          "nation": "france",
+          "type": "Cruiser"
+        },
+        {
+          "id": "3532601296",
+          "english": "Duke of Bronte",
+          "chinese": "勃朗特公爵",
+          "nation": "united_kingdom",
+          "type": "Battleship"
+        }
+      ],
+      "differences": []
+    },
+    {
+      "region": "ASIA",
+      "ok": true,
+      "version": "15.9.0",
+      "date": "20261007",
+      "apiShips": 1017,
+      "scopedShips": 199,
+      "missing": [],
+      "notInApi": [
+        {
+          "id": "3247387984",
+          "english": "Cordillera",
+          "chinese": "山脉",
+          "nation": "pan_america",
+          "type": "Battleship"
+        },
+        {
+          "id": "3250501424",
+          "english": "Reinhard",
+          "chinese": "莱茵哈特",
+          "nation": "germany",
+          "type": "Cruiser"
+        },
+        {
+          "id": "3340744400",
+          "english": "Taihō",
+          "chinese": "大凤",
+          "nation": "japan",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3340744688",
+          "english": "Essex",
+          "chinese": "埃塞克斯",
+          "nation": "usa",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3342841552",
+          "english": "Kikaku",
+          "chinese": "毅鹤",
+          "nation": "japan",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3342841840",
+          "english": "Concord Bridge",
+          "chinese": "康科德桥",
+          "nation": "usa",
+          "type": "AirCarrier"
+        },
+        {
+          "id": "3353294672",
+          "english": "[Richelieu]",
+          "chinese": "[黎塞留]",
+          "nation": "france",
+          "type": "Battleship"
+        },
+        {
+          "id": "3355359056",
+          "english": "[La Galissonnière]",
+          "chinese": "[拉加利索尼埃]",
+          "nation": "france",
+          "type": "Cruiser"
+        },
+        {
+          "id": "3532601296",
+          "english": "Duke of Bronte",
+          "chinese": "勃朗特公爵",
+          "nation": "united_kingdom",
+          "type": "Battleship"
+        }
+      ],
+      "differences": []
+    }
+  ],
+  "reference": {
+    "url": "https://raw.githubusercontent.com/jxzhangaoran/aperadar_shiplist_update/master/",
+    "version": "13.8",
+    "date": "20240905",
+    "exampleShips": 809,
+    "missingIdsInLocal": [],
+    "namingDifferences": [
+      {
+        "id": "3363780304",
+        "english": "Ragnarok",
+        "chinese": "诸神黄昏",
+        "nation": "japan",
+        "type": "Battleship",
+        "referenceName": "诸神的黄昏"
+      },
+      {
+        "id": "3374266064",
+        "english": "Ignis Purgatio",
+        "chinese": "炼狱烈焰",
+        "nation": "japan",
+        "type": "Battleship",
+        "referenceName": "Ignis Purgatio"
+      },
+      {
+        "id": "3522082512",
+        "english": "ARP Nachi",
+        "chinese": "ARP 那智",
+        "nation": "japan",
+        "type": "Cruiser",
+        "referenceName": "ARP Nachi"
+      },
+      {
+        "id": "3541972176",
+        "english": "Ship Smasha",
+        "chinese": "冲撞跳跳",
+        "nation": "pan_asia",
+        "type": "Destroyer",
+        "referenceName": "Ship Smasha"
+      },
+      {
+        "id": "3542005456",
+        "english": "ARP Maya",
+        "chinese": "ARP 摩耶",
+        "nation": "japan",
+        "type": "Cruiser",
+        "referenceName": "ARP Maya"
+      },
+      {
+        "id": "3551442640",
+        "english": "ARP Haguro",
+        "chinese": "ARP 羽黑",
+        "nation": "japan",
+        "type": "Cruiser",
+        "referenceName": "ARP Haguro"
+      },
+      {
+        "id": "3552491216",
+        "english": "ARP Takao",
+        "chinese": "ARP 高雄",
+        "nation": "japan",
+        "type": "Cruiser",
+        "referenceName": "ARP Takao"
+      },
+      {
+        "id": "3552523984",
+        "english": "ARP Hiei",
+        "chinese": "ARP 比叡",
+        "nation": "japan",
+        "type": "Battleship",
+        "referenceName": "ARP Hiei"
+      },
+      {
+        "id": "3553539792",
+        "english": "ARP Ashigara",
+        "chinese": "ARP 足柄",
+        "nation": "japan",
+        "type": "Cruiser",
+        "referenceName": "ARP Ashigara"
+      },
+      {
+        "id": "3553572560",
+        "english": "ARP Haruna",
+        "chinese": "ARP 榛名",
+        "nation": "japan",
+        "type": "Battleship",
+        "referenceName": "ARP Haruna"
+      },
+      {
+        "id": "3554621136",
+        "english": "ARP Kirishima",
+        "chinese": "ARP 雾岛",
+        "nation": "japan",
+        "type": "Battleship",
+        "referenceName": "ARP Kirishima"
+      },
+      {
+        "id": "3555636944",
+        "english": "ARP Myōkō",
+        "chinese": "ARP 妙高",
+        "nation": "japan",
+        "type": "Cruiser",
+        "referenceName": "ARP Myōkō"
+      },
+      {
+        "id": "3555669712",
+        "english": "ARP Kongō",
+        "chinese": "ARP 金刚",
+        "nation": "japan",
+        "type": "Battleship",
+        "referenceName": "ARP Kongō"
+      },
+      {
+        "id": "3560912592",
+        "english": "ARP Yamato",
+        "chinese": "ARP 大和",
+        "nation": "japan",
+        "type": "Battleship",
+        "referenceName": "ARP Yamato"
+      },
+      {
+        "id": "3740218576",
+        "english": "Sun Yat-Sen",
+        "chinese": "孙中山",
+        "nation": "pan_asia",
+        "type": "Battleship",
+        "referenceName": "载之"
+      }
+    ]
+  },
+  "naming": {
+    "scopedShips": 201,
+    "missingIdMappings": [],
+    "untranslatedNames": [],
+    "unmapped": [],
+    "nonChinese": [
+      {
+        "id": "3539384016",
+        "english": "I-56 '44",
+        "chinese": "I-56 '44",
+        "nation": "japan",
+        "type": "Submarine"
+      },
+      {
+        "id": "3751196368",
+        "english": "I-56",
+        "chinese": "I-56",
+        "nation": "japan",
+        "type": "Submarine"
+      }
+    ],
+    "identifierNames": [
+      {
+        "id": "3539384016",
+        "english": "I-56 '44",
+        "chinese": "I-56 '44",
+        "nation": "japan",
+        "type": "Submarine"
+      },
+      {
+        "id": "3751196368",
+        "english": "I-56",
+        "chinese": "I-56",
+        "nation": "japan",
+        "type": "Submarine"
+      }
+    ],
+    "reviewNames": [],
+    "outsideScopeChanges": [
+      {
+        "id": "3248404240",
+        "english": "Statenland",
+        "chinese": "斯塔滕兰",
+        "nation": "netherlands",
+        "type": "Cruiser",
+        "legacyChinese": "国土"
+      },
+      {
+        "id": "3249485808",
+        "english": "Colorado 2",
+        "chinese": "科罗拉多 2",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "科罗拉多2"
+      },
+      {
+        "id": "3256792848",
+        "english": "Vrijheid",
+        "chinese": "自由",
+        "nation": "netherlands",
+        "type": "Cruiser",
+        "legacyChinese": "弗赖海特"
+      },
+      {
+        "id": "3256825168",
+        "english": "Comodoro",
+        "chinese": "科莫多鲁",
+        "nation": "pan_america",
+        "type": "Battleship",
+        "legacyChinese": "海军准将"
+      },
+      {
+        "id": "3319740208",
+        "english": "Von Zuckerhoff",
+        "chinese": "泥头车",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "冯·祖克霍夫"
+      },
+      {
+        "id": "3319740400",
+        "english": "Rhode Island B",
+        "chinese": "罗德岛 (黑)",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "罗德岛 B"
+      },
+      {
+        "id": "3330159920",
+        "english": "Oväsen",
+        "chinese": "惊雷卷地",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "奥韦森"
+      },
+      {
+        "id": "3330192848",
+        "english": "PTRPVLSK",
+        "chinese": "歪比巴卜",
+        "nation": "ussr",
+        "type": "Cruiser",
+        "legacyChinese": "PTRPVLSK"
+      },
+      {
+        "id": "3330226160",
+        "english": "Montana 2",
+        "chinese": "蒙大拿 2",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "蒙大拿2"
+      },
+      {
+        "id": "3330258928",
+        "english": "Piñatapolis",
+        "chinese": "饺子皮",
+        "nation": "usa",
+        "type": "AirCarrier",
+        "legacyChinese": "皮纳塔波利斯"
+      },
+      {
+        "id": "3331274736",
+        "english": "Iowa 2",
+        "chinese": "依阿华 2",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "依阿华2"
+      },
+      {
+        "id": "3340154864",
+        "english": "Balao 2",
+        "chinese": "巴劳鱵 2",
+        "nation": "usa",
+        "type": "Submarine",
+        "legacyChinese": "巴劳鱵2"
+      },
+      {
+        "id": "3340646192",
+        "english": "Sharqi",
+        "chinese": "东方",
+        "nation": "germany",
+        "type": "Destroyer",
+        "legacyChinese": "沙尔奇"
+      },
+      {
+        "id": "3340679152",
+        "english": "Puerto Rico B",
+        "chinese": "波多黎各 (黑)",
+        "nation": "usa",
+        "type": "Cruiser",
+        "legacyChinese": "波多黎各 B"
+      },
+      {
+        "id": "3340744496",
+        "english": "Süsshofen",
+        "chinese": "彩男爵",
+        "nation": "germany",
+        "type": "AirCarrier",
+        "legacyChinese": "苏斯霍芬"
+      },
+      {
+        "id": "3341694416",
+        "english": "Neustrashimy B",
+        "chinese": "不惧 (黑)",
+        "nation": "ussr",
+        "type": "Destroyer",
+        "legacyChinese": "不惧 B"
+      },
+      {
+        "id": "3341759792",
+        "english": "Karl XIV Johan B",
+        "chinese": "卡尔十四世·约翰 (黑)",
+        "nation": "europe",
+        "type": "Battleship",
+        "legacyChinese": "卡尔十四世·约翰 B"
+      },
+      {
+        "id": "3341760240",
+        "english": "AL Marco Polo",
+        "chinese": "AL 马可·波罗",
+        "nation": "italy",
+        "type": "Battleship",
+        "legacyChinese": "AL 马可波罗"
+      },
+      {
+        "id": "3341760496",
+        "english": "Bird Cry",
+        "chinese": "鸟鸣",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "鸟啸"
+      },
+      {
+        "id": "3342776112",
+        "english": "Schill B",
+        "chinese": "席尔 (黑)",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "席尔 B"
+      },
+      {
+        "id": "3342808816",
+        "english": "Roma Aeterna",
+        "chinese": "尼禄",
+        "nation": "italy",
+        "type": "Battleship",
+        "legacyChinese": "永恒罗马"
+      },
+      {
+        "id": "3342808880",
+        "english": "Wahnsinn",
+        "chinese": "狂人",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "瓦恩辛"
+      },
+      {
+        "id": "3343791408",
+        "english": "Scarlet Storm",
+        "chinese": "绯红风暴",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "猩红风暴"
+      },
+      {
+        "id": "3352246256",
+        "english": "Volunteer State",
+        "chinese": "田纳西",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "志愿者之州"
+      },
+      {
+        "id": "3362732016",
+        "english": "AL Kearsarge",
+        "chinese": "AL 基尔萨奇",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "AL 奇尔沙治"
+      },
+      {
+        "id": "3363747792",
+        "english": "STAR Edinburgh",
+        "chinese": "星际爱丁堡",
+        "nation": "uk",
+        "type": "Cruiser",
+        "legacyChinese": "星之爱丁堡"
+      },
+      {
+        "id": "3426694960",
+        "english": "Odin TE",
+        "chinese": "奥丁TE",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "奥丁 TE"
+      },
+      {
+        "id": "3435018064",
+        "english": "Kléber TE",
+        "chinese": "克莱贝尔TE",
+        "nation": "france",
+        "type": "Destroyer",
+        "legacyChinese": "克莱贝尔 TE"
+      },
+      {
+        "id": "3435083760",
+        "english": "BA Montana",
+        "chinese": "BA 蒙大拿",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "BA蒙大拿"
+      },
+      {
+        "id": "3436131792",
+        "english": "BA Hovercraft",
+        "chinese": "BA 气垫船",
+        "nation": "ussr",
+        "type": "Battleship",
+        "legacyChinese": "BA Hovercraft"
+      },
+      {
+        "id": "3437180368",
+        "english": "Borodino TE",
+        "chinese": "博罗季诺TE",
+        "nation": "ussr",
+        "type": "Battleship",
+        "legacyChinese": "博罗季诺 TE"
+      },
+      {
+        "id": "3437180656",
+        "english": "BA Binah",
+        "chinese": "BA 比纳",
+        "nation": "italy",
+        "type": "Battleship",
+        "legacyChinese": "BA Binah"
+      },
+      {
+        "id": "3437180720",
+        "english": "BA Tirpitz",
+        "chinese": "BA 提尔皮茨",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "BA提尔皮茨"
+      },
+      {
+        "id": "3437180912",
+        "english": "Alabama B",
+        "chinese": "阿拉巴马 (黑)",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "阿拉巴马 B"
+      },
+      {
+        "id": "3438196528",
+        "english": "München B",
+        "chinese": "慕尼黑 (黑)",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "慕尼黑 B"
+      },
+      {
+        "id": "3445503824",
+        "english": "Kléber CLR",
+        "chinese": "克莱贝尔 炫彩",
+        "nation": "france",
+        "type": "Destroyer",
+        "legacyChinese": "克莱贝尔CLR"
+      },
+      {
+        "id": "3445536112",
+        "english": "Brisbane B",
+        "chinese": "布里斯班 (黑)",
+        "nation": "commonwealth",
+        "type": "Cruiser",
+        "legacyChinese": "布里斯班 B"
+      },
+      {
+        "id": "3445536720",
+        "english": "Defence",
+        "chinese": "防御",
+        "nation": "uk",
+        "type": "Cruiser",
+        "legacyChinese": "防卫"
+      },
+      {
+        "id": "3446585136",
+        "english": "Roon CLR",
+        "chinese": "罗恩 炫彩",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "罗恩CLR"
+      },
+      {
+        "id": "3511629776",
+        "english": "Danu",
+        "chinese": "达努",
+        "nation": "uk",
+        "type": "Battleship",
+        "legacyChinese": "达奴"
+      },
+      {
+        "id": "3529422608",
+        "english": "Unie",
+        "chinese": "同盟",
+        "nation": "netherlands",
+        "type": "Cruiser",
+        "legacyChinese": "联合"
+      },
+      {
+        "id": "3530504176",
+        "english": "Georgia",
+        "chinese": "乔治亚",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "佐治亚"
+      },
+      {
+        "id": "3540923696",
+        "english": "Błyskawica '52",
+        "chinese": "闪电 '52",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "闪电52"
+      },
+      {
+        "id": "3540989680",
+        "english": "Pilus Posterior",
+        "chinese": "后百夫长",
+        "nation": "italy",
+        "type": "Battleship",
+        "legacyChinese": "副百夫长"
+      },
+      {
+        "id": "3541972432",
+        "english": "Provorny",
+        "chinese": "迅捷",
+        "nation": "ussr",
+        "type": "Destroyer",
+        "legacyChinese": "灵巧"
+      },
+      {
+        "id": "3541972944",
+        "english": "Eskimo",
+        "chinese": "爱斯基摩",
+        "nation": "uk",
+        "type": "Destroyer",
+        "legacyChinese": "爱斯基摩人"
+      },
+      {
+        "id": "3542005040",
+        "english": "Regele Carol I",
+        "chinese": "卡罗尔一世国王",
+        "nation": "europe",
+        "type": "Cruiser",
+        "legacyChinese": "卡罗尔一世"
+      },
+      {
+        "id": "3542005552",
+        "english": "Cross of Dorn",
+        "chinese": "多恩十字",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "Cross of Dorn"
+      },
+      {
+        "id": "3542037808",
+        "english": "Turgut Reis",
+        "chinese": "图尔古特·雷斯",
+        "nation": "europe",
+        "type": "Battleship",
+        "legacyChinese": "图尔古特·雷伊斯"
+      },
+      {
+        "id": "3543020848",
+        "english": "Stord '43",
+        "chinese": "斯图尔 '43",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "斯托德43"
+      },
+      {
+        "id": "3543021520",
+        "english": "Jupiter '42",
+        "chinese": "朱庇特 '42",
+        "nation": "uk",
+        "type": "Destroyer",
+        "legacyChinese": "朱庇特42"
+      },
+      {
+        "id": "3543054128",
+        "english": "Nürnberg '44",
+        "chinese": "纽伦堡 '44",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "纽伦堡44"
+      },
+      {
+        "id": "3543086896",
+        "english": "Scharnhorst '43",
+        "chinese": "沙恩霍斯特 '43",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "沙恩霍斯特43"
+      },
+      {
+        "id": "3544102864",
+        "english": "Orion '44",
+        "chinese": "俄里翁 '44",
+        "nation": "uk",
+        "type": "Cruiser",
+        "legacyChinese": "俄里翁44"
+      },
+      {
+        "id": "3550393712",
+        "english": "Pioneer",
+        "chinese": "先锋",
+        "nation": "commonwealth",
+        "type": "Cruiser",
+        "legacyChinese": "先驱"
+      },
+      {
+        "id": "3550459216",
+        "english": "Independencia",
+        "chinese": "独立",
+        "nation": "pan_america",
+        "type": "AirCarrier",
+        "legacyChinese": "自主"
+      },
+      {
+        "id": "3551475120",
+        "english": "Triunfante",
+        "chinese": "胜利",
+        "nation": "spain",
+        "type": "Battleship",
+        "legacyChinese": "胜捷"
+      },
+      {
+        "id": "3551475440",
+        "english": "Pilus Prior",
+        "chinese": "前百夫长",
+        "nation": "italy",
+        "type": "Battleship",
+        "legacyChinese": "百夫长"
+      },
+      {
+        "id": "3552458032",
+        "english": "Błyskawica '44",
+        "chinese": "闪电 '44",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "闪电44"
+      },
+      {
+        "id": "3552491280",
+        "english": "Vrijheid",
+        "chinese": "自由",
+        "nation": "netherlands",
+        "type": "Cruiser",
+        "legacyChinese": "弗赖海特"
+      },
+      {
+        "id": "3552491344",
+        "english": "Metz",
+        "chinese": "梅斯",
+        "nation": "france",
+        "type": "Cruiser",
+        "legacyChinese": "梅茨"
+      },
+      {
+        "id": "3552491472",
+        "english": "Sinann",
+        "chinese": "思南",
+        "nation": "uk",
+        "type": "Cruiser",
+        "legacyChinese": "辛安"
+      },
+      {
+        "id": "3552524080",
+        "english": "Bismarck '41",
+        "chinese": "俾斯麦 '41",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "俾斯麦41"
+      },
+      {
+        "id": "3552524272",
+        "english": "Alabama ST",
+        "chinese": "阿拉巴马",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "阿拉巴马 ST"
+      },
+      {
+        "id": "3553539824",
+        "english": "Optio",
+        "chinese": "百夫长副手",
+        "nation": "italy",
+        "type": "Cruiser",
+        "legacyChinese": "副官"
+      },
+      {
+        "id": "3655218960",
+        "english": "Tromp",
+        "chinese": "特隆普",
+        "nation": "netherlands",
+        "type": "Destroyer",
+        "legacyChinese": "特龙普"
+      },
+      {
+        "id": "3666786288",
+        "english": "Alaska B",
+        "chinese": "阿拉斯加 (黑)",
+        "nation": "usa",
+        "type": "Cruiser",
+        "legacyChinese": "阿拉斯加 B"
+      },
+      {
+        "id": "3666818864",
+        "english": "Pommern B",
+        "chinese": "波美拉尼亚 (黑)",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "波美拉尼亚 B"
+      },
+      {
+        "id": "3666818896",
+        "english": "Jean Bart B",
+        "chinese": "让·巴尔 (黑)",
+        "nation": "france",
+        "type": "Battleship",
+        "legacyChinese": "让·巴尔 B"
+      },
+      {
+        "id": "3666819056",
+        "english": "Kearsarge B",
+        "chinese": "基尔萨奇 （黑）",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "奇尔沙治 B"
+      },
+      {
+        "id": "3667802064",
+        "english": "Cossack B",
+        "chinese": "哥萨克 (黑)",
+        "nation": "uk",
+        "type": "Destroyer",
+        "legacyChinese": "哥萨克人 B"
+      },
+      {
+        "id": "3667834672",
+        "english": "Mainz B",
+        "chinese": "美因茨 （黑）",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "美因茨 B"
+      },
+      {
+        "id": "3667867440",
+        "english": "Tirpitz B",
+        "chinese": "提尔皮茨 (黑)",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "提尔皮茨 B"
+      },
+      {
+        "id": "3667867632",
+        "english": "Massachusetts B",
+        "chinese": "马萨诸塞 (黑)",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "马萨诸塞 B"
+      },
+      {
+        "id": "3667899856",
+        "english": "Chkalov B",
+        "chinese": "契卡洛夫 （黑）",
+        "nation": "ussr",
+        "type": "AirCarrier",
+        "legacyChinese": "契卡洛夫 B"
+      },
+      {
+        "id": "3667900208",
+        "english": "Graf Zeppelin B",
+        "chinese": "齐柏林伯爵 (黑)",
+        "nation": "germany",
+        "type": "AirCarrier",
+        "legacyChinese": "齐柏林伯爵 B"
+      },
+      {
+        "id": "3667900400",
+        "english": "Saipan B",
+        "chinese": "塞班 (黑)",
+        "nation": "usa",
+        "type": "AirCarrier",
+        "legacyChinese": "塞班 B"
+      },
+      {
+        "id": "3668850672",
+        "english": "Sims B",
+        "chinese": "西姆斯 (黑)",
+        "nation": "usa",
+        "type": "Destroyer",
+        "legacyChinese": "西姆斯 B"
+      },
+      {
+        "id": "3668916016",
+        "english": "Scharnhorst B",
+        "chinese": "沙恩霍斯特 (黑)",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "沙恩霍斯特 B"
+      },
+      {
+        "id": "3669964624",
+        "english": "Dunkerque B",
+        "chinese": "敦刻尔克 (黑)",
+        "nation": "france",
+        "type": "Battleship",
+        "legacyChinese": "敦刻尔克 B"
+      },
+      {
+        "id": "3676223216",
+        "english": "Napoli B",
+        "chinese": "那不勒斯 （黑）",
+        "nation": "italy",
+        "type": "Cruiser",
+        "legacyChinese": "那不勒斯 B"
+      },
+      {
+        "id": "3679369200",
+        "english": "Atlanta B",
+        "chinese": "亚特兰大 (黑)",
+        "nation": "usa",
+        "type": "Cruiser",
+        "legacyChinese": "亚特兰大 B"
+      },
+      {
+        "id": "3699291600",
+        "english": "Lazo B",
+        "chinese": "拉佐 (黑)",
+        "nation": "ussr",
+        "type": "Cruiser",
+        "legacyChinese": "拉佐 B"
+      },
+      {
+        "id": "3721344976",
+        "english": "Renown '44",
+        "chinese": "声望 '44",
+        "nation": "uk",
+        "type": "Battleship",
+        "legacyChinese": "声望44"
+      },
+      {
+        "id": "3730749424",
+        "english": "Rochester",
+        "chinese": "罗切斯特",
+        "nation": "usa",
+        "type": "Cruiser",
+        "legacyChinese": "罗彻斯特"
+      },
+      {
+        "id": "3730782000",
+        "english": "Brandenburg B",
+        "chinese": "勃兰登堡 (黑)",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "勃兰登堡 B"
+      },
+      {
+        "id": "3730782032",
+        "english": "Flandre",
+        "chinese": "佛兰德",
+        "nation": "france",
+        "type": "Battleship",
+        "legacyChinese": "弗兰德尔"
+      },
+      {
+        "id": "3732879312",
+        "english": "Repulse B",
+        "chinese": "反击 (黑)",
+        "nation": "uk",
+        "type": "Battleship",
+        "legacyChinese": "反击 B"
+      },
+      {
+        "id": "3739137488",
+        "english": "Smolensk B",
+        "chinese": "斯摩棱斯克 (黑)",
+        "nation": "ussr",
+        "type": "Cruiser",
+        "legacyChinese": "斯摩棱斯克 B"
+      },
+      {
+        "id": "3740153840",
+        "english": "Black B",
+        "chinese": "布莱克 (黑)",
+        "nation": "usa",
+        "type": "Destroyer",
+        "legacyChinese": "布莱克 B"
+      },
+      {
+        "id": "3750638896",
+        "english": "Jäger",
+        "chinese": "猎兵",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "耶格尔"
+      },
+      {
+        "id": "3750705136",
+        "english": "Kearsarge",
+        "chinese": "基尔萨奇",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "奇尔沙治"
+      },
+      {
+        "id": "3751720912",
+        "english": "Tiger '59",
+        "chinese": "虎 '59",
+        "nation": "uk",
+        "type": "Cruiser",
+        "legacyChinese": "虎59"
+      },
+      {
+        "id": "3752736208",
+        "english": "Tashkent '39",
+        "chinese": "塔什干 '39",
+        "nation": "ussr",
+        "type": "Destroyer",
+        "legacyChinese": "塔什干39"
+      },
+      {
+        "id": "3752736720",
+        "english": "Cossack",
+        "chinese": "哥萨克",
+        "nation": "uk",
+        "type": "Destroyer",
+        "legacyChinese": "哥萨克人"
+      },
+      {
+        "id": "3759585264",
+        "english": "Gato",
+        "chinese": "小鲨鱼",
+        "nation": "usa",
+        "type": "Submarine",
+        "legacyChinese": "猫鲨"
+      },
+      {
+        "id": "3760109392",
+        "english": "Colbert",
+        "chinese": "科尔贝尔",
+        "nation": "france",
+        "type": "Cruiser",
+        "legacyChinese": "科尔伯特"
+      },
+      {
+        "id": "3761124656",
+        "english": "Velos",
+        "chinese": "箭",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "贝洛斯"
+      },
+      {
+        "id": "3761157488",
+        "english": "Hector",
+        "chinese": "赫克托",
+        "nation": "commonwealth",
+        "type": "Cruiser",
+        "legacyChinese": "赫克托耳"
+      },
+      {
+        "id": "3761157936",
+        "english": "Siegfried",
+        "chinese": "齐格飞",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "齐格菲"
+      },
+      {
+        "id": "3761190640",
+        "english": "Marco Polo",
+        "chinese": "马可·波罗",
+        "nation": "italy",
+        "type": "Battleship",
+        "legacyChinese": "马可波罗"
+      },
+      {
+        "id": "3762173232",
+        "english": "Orkan",
+        "chinese": "风暴",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "奥坎"
+      },
+      {
+        "id": "3763221872",
+        "english": "Haida",
+        "chinese": "海达",
+        "nation": "commonwealth",
+        "type": "Destroyer",
+        "legacyChinese": "海达人"
+      },
+      {
+        "id": "3763288048",
+        "english": "W. Virginia '41",
+        "chinese": "西弗吉尼亚 '41",
+        "nation": "usa",
+        "type": "Battleship",
+        "legacyChinese": "西弗吉尼亚41"
+      },
+      {
+        "id": "3764271088",
+        "english": "Monaghan",
+        "chinese": "莫纳根",
+        "nation": "usa",
+        "type": "Destroyer",
+        "legacyChinese": "莫纳汉"
+      },
+      {
+        "id": "3764303696",
+        "english": "De Grasse",
+        "chinese": "德·格拉斯",
+        "nation": "france",
+        "type": "Cruiser",
+        "legacyChinese": "格拉斯"
+      },
+      {
+        "id": "3765352432",
+        "english": "Rattlehead",
+        "chinese": "Rattlehead",
+        "nation": "usa",
+        "type": "Cruiser",
+        "legacyChinese": "受害骷髅"
+      },
+      {
+        "id": "3765384944",
+        "english": "Giulio Cesare",
+        "chinese": "朱利奥·恺撒",
+        "nation": "italy",
+        "type": "Battleship",
+        "legacyChinese": "尤里乌斯-恺撒"
+      },
+      {
+        "id": "3864933840",
+        "english": "Delny",
+        "chinese": "干练",
+        "nation": "ussr",
+        "type": "Destroyer",
+        "legacyChinese": "德尔尼"
+      },
+      {
+        "id": "4074682320",
+        "english": "Goliath",
+        "chinese": "歌利亚",
+        "nation": "uk",
+        "type": "Cruiser",
+        "legacyChinese": "哥利亚"
+      },
+      {
+        "id": "4076812080",
+        "english": "Zieten",
+        "chinese": "齐藤",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "齐滕"
+      },
+      {
+        "id": "4077794608",
+        "english": "Grom",
+        "chinese": "雷鸣",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "雷霆"
+      },
+      {
+        "id": "4078843184",
+        "english": "Stord",
+        "chinese": "斯图尔",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "斯托德"
+      },
+      {
+        "id": "4079891760",
+        "english": "Muavenet",
+        "chinese": "支援",
+        "nation": "europe",
+        "type": "Destroyer",
+        "legacyChinese": "穆阿维内特"
+      },
+      {
+        "id": "4079957808",
+        "english": "Derfflinger",
+        "chinese": "德芙林格",
+        "nation": "germany",
+        "type": "Battleship",
+        "legacyChinese": "德弗林格尔"
+      },
+      {
+        "id": "4079957968",
+        "english": "Tiger",
+        "chinese": "虎级",
+        "nation": "uk",
+        "type": "Battleship",
+        "legacyChinese": "虎"
+      },
+      {
+        "id": "4081006544",
+        "english": "Queen Mary",
+        "chinese": "玛丽王后",
+        "nation": "uk",
+        "type": "Battleship",
+        "legacyChinese": "玛丽女王"
+      },
+      {
+        "id": "4178458064",
+        "english": "Zorkiy",
+        "chinese": "敏锐",
+        "nation": "ussr",
+        "type": "Destroyer",
+        "legacyChinese": "佐尔基"
+      },
+      {
+        "id": "4178524112",
+        "english": "Devastation",
+        "chinese": "蹂躏",
+        "nation": "uk",
+        "type": "Battleship",
+        "legacyChinese": "毁灭"
+      },
+      {
+        "id": "4179572560",
+        "english": "République",
+        "chinese": "共和",
+        "nation": "france",
+        "type": "Battleship",
+        "legacyChinese": "共和国"
+      },
+      {
+        "id": "4180555504",
+        "english": "Adriatico",
+        "chinese": "亚得里亚海",
+        "nation": "italy",
+        "type": "Destroyer",
+        "legacyChinese": "亚得里亚"
+      },
+      {
+        "id": "4180588304",
+        "english": "Johan de Witt",
+        "chinese": "约翰·德·威特",
+        "nation": "netherlands",
+        "type": "Cruiser",
+        "legacyChinese": "约翰·德·维特"
+      },
+      {
+        "id": "4180621264",
+        "english": "Lion",
+        "chinese": "狮级",
+        "nation": "uk",
+        "type": "Battleship",
+        "legacyChinese": "狮"
+      },
+      {
+        "id": "4181112784",
+        "english": "Sturdy",
+        "chinese": "坚定",
+        "nation": "uk",
+        "type": "Submarine",
+        "legacyChinese": "强健"
+      },
+      {
+        "id": "4181636944",
+        "english": "Charles Martel",
+        "chinese": "查理·马特",
+        "nation": "france",
+        "type": "Cruiser",
+        "legacyChinese": "查理-马特"
+      },
+      {
+        "id": "4182652368",
+        "english": "Udaloi",
+        "chinese": "无畏",
+        "nation": "ussr",
+        "type": "Destroyer",
+        "legacyChinese": "乌达洛伊"
+      },
+      {
+        "id": "4183209712",
+        "english": "Foca",
+        "chinese": "海豹",
+        "nation": "italy",
+        "type": "Submarine",
+        "legacyChinese": "福卡"
+      },
+      {
+        "id": "4183209936",
+        "english": "Undine",
+        "chinese": "温蒂尼",
+        "nation": "uk",
+        "type": "Submarine",
+        "legacyChinese": "温蒂妮"
+      },
+      {
+        "id": "4183701232",
+        "english": "Aviere",
+        "chinese": "飞行员",
+        "nation": "italy",
+        "type": "Destroyer",
+        "legacyChinese": "阿维埃尔"
+      },
+      {
+        "id": "4183734096",
+        "english": "La Galissonnière",
+        "chinese": "拉·加利索尼埃",
+        "nation": "france",
+        "type": "Cruiser",
+        "legacyChinese": "拉加利索尼埃"
+      },
+      {
+        "id": "4184750032",
+        "english": "Acasta",
+        "chinese": "阿卡司塔",
+        "nation": "uk",
+        "type": "Destroyer",
+        "legacyChinese": "阿卡斯塔"
+      },
+      {
+        "id": "4185798384",
+        "english": "Turbine",
+        "chinese": "旋风",
+        "nation": "italy",
+        "type": "Destroyer",
+        "legacyChinese": "图尔比内"
+      },
+      {
+        "id": "4185830864",
+        "english": "Svietlana",
+        "chinese": "斯维特拉娜",
+        "nation": "ussr",
+        "type": "Cruiser",
+        "legacyChinese": "斯维特拉那"
+      },
+      {
+        "id": "4185831248",
+        "english": "Duguay-Trouin",
+        "chinese": "迪盖·特鲁安",
+        "nation": "france",
+        "type": "Cruiser",
+        "legacyChinese": "迪盖-特鲁安"
+      },
+      {
+        "id": "4185896400",
+        "english": "Komsomolets",
+        "chinese": "科莫索莫勒斯",
+        "nation": "ussr",
+        "type": "AirCarrier",
+        "legacyChinese": "共青团员"
+      },
+      {
+        "id": "4186847184",
+        "english": "Valkyrie",
+        "chinese": "瓦尔基里",
+        "nation": "uk",
+        "type": "Destroyer",
+        "legacyChinese": "女武神"
+      },
+      {
+        "id": "4187928304",
+        "english": "Nino Bixio",
+        "chinese": "尼诺·比克肖",
+        "nation": "italy",
+        "type": "Cruiser",
+        "legacyChinese": "尼诺·比西奥"
+      },
+      {
+        "id": "4188976464",
+        "english": "Hércules",
+        "chinese": "大力神",
+        "nation": "pan_america",
+        "type": "Cruiser",
+        "legacyChinese": "赫丘利"
+      },
+      {
+        "id": "4274992464",
+        "english": "Los Andes",
+        "chinese": "洛斯安第斯",
+        "nation": "pan_america",
+        "type": "Battleship",
+        "legacyChinese": "安第斯"
+      },
+      {
+        "id": "4275975504",
+        "english": "Cuauhtémoc",
+        "chinese": "夸乌特莫克",
+        "nation": "pan_america",
+        "type": "Destroyer",
+        "legacyChinese": "瓜特穆斯"
+      },
+      {
+        "id": "4277024592",
+        "english": "Le Hardi",
+        "chinese": "大胆",
+        "nation": "france",
+        "type": "Destroyer",
+        "legacyChinese": "斗胆"
+      },
+      {
+        "id": "4284397328",
+        "english": "Utrecht",
+        "chinese": "乌得勒支",
+        "nation": "netherlands",
+        "type": "Cruiser",
+        "legacyChinese": "乌特勒支"
+      },
+      {
+        "id": "4284397360",
+        "english": "Prinz Adalbert",
+        "chinese": "阿达尔贝特王子",
+        "nation": "germany",
+        "type": "Cruiser",
+        "legacyChinese": "阿达尔伯特亲王"
+      },
+      {
+        "id": "4293834096",
+        "english": "Sutlej",
+        "chinese": "萨特累季河",
+        "nation": "commonwealth",
+        "type": "Cruiser",
+        "legacyChinese": "萨特莱杰"
+      },
+      {
+        "id": "4293834736",
+        "english": "Erie",
+        "chinese": "伊利湖",
+        "nation": "usa",
+        "type": "Cruiser",
+        "legacyChinese": "伊利"
+      }
+    ],
+    "panAsianExcluded": []
+  },
+  "regionalIdDifferences": [
+    {
+      "region": "EU",
+      "missingFromPrimary": [],
+      "missingFromRegion": []
+    },
+    {
+      "region": "ASIA",
+      "missingFromPrimary": [],
+      "missingFromRegion": []
+    }
+  ],
+  "conclusion": {
+    "publicApiIdsComplete": true,
+    "referenceIdsComplete": true,
+    "idMappingCoverageComplete": true,
+    "untranslatedNames": 0,
+    "identifierNames": 2,
+    "scope": "All Japanese and Pan-Asian ship types; known ship ID overrides take precedence over English aliases.",
+    "limits": "Coverage is relative to the current public WG encyclopedia. Complete ID coverage does not independently prove every translation is correct."
+  }
+}

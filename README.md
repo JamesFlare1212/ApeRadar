@@ -75,6 +75,8 @@ w = 20% × min(本舰场次 / 60, 1)
 | `pnpm typecheck` | 完整 TypeScript 检查 |
 | `pnpm test` | 解析、算法、SQLite、网络边界与生命周期测试 |
 | `pnpm test:api:live` | Validate live regional APIs using `config/api.json`, optionally overridden by `WG_APPLICATION_ID` |
+| `pnpm ships:update` | Refresh the bundled bilingual ship catalog using the WG encyclopedia API |
+| `pnpm ships:update --names-only` | Restore original Chinese ship names in the local catalog without network access |
 | `pnpm check` | 类型检查、核心测试与设计令牌检查 |
 | `pnpm build` | 生产界面与 Electron 主进程/preload |
 | `pnpm build:web` | 单独构建浏览器界面 |
@@ -104,7 +106,7 @@ apps/
     electron-builder.json Windows 打包配置
   server/               SQLite、文件监测、API 与查询生命周期
     src/                领域服务与浏览器开发接口
-    resources/          MIT 船表
+    resources/          Bundled bilingual ship catalog
   web/                  React + Vite 浏览器界面
     src/                页面、组件与类型桥
     public/             静态资源
@@ -144,4 +146,4 @@ pnpm test:api:live
 
 技术实现参考 [Electron 上下文隔离](https://www.electronjs.org/docs/latest/tutorial/context-isolation)、[安全建议](https://www.electronjs.org/docs/latest/tutorial/security)、[Node SQLite API](https://nodejs.org/api/sqlite.html) 与 [Tailwind Vite 集成](https://tailwindcss.com/docs/installation/using-vite)。
 
-船表来自原 MIT 发布包，原始版权声明保留在 [LICENSE](LICENSE) 和 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。这是独立社区项目，不代表游戏发行商。
+The initial ship catalog came from the original MIT distribution. Current entries are refreshed through the WG Public API, retaining legacy entries absent from the API. Missing ships are fetched in the background and persisted locally. See [Ship catalog maintenance](docs/ship-catalog.md), [LICENSE](LICENSE), and [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) for maintenance and attribution. This is an independent community project.

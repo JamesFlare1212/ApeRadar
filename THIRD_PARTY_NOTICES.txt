@@ -1,6 +1,18 @@
 ApeRadar Next is a TypeScript implementation informed by offline analysis of
-ApeRadar 2.1.0. The bundled ship catalog is from the original MIT-licensed
-ApeRadar distribution. Copyright (c) 2023 zylalx1; see LICENSE.
+ApeRadar 2.1.0. The initial ship catalog is from the original MIT-licensed
+ApeRadar distribution. Copyright (c) 2023 zylalx1; see LICENSE. Current ship
+details and localized names are refreshed through the Wargaming Public API;
+legacy entries absent from the API are retained. Game data and related names
+belong to their respective owners and are not covered by this project's MIT
+license. See docs/ship-catalog.md for the update process and API references.
+
+Original Chinese ship-name restoration is informed by the workflow in
+https://github.com/jxzhangaoran/aperadar_shiplist_update . The TypeScript
+implementation is project-authored; its name dictionary is based on this
+project's original MIT catalog, with aliases and locally maintained additions.
+Ship ID mappings cover Japanese and Pan-Asian ships. ARP collaboration names
+were checked against the WG API's Japanese localization; existing official
+Chinese names are retained for the other reviewed collaboration ships.
 
 React, Vite, Tailwind CSS, Electron, electron-updater, Node.js, SQLite, Radix UI, Font Awesome Free,
 Zod and build/test dependencies retain their respective licenses. Their

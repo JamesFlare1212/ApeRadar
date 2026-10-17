@@ -6,6 +6,7 @@ import { loadApiConfig } from '@aperadar/server/config'
 import { vortexApiUrl, wgApiUrl } from '@aperadar/shared/api-config'
 import { getShip } from '@aperadar/server/arena'
 import { probeApiHealth } from '@aperadar/server/health'
+import { ShipCatalogApi } from '@aperadar/server/ship-catalog'
 import { DEFAULT_SETTINGS } from '@aperadar/shared/settings'
 
 // Opt-in live checks. Never reads game logs, changes settings, or writes player caches.
@@ -115,6 +116,15 @@ try {
   const payload = await negative.json()
   report.negative = { httpStatus: negative.status, apiStatus: payload.status, error: payload.error, ok: payload.status === 'error' && payload.error?.message === 'ACCOUNT_ID_NOT_SPECIFIED' }
   assert.ok(report.negative.ok, 'Expected missing account_id to be rejected')
+  const catalogApi = new ShipCatalogApi(settings, { fetcher, config })
+  const sampleId = Object.entries(catalog.ships).find(([, ship]) => ship['name_en-us'] === 'Yamato')[0]
+  const ships = await catalogApi.getShips([sampleId, '3552523472', '3560912592'], 'NA', signal)
+  assert.ok(ships[sampleId]?.['name_en-us'] && ships[sampleId]?.['name_zh-cn'], 'Expected bilingual ship encyclopedia data')
+  assert.equal(ships[sampleId].type, 'Battleship')
+  assert.equal(ships[sampleId]['name_zh-cn'], '大和', 'Expected the original Chinese ship name after API lookup')
+  assert.equal(ships['3552523472']['name_zh-cn'], '玄武', 'Expected the Pan-Asian battleship name after API lookup')
+  assert.equal(ships['3560912592']['name_zh-cn'], 'ARP 大和', 'Expected the ARP collaboration ship name after API lookup')
+  report.shipCatalog = { ok: true, region: 'NA', bilingual: true, originalNames: true, idMappings: true, panAsianBattleships: true, collaborationNames: true, returned: Object.keys(ships).length }
   for (const region of ['NA', 'EU', 'ASIA']) await functional(region, 'WG_PUBLIC')
   for (const check of report.health.checks.filter(check => check.source === 'VORTEX' && check.ok)) await functional(check.region, 'VORTEX')
   const official = report.functional.filter(item => item.source === 'WG_PUBLIC')
