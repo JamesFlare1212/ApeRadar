@@ -64,7 +64,7 @@ export interface ApiHealth {
 export interface AppState {
   settings: Settings; battle: Battle | null; watchlist: WatchEntry[]; history: HistoryEntry[]
   query: { status: 'idle' | 'loading' | 'complete'; done: number; total: number; message: string }
-  monitor: { enabled: boolean; lastFile: string | null; message: string }
+  monitor: { enabled: boolean; lastFile: string | null; message: string; error: string | null }
   health: ApiHealth
   apiConfiguration: { filePath: string | null; applicationIdManaged: boolean; applicationIdSource: 'environment' | 'file' | null }
   activities: Activity[]; shipVersion: string; dataLocation: string
@@ -88,7 +88,6 @@ export interface RadarBridge {
   cancelQuery(): Promise<AppState>
   checkApiHealth(): Promise<AppState>
   saveSettings(settings: Settings): Promise<AppState>
-  setMonitor(enabled: boolean): Promise<AppState>
   setWatch(input: WatchInput): Promise<AppState>
   chooseGamePath(): Promise<string | null>
   discoverGameClients(): Promise<GameClientDiscovery>

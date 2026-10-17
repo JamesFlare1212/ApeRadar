@@ -48,18 +48,20 @@ describe('battle lifecycle', () => {
       expect(service.state().battle?.players[0].status).toBe('ready')
     } finally { service.dispose() }
   })
-  it('automatically imports a real fixture file and stops cleanly', async () => {
+  it('automatically monitors the saved directory on startup', async () => {
     const directory = tempDirectory()
     createGameClient(directory, 'ASIA')
     writeFileSync(path.join(directory, 'replays', 'tempArenaInfo.json'), JSON.stringify(arena('AutoCaptain')))
-    const service = new RadarService(new RadarDatabase(':memory:'), catalog)
+    const database = new RadarDatabase(':memory:')
+    database.saveSettings({ ...settings(), autoQuery: false, gamePath: directory })
+    const service = new RadarService(database, catalog)
     try {
-      service.saveSettings({ ...settings(), autoQuery: false, gamePath: `  ${directory}  ` })
-      const imported = new Promise<void>((resolve, reject) => { const timer = setTimeout(() => reject(new Error('Monitor fixture timed out')), 3000); service.on('state', state => { if (state.battle?.players[0]?.name === 'AutoCaptain') { clearTimeout(timer); resolve() } }) })
-      await service.setMonitor(true); await imported
+      expect(service.state().monitor.enabled).toBe(true)
+      await expect.poll(() => service.state().monitor.lastFile).toBe(path.join(directory, 'replays', 'tempArenaInfo.json'))
+      expect(service.state().battle?.players[0].name).toBe('AutoCaptain')
       expect(service.state().battle?.isDemo).toBe(false)
       expect(service.state().history).toHaveLength(1)
-      await service.setMonitor(false); expect(service.state().monitor.enabled).toBe(false)
+      expect(service.state().monitor.error).toBeNull()
     } finally { service.dispose(); removeTemp(directory) }
   })
   it('resolves AUTO again before querying and removes a disabled secondary region', async () => {
@@ -110,18 +112,48 @@ describe('battle lifecycle', () => {
       expect(regions).toEqual(['EU'])
     } finally { service.dispose(); removeTemp(directory) }
   })
-  it('rejects arbitrary directories and cancels an obsolete monitor enable', async () => {
+  it('reports an invalid directory and recovers automatically when it becomes valid', async () => {
     const directory = tempDirectory()
     const service = new RadarService(new RadarDatabase(':memory:'), catalog)
     try {
-      service.saveSettings({ ...settings(), gamePath: directory })
-      await expect(service.setMonitor(true)).rejects.toThrow('WorldOfWarships.exe')
-      expect(service.state().monitor.enabled).toBe(false)
+      service.saveSettings({ ...settings(), gamePath: directory, autoQuery: false })
+      await expect.poll(() => service.state().monitor.error).toContain('WorldOfWarships.exe')
+      expect(service.state().monitor.enabled).toBe(true)
       createGameClient(directory)
-      const pending = service.setMonitor(true)
+      await expect.poll(() => service.state().monitor.error, { timeout: 4000 }).toBeNull()
+      expect(service.state().monitor.lastFile).toBeNull()
+    } finally { service.dispose(); removeTemp(directory) }
+  })
+  it('switches directories automatically and ignores an obsolete scan', async () => {
+    const first = createGameClient(tempDirectory())
+    const second = createGameClient(tempDirectory())
+    writeFileSync(path.join(first, 'replays', 'tempArenaInfo.json'), JSON.stringify(arena('OldCaptain')))
+    writeFileSync(path.join(second, 'replays', 'tempArenaInfo.json'), JSON.stringify(arena('NewCaptain')))
+    const service = new RadarService(new RadarDatabase(':memory:'), catalog)
+    try {
+      service.saveSettings({ ...settings(), gamePath: first, autoQuery: false })
+      service.saveSettings({ ...service.state().settings, gamePath: `  ${second}  ` })
+      await expect.poll(() => service.state().monitor.lastFile).toBe(path.join(second, 'replays', 'tempArenaInfo.json'))
+      expect(service.state().history).toHaveLength(1)
+      expect(service.state().battle?.players[0].name).toBe('NewCaptain')
       service.saveSettings({ ...service.state().settings, gamePath: '' })
-      await pending
-      expect(service.state().monitor.enabled).toBe(false)
+      expect(service.state().monitor.enabled).toBe(true)
+      expect(service.state().monitor.error).toContain('选择游戏目录')
+    } finally { service.dispose(); removeTemp(first); removeTemp(second) }
+  })
+  it('reports an unreadable lineup and clears the error after a successful retry', async () => {
+    const directory = createGameClient(tempDirectory())
+    const filename = path.join(directory, 'replays', 'tempArenaInfo.json')
+    writeFileSync(filename, '{incomplete')
+    const service = new RadarService(new RadarDatabase(':memory:'), catalog)
+    try {
+      service.saveSettings({ ...settings(), gamePath: directory, autoQuery: false })
+      await expect.poll(() => service.state().monitor.error).toBeTruthy()
+      expect(service.state().battle?.isDemo).toBe(true)
+      writeFileSync(filename, JSON.stringify(arena('RecoveredCaptain')))
+      await expect.poll(() => service.state().monitor.lastFile, { timeout: 4000 }).toBe(filename)
+      expect(service.state().battle?.players[0].name).toBe('RecoveredCaptain')
+      expect(service.state().monitor.error).toBeNull()
     } finally { service.dispose(); removeTemp(directory) }
   })
 })

@@ -51,7 +51,6 @@ export async function createDevApi(catalogPath: string, dataDirectory: string, c
         case '/api/game-client': result = await inspectGameClient(z.string().max(1024).parse((input as { path?: unknown })?.path)); break
         case '/api/settings': result = service.saveSettings(input); break
         case '/api/watch': result = service.setWatch(input as WatchInput); break
-        case '/api/monitor': result = await service.setMonitor((input as { enabled: boolean }).enabled); break
         default: res.writeHead(404).end(); return
       }
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end(JSON.stringify(result))

@@ -100,7 +100,6 @@ async function createWindow() {
   handle('radar:game-client', input => inspectGameClient(z.string().max(1024).parse(input)))
   handle('radar:settings', input => service!.saveSettings(input))
   handle('radar:watch', input => service!.setWatch(input as WatchInput))
-  handle('radar:monitor', enabled => service!.setMonitor(z.boolean().parse(enabled)))
   handle('radar:open-file', async () => {
     const result = await dialog.showOpenDialog(mainWindow, { title: '导入对局阵容', filters: [{ name: '阵容 / 回放', extensions: ['json', 'wowsreplay'] }], properties: ['openFile'] })
     if (result.canceled || !result.filePaths[0]) return null
@@ -176,12 +175,15 @@ async function createWindow() {
         location.hash='/settings/connection';
         for(let i=0;i<80&&!document.querySelector('.game-region-result.detected');i++) await new Promise(resolve=>setTimeout(resolve,50));
         const discovered=await api.discoverGameClients();
-        const monitor=await api.setMonitor(true);
-        await api.setMonitor(false);
-        const result={valid:client.valid,region:client.region.region,installationRealm:client.installationRealm,invalidRejected:!invalid.valid,regionVisible:document.querySelector('.game-region-result strong')?.textContent?.includes('NA')===true,pathVisible:document.getElementById('game-path')?.value===${JSON.stringify(gameFixture)},discoveryBridge:Array.isArray(discovered.clients),waitingForArena:monitor.monitor.enabled&&monitor.monitor.lastFile===null};
+        const monitor=await api.getState();
+        const regionVisible=document.querySelector('.game-region-result strong')?.textContent?.includes('NA')===true;
+        const pathVisible=document.getElementById('game-path')?.value===${JSON.stringify(gameFixture)};
+        location.hash='/overview';
+        for(let i=0;i<40&&!document.querySelector('.sidebar-main-navigation');i++) await new Promise(resolve=>setTimeout(resolve,50));
+        const result={valid:client.valid,region:client.region.region,installationRealm:client.installationRealm,invalidRejected:!invalid.valid,regionVisible,pathVisible,discoveryBridge:Array.isArray(discovered.clients),waitingForArena:monitor.monitor.enabled&&monitor.monitor.lastFile===null&&monitor.monitor.error===null,quietMonitoring:!document.querySelector('.game-connection')&&typeof api.setMonitor==='undefined'};
         return result;
-      })()`) as { valid: boolean; region: string; installationRealm: string; invalidRejected: boolean; regionVisible: boolean; pathVisible: boolean; discoveryBridge: boolean; waitingForArena: boolean }
-      if (!gameClientResult.valid || gameClientResult.region !== 'NA' || gameClientResult.installationRealm !== 'WW' || !gameClientResult.invalidRejected || !gameClientResult.regionVisible || !gameClientResult.pathVisible || !gameClientResult.discoveryBridge || !gameClientResult.waitingForArena) throw new Error('Desktop game-client detection assertion failed')
+      })()`) as { valid: boolean; region: string; installationRealm: string; invalidRejected: boolean; regionVisible: boolean; pathVisible: boolean; discoveryBridge: boolean; waitingForArena: boolean; quietMonitoring: boolean }
+      if (!gameClientResult.valid || gameClientResult.region !== 'NA' || gameClientResult.installationRealm !== 'WW' || !gameClientResult.invalidRejected || !gameClientResult.regionVisible || !gameClientResult.pathVisible || !gameClientResult.discoveryBridge || !gameClientResult.waitingForArena || !gameClientResult.quietMonitoring) throw new Error('Desktop game-client detection assertion failed')
       service!.saveSettings(originalGameSettings)
       await mainWindow.webContents.executeJavaScript("location.hash='/overview'")
       // Let the restored workspace finish its mount-time IPC requests before exiting.

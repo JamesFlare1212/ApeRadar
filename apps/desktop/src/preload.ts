@@ -23,7 +23,6 @@ const api: RadarBridge = {
   cancelQuery: () => ipcRenderer.invoke('radar:cancel'),
   checkApiHealth: () => ipcRenderer.invoke('radar:health'),
   saveSettings: (settings: Settings) => ipcRenderer.invoke('radar:settings', settings),
-  setMonitor: (enabled: boolean) => ipcRenderer.invoke('radar:monitor', enabled),
   setWatch: (input: WatchInput) => ipcRenderer.invoke('radar:watch', input),
   chooseGamePath: () => ipcRenderer.invoke('radar:choose-path'),
   discoverGameClients: () => ipcRenderer.invoke('radar:game-clients'),

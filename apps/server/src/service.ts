@@ -19,14 +19,13 @@ export class RadarService extends EventEmitter {
   private battle: Battle | null
   private activities: Activity[] = []
   private queryState: AppState['query'] = { status: 'idle', done: 0, total: 0, message: '等待导入阵容' }
-  private monitorState: AppState['monitor'] = { enabled: false, lastFile: null, message: '自动监测未开启' }
+  private monitorState: AppState['monitor'] = { enabled: true, lastFile: null, message: '正在等待游戏阵容文件…', error: null }
   private controller: AbortController | null = null
   private timer: ReturnType<typeof setInterval> | null = null
-  private scanning = false
+  private scanningGeneration: number | null = null
   private monitorGeneration = 0
   private routingRevision = 0
   private lastStamp = ''
-  private monitorError = ''
   private disposed = false
   private health = initialApiHealth()
   private healthTimer: ReturnType<typeof setInterval> | null = null
@@ -45,6 +44,7 @@ export class RadarService extends EventEmitter {
     this.applyShipDetails(this.battle)
     this.log('info', '欢迎回来。导入阵容或连接游戏目录，开始查看战局。', false)
     void this.refreshMissingShips(this.battle)
+    this.startMonitor()
   }
   state(): AppState {
     return structuredClone({ settings: this.settings, battle: this.battle, watchlist: this.database.getWatchlist(),
@@ -265,56 +265,47 @@ export class RadarService extends EventEmitter {
       if (primary && primary !== 'CN') this.routeBattle(this.battle, settings, primary, true)
       this.database.saveBattle(this.battle)
     }
-    if (old.gamePath !== settings.gamePath) { this.monitorGeneration++; this.stopMonitor() }
+    if (old.gamePath !== settings.gamePath) this.startMonitor()
     if (this.healthTimer && (routingChanged || (settings.region === 'AUTO' && old.gamePath !== settings.gamePath))) this.refreshHealth(true)
     this.log('success', '设置已保存到本机')
     return this.state()
   }
   setWatch(input: WatchInput): AppState { this.database.setWatch(watchSchema.parse(input)); this.log('success', input.status ? '关注名单已更新' : '已移除关注记录'); return this.state() }
-  private stopMonitor() {
-    if (this.timer) clearInterval(this.timer)
-    this.timer = null
-    this.monitorState = { ...this.monitorState, enabled: false, message: '自动监测已暂停' }
-  }
-  async setMonitor(enabled: boolean): Promise<AppState> {
-    if (typeof enabled !== 'boolean') throw new Error('监测开关无效')
+  private startMonitor() {
     const generation = ++this.monitorGeneration
-    this.stopMonitor()
-    if (enabled) {
-      const inspection = await inspectGameClient(this.settings.gamePath)
-      if (this.disposed) throw new Error('应用已关闭')
-      if (generation !== this.monitorGeneration) return this.state()
-      if (!inspection.valid) { this.publish(); throw new Error(inspection.message) }
-    }
+    if (this.timer) clearInterval(this.timer)
     this.lastStamp = ''
-    this.monitorError = ''
-    this.monitorState = { enabled, lastFile: null, message: enabled ? '目录已验证，正在等待游戏阵容文件…' : '自动监测已暂停' }
-    if (enabled) {
-      this.timer = setInterval(() => { void this.scan(generation) }, 2000)
-      this.timer.unref()
-      void this.scan(generation)
-    }
+    this.monitorState = { enabled: true, lastFile: null, message: '正在等待游戏阵容文件…', error: this.settings.gamePath ? null : '请在设置中选择游戏目录，自动载入新对局。' }
+    this.timer = setInterval(() => { void this.scan(generation) }, 2000)
+    this.timer.unref()
+    void this.scan(generation)
+  }
+  private clearMonitorError() {
+    if (!this.monitorState.error) return
+    this.monitorState = { ...this.monitorState, error: null, message: '正在等待游戏阵容文件…' }
     this.publish()
-    return this.state()
   }
   private async scan(generation: number) {
-    if (this.scanning || !this.monitorState.enabled || generation !== this.monitorGeneration) return
-    this.scanning = true
+    if (this.scanningGeneration === generation || !this.monitorState.enabled || generation !== this.monitorGeneration || !this.settings.gamePath) return
+    this.scanningGeneration = generation
     try {
+      const inspection = await inspectGameClient(this.settings.gamePath)
+      if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
+      if (!inspection.valid) throw new Error(inspection.message)
       const latest = await latestArena(this.settings.gamePath)
-      if (!latest || latest.stamp === this.lastStamp || !this.monitorState.enabled || generation !== this.monitorGeneration) return
+      if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
+      if (!latest || latest.stamp === this.lastStamp) { this.clearMonitorError(); return }
       const bytes = await readArenaFile(latest.path)
       if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
       await this.importBytes(bytes, latest.path, true, generation)
       if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
       this.lastStamp = latest.stamp
-      this.monitorError = ''
-      this.monitorState = { enabled: true, lastFile: latest.path, message: '已连接 · 新对局将自动载入' }
+      this.monitorState = { enabled: true, lastFile: latest.path, message: '已连接 · 新对局将自动载入', error: null }
       this.publish()
     } catch (error) {
       const text = message(error)
-      if (generation === this.monitorGeneration && this.monitorState.enabled && this.monitorError !== text) { this.monitorError = text; this.monitorState = { ...this.monitorState, message: text }; this.log('warning', `等待可读取的阵容文件：${text}`) }
-    } finally { this.scanning = false }
+      if (generation === this.monitorGeneration && this.monitorState.enabled && this.monitorState.error !== text) { this.monitorState = { ...this.monitorState, message: text, error: text }; this.log('warning', `自动监测异常：${text}`) }
+    } finally { if (this.scanningGeneration === generation) this.scanningGeneration = null }
   }
   dispose() { if (this.disposed) return; this.disposed = true; this.shipController.abort(); this.monitorState.enabled = false; this.stopQuery(); if (this.timer) clearInterval(this.timer); this.timer = null; this.healthController?.abort(); this.healthController = null; this.healthPending = null; if (this.healthTimer) clearInterval(this.healthTimer); this.healthTimer = null; this.removeAllListeners(); this.database.close() }
 }

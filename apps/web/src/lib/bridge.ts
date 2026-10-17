@@ -21,7 +21,7 @@ const web: RadarBridge = {
   loadDemo: () => request('demo'), loadBattle: id => request('history', { id }),
   query: options => request('query', options), cancelQuery: () => request('cancel'),
   checkApiHealth: () => request('health'),
-  saveSettings: settings => request('settings', settings), setMonitor: enabled => request('monitor', { enabled }),
+  saveSettings: settings => request('settings', settings),
   setWatch: input => request('watch', input), chooseGamePath: async () => null,
   discoverGameClients: () => request('game-clients'), inspectGameClient: path => request('game-client', { path }),
   copyText: text => navigator.clipboard.writeText(text),
