@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Settings } from '@aperadar/shared/types'
+import { DEFAULT_SETTINGS } from '@aperadar/shared/settings'
 
 type Appearance = Pick<Settings, 'theme' | 'lightPalette' | 'darkPalette'>
 const cacheKey = 'aperadar.appearance'
@@ -44,10 +45,11 @@ export function registerAppearance(appearance: Appearance, preview = false, list
 }
 
 export function applyCachedAppearance() {
+  let appearance: Appearance = DEFAULT_SETTINGS
   try {
-    const value = normalize(JSON.parse(localStorage.getItem(cacheKey) ?? 'null'))
-    if (value) apply(value)
+    appearance = normalize(JSON.parse(localStorage.getItem(cacheKey) ?? 'null')) ?? DEFAULT_SETTINGS
   } catch { /* Settings from the local service remain the source of truth. */ }
+  apply(appearance)
 }
 
 export function useAppearance(appearance: Appearance | undefined, preview = false) {
