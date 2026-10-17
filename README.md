@@ -25,7 +25,7 @@ pnpm dev:web
 
 ## 使用
 
-1. 在设置中选择区服，并选择包含 `WorldOfWarships.exe` 的游戏目录。自动识别区服需要能读取 `profile/clientrunner.log`。
+1. Open Settings → Game connection. The app discovers current WGC and Steam clients and validates the selected installation. AUTO uses the active server in game preferences and recent startup logs; choose a region manually if evidence is unavailable or conflicting.
 2. 开启侧栏的自动监测，或点击「打开阵容」导入 `tempArenaInfo.json` / `.wowsreplay`。也可直接拖入文件。
 3. 查询结果逐位更新。阵容保留游戏文件中的原始顺序，可搜索舰长/船名、筛选舰种、切换账号/加权胜率，并打开详细统计。
 4. 点击星标维护本地关注与备注。在历史页回看快照，或主动导出 CSV、生成文字摘要。

@@ -1,5 +1,38 @@
 # 架构与行为
 
+## Game client discovery and region selection
+
+`game-discovery.ts` reads current WGC path-pointer records and modern nested Steam
+KeyValues libraries/manifests. It performs bounded reads, validates Steam app ID
+552990, rejects manifest path traversal, resolves canonical installation paths,
+and merges Windows paths without case sensitivity. Discovery never launches the
+game or modifies its files.
+
+`game-client.ts` verifies PE executable headers, the current 64-bit layout, and the
+build recorded as installed by WGC. An incomplete installed build is rejected;
+an older build is not silently substituted. Clients without WGC metadata use the
+newest complete numeric build directory. Installation labels such as `WW` remain
+separate from the API region.
+
+AUTO is the default for new settings. Region detection compares the active server
+in the game preferences with the latest realm in a bounded startup-log tail. The
+preferences reader extracts only the relevant section because other game element
+names need not be valid XML. Startup logs older than 24 hours are ignored. Missing,
+unrecognized, unsupported, and conflicting evidence have explicit results; no
+region is guessed. A manually selected region takes precedence.
+
+Each query resolves its routing before consulting player caches. Settings changes
+cancel pending resolution and requests, and disabling mixed regions restores the
+primary region for both teams. Monitor generations prevent a paused or replaced
+scan from importing a battle. API health checks report unresolved routing without
+probing an arbitrary region.
+
+The settings page discovers clients on entry, selects a sole candidate only when
+the path is empty, and preserves an existing path or manual region selection. It
+shows directory validation, evidence timestamps, conflicts, and waiting-for-arena
+states separately. Browser development previews can use `APERADAR_DATA_DIR` for an
+isolated database, matching the desktop test workflow.
+
 ## 工作区边界
 
 项目使用 pnpm workspace，参考 T3 Code 将应用拆分为 `apps/desktop`、`apps/server`、`apps/web`，跨应用逻辑放在 `packages/shared`。根目录维护统一命令、锁文件、TypeScript 基础选项及跨包测试，各包独立声明依赖与类型检查配置。

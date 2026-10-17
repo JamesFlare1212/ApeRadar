@@ -8,6 +8,9 @@ import type { FilePayload, QueryOptions, WatchInput } from '@aperadar/shared/typ
 import { initialUpdateState } from '@aperadar/shared/updates'
 import appPackage from '../../../package.json'
 import { loadApiConfig } from './config.ts'
+import { z } from 'zod'
+import { discoverGameClients } from './game-discovery.ts'
+import { inspectGameClient } from './game-client.ts'
 
 export async function createDevApi(catalogPath: string, dataDirectory: string, configFile: string) {
   const runtimeConfig = await loadApiConfig(configFile)
@@ -44,9 +47,11 @@ export async function createDevApi(catalogPath: string, dataDirectory: string, c
         case '/api/query': result = await service.query(input as QueryOptions); break
         case '/api/cancel': result = service.cancelQuery(); break
         case '/api/health': result = await service.checkApiHealth(); break
+        case '/api/game-clients': result = await discoverGameClients(); break
+        case '/api/game-client': result = await inspectGameClient(z.string().max(1024).parse((input as { path?: unknown })?.path)); break
         case '/api/settings': result = service.saveSettings(input); break
         case '/api/watch': result = service.setWatch(input as WatchInput); break
-        case '/api/monitor': result = service.setMonitor((input as { enabled: boolean }).enabled); break
+        case '/api/monitor': result = await service.setMonitor((input as { enabled: boolean }).enabled); break
         default: res.writeHead(404).end(); return
       }
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end(JSON.stringify(result))

@@ -1,7 +1,6 @@
 import { EventEmitter } from 'node:events'
-import { statSync } from 'node:fs'
 import { createHash, randomUUID } from 'node:crypto'
-import type { Activity, AppState, Battle, FilePayload, QueryOptions, Settings, WatchInput } from '@aperadar/shared/types'
+import type { Activity, AppState, Battle, FilePayload, QueryOptions, Settings, SupportedRegion, WatchInput } from '@aperadar/shared/types'
 import { fileSchema, querySchema, settingsSchema, watchSchema } from '@aperadar/shared/settings'
 import { teamSummary } from '@aperadar/shared/statistics'
 import { buildBattle, latestArena, parseArenaBytes, readArenaFile, resolveRegion, type ShipCatalog } from './arena.ts'
@@ -10,6 +9,7 @@ import { RadarDatabase } from './database.ts'
 import { createDemo } from './demo.ts'
 import { initialApiHealth, probeApiHealth, type ApiHealthOptions } from './health.ts'
 import type { RuntimeApiConfig } from './config.ts'
+import { inspectGameClient } from './game-client.ts'
 
 export type ProviderFactory = (settings: Settings) => Pick<WargamingApi, 'query'>
 export class RadarService extends EventEmitter {
@@ -21,6 +21,8 @@ export class RadarService extends EventEmitter {
   private controller: AbortController | null = null
   private timer: ReturnType<typeof setInterval> | null = null
   private scanning = false
+  private monitorGeneration = 0
+  private routingRevision = 0
   private lastStamp = ''
   private monitorError = ''
   private disposed = false
@@ -77,9 +79,17 @@ export class RadarService extends EventEmitter {
     this.health = { ...this.health, checking: true }
     this.publish()
     const settings = structuredClone(this.settings)
-    const currentRegion = !this.battle?.isDemo ? this.battle?.players.find(player => player.team === 'ally')?.region ?? this.battle?.players[0]?.region : undefined
     const pending = (async () => {
-      const primary = settings.region === 'AUTO' ? await resolveRegion(settings).catch(() => currentRegion ?? 'ASIA' as const) : settings.region
+      let primary: SupportedRegion
+      try { primary = await resolveRegion(settings) }
+      catch (error) {
+        controller.signal.throwIfAborted()
+        if (!this.disposed && this.healthController === controller) {
+          this.health = { ...initialApiHealth(this.health.intervalMs), checkedAt: new Date().toISOString(), message: `尚未检查 API：${message(error)}` }
+          this.publish()
+        }
+        return this.state()
+      }
       const regions = settings.secondaryEnabled ? [primary, settings.secondaryRegion] : [primary]
       const health = await probeApiHealth(settings, regions, controller.signal, this.healthOptions)
       controller.signal.throwIfAborted()
@@ -95,9 +105,14 @@ export class RadarService extends EventEmitter {
     const file = fileSchema.parse(input)
     return this.importBytes(Buffer.from(file.base64, 'base64'), file.name, autoQuery)
   }
-  async importBytes(bytes: Buffer, filename: string, autoQuery = true): Promise<AppState> {
-    const region = await resolveRegion(this.settings)
-    const battle = buildBattle(parseArenaBytes(bytes), filename, this.settings, region, this.catalog)
+  async importBytes(bytes: Buffer, filename: string, autoQuery = true, monitorGeneration?: number): Promise<AppState> {
+    const settings = structuredClone(this.settings)
+    const revision = this.routingRevision
+    const region = await resolveRegion(settings)
+    if (this.disposed) throw new Error('应用已关闭')
+    if (monitorGeneration !== undefined && (monitorGeneration !== this.monitorGeneration || !this.monitorState.enabled)) return this.state()
+    if (revision !== this.routingRevision) throw new Error('游戏或区服设置已变更，请重新导入阵容')
+    const battle = buildBattle(parseArenaBytes(bytes), filename, settings, region, this.catalog)
     this.stopQuery()
     this.battle = battle
     if (this.healthTimer && this.settings.region === 'AUTO') this.refreshHealth(true)
@@ -139,6 +154,20 @@ export class RadarService extends EventEmitter {
     const battle = this.battle
     const id = battle.id
     const settings = structuredClone(this.settings)
+    const revision = this.routingRevision
+    this.queryState = { status: 'loading', done: 0, total: 0, message: '正在确认查询区服…' }
+    this.publish()
+    try {
+      const region = await resolveRegion(settings)
+      if (controller.signal.aborted || this.controller !== controller || revision !== this.routingRevision || this.battle !== battle) return this.state()
+      this.routeBattle(battle, settings, region)
+    } catch (error) {
+      if (controller.signal.aborted || this.controller !== controller) return this.state()
+      this.controller = null
+      this.queryState = { status: 'idle', done: 0, total: 0, message: message(error) }
+      this.publish()
+      throw error
+    }
     const players = battle.players.filter(p => p.status !== 'bot' && (!options.failedOnly || ['unavailable', 'not-found', 'pending'].includes(p.status) || p.error))
     const done = new Set<string>()
     this.queryState = { status: 'loading', done: 0, total: players.length, message: '正在查询玩家战绩…' }
@@ -175,57 +204,77 @@ export class RadarService extends EventEmitter {
     return this.state()
   }
   cancelQuery(): AppState { this.stopQuery(); if (this.battle && !this.battle.isDemo) this.database.saveBattle(this.battle); this.publish(); return this.state() }
+  private routeBattle(battle: Battle, settings: Settings, primary: SupportedRegion, reset = false) {
+    battle.players = battle.players.map(player => {
+      const region = settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : primary
+      if (!reset && player.region === region) return player
+      return { ...player, region, key: `${region}:${player.name}:${player.ship.id}`, status: player.status === 'bot' ? 'bot' as const : 'pending' as const, stats: null, accountId: null, error: null, fetchedAt: null, cached: false }
+    })
+  }
   saveSettings(input: unknown): AppState {
     const settings = this.configuredSettings(settingsSchema.parse(input))
     const old = this.settings
-    const routingChanged = settings.region !== old.region || settings.secondaryEnabled !== old.secondaryEnabled || settings.secondaryRegion !== old.secondaryRegion || settings.api !== old.api || settings.wgApplicationId !== old.wgApplicationId
-    if (routingChanged) this.stopQuery()
+    const routingChanged = settings.region !== old.region || settings.secondaryEnabled !== old.secondaryEnabled || settings.secondaryRegion !== old.secondaryRegion || settings.api !== old.api || settings.wgApplicationId !== old.wgApplicationId || (settings.region === 'AUTO' && settings.gamePath !== old.gamePath)
+    if (routingChanged) { this.routingRevision++; this.stopQuery() }
     this.settings = settings
     // A file-managed ID must not overwrite the user's saved fallback when another preference changes.
     this.database.saveSettings(this.runtimeConfig?.config.wgApplicationId ? { ...settings, wgApplicationId: this.database.getSettings().wgApplicationId } : settings)
     if (routingChanged && this.battle && !this.battle.isDemo) {
-      this.battle.players = this.battle.players.map(player => ({ ...player, region: settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : settings.region === 'AUTO' ? player.region : settings.region, key: `${settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : settings.region === 'AUTO' ? player.region : settings.region}:${player.name}:${player.ship.id}`, status: player.status === 'bot' ? 'bot' : 'pending', stats: null, accountId: null, error: null, fetchedAt: null, cached: false }))
+      const primary = settings.region === 'AUTO' ? this.battle.players.find(player => player.team === 'ally')?.region : settings.region
+      // AUTO is resolved again before a query; cleared results cannot be reused
+      // while a new path or region is still being inspected asynchronously.
+      if (primary && primary !== 'CN') this.routeBattle(this.battle, settings, primary, true)
       this.database.saveBattle(this.battle)
     }
-    if (old.gamePath !== settings.gamePath && this.monitorState.enabled) this.setMonitor(false)
+    if (old.gamePath !== settings.gamePath) { this.monitorGeneration++; this.stopMonitor() }
     if (this.healthTimer && (routingChanged || (settings.region === 'AUTO' && old.gamePath !== settings.gamePath))) this.refreshHealth(true)
     this.log('success', '设置已保存到本机')
     return this.state()
   }
   setWatch(input: WatchInput): AppState { this.database.setWatch(watchSchema.parse(input)); this.log('success', input.status ? '关注名单已更新' : '已移除关注记录'); return this.state() }
-  setMonitor(enabled: boolean): AppState {
-    if (typeof enabled !== 'boolean') throw new Error('监测开关无效')
-    if (enabled && !this.settings.gamePath.trim()) throw new Error('请先在设置中选择游戏目录')
-    if (enabled) { try { if (!statSync(this.settings.gamePath).isDirectory()) throw new Error() } catch { throw new Error('游戏目录不存在，请在设置中重新选择') } }
+  private stopMonitor() {
     if (this.timer) clearInterval(this.timer)
     this.timer = null
+    this.monitorState = { ...this.monitorState, enabled: false, message: '自动监测已暂停' }
+  }
+  async setMonitor(enabled: boolean): Promise<AppState> {
+    if (typeof enabled !== 'boolean') throw new Error('监测开关无效')
+    const generation = ++this.monitorGeneration
+    this.stopMonitor()
+    if (enabled) {
+      const inspection = await inspectGameClient(this.settings.gamePath)
+      if (this.disposed) throw new Error('应用已关闭')
+      if (generation !== this.monitorGeneration) return this.state()
+      if (!inspection.valid) { this.publish(); throw new Error(inspection.message) }
+    }
     this.lastStamp = ''
     this.monitorError = ''
-    this.monitorState = { ...this.monitorState, enabled, message: enabled ? '正在等待游戏阵容文件…' : '自动监测已暂停' }
+    this.monitorState = { enabled, lastFile: null, message: enabled ? '目录已验证，正在等待游戏阵容文件…' : '自动监测已暂停' }
     if (enabled) {
-      this.timer = setInterval(() => { void this.scan() }, 2000)
+      this.timer = setInterval(() => { void this.scan(generation) }, 2000)
       this.timer.unref()
-      void this.scan()
+      void this.scan(generation)
     }
     this.publish()
     return this.state()
   }
-  private async scan() {
-    if (this.scanning || !this.monitorState.enabled) return
+  private async scan(generation: number) {
+    if (this.scanning || !this.monitorState.enabled || generation !== this.monitorGeneration) return
     this.scanning = true
     try {
       const latest = await latestArena(this.settings.gamePath)
-      if (!latest || latest.stamp === this.lastStamp || !this.monitorState.enabled) return
+      if (!latest || latest.stamp === this.lastStamp || !this.monitorState.enabled || generation !== this.monitorGeneration) return
       const bytes = await readArenaFile(latest.path)
-      if (!this.monitorState.enabled) return
-      await this.importBytes(bytes, latest.path)
+      if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
+      await this.importBytes(bytes, latest.path, true, generation)
+      if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
       this.lastStamp = latest.stamp
       this.monitorError = ''
       this.monitorState = { enabled: true, lastFile: latest.path, message: '已连接 · 新对局将自动载入' }
       this.publish()
     } catch (error) {
       const text = message(error)
-      if (this.monitorError !== text) { this.monitorError = text; this.log('warning', `等待可读取的阵容文件：${text}`) }
+      if (generation === this.monitorGeneration && this.monitorState.enabled && this.monitorError !== text) { this.monitorError = text; this.monitorState = { ...this.monitorState, message: text }; this.log('warning', `等待可读取的阵容文件：${text}`) }
     } finally { this.scanning = false }
   }
   dispose() { if (this.disposed) return; this.disposed = true; this.monitorState.enabled = false; this.stopQuery(); if (this.timer) clearInterval(this.timer); this.timer = null; this.healthController?.abort(); this.healthController = null; this.healthPending = null; if (this.healthTimer) clearInterval(this.healthTimer); this.healthTimer = null; this.removeAllListeners(); this.database.close() }

@@ -4,6 +4,8 @@ import path from 'node:path'
 import { z } from 'zod'
 import type { Battle, RadarPlayer, Region, SupportedRegion, Settings, Ship, ShipType } from '@aperadar/shared/types'
 import { isSupportedRegion } from '@aperadar/shared/types'
+import { lastLogRegion } from './game-region.ts'
+import { inspectGameClient } from './game-client.ts'
 
 const idSchema = z.union([z.string().regex(/^\d{1,20}$/), z.number().int().nonnegative().safe()]).transform(String)
 const arenaSchema = z.object({
@@ -55,19 +57,18 @@ export async function readArenaFile(filename: string): Promise<Buffer> {
   } finally { await file.close() }
 }
 export function detectRegion(text: string): SupportedRegion {
-  const matches = [...text.matchAll(/Selected realm:\s*([^\r\n]+)/g)]
-  const realm = matches.at(-1)?.[1].trim().toUpperCase()
+  const realm = lastLogRegion(text)
   if (isSupportedRegion(realm)) return realm
   if (realm === 'CN') throw new Error('国服在线查询已停止支持')
   throw new Error('无法自动识别区服，请在设置中手动选择')
 }
 export async function resolveRegion(settings: Settings): Promise<SupportedRegion> {
   if (settings.region !== 'AUTO') return settings.region
-  if (!settings.gamePath) throw new Error('自动识别区服需要设置游戏目录，或手动选择区服')
-  let text: string
-  try { text = await readFile(path.join(settings.gamePath, 'profile', 'clientrunner.log'), 'utf8') }
-  catch { throw new Error('无法读取游戏区服，请在设置中手动选择') }
-  return detectRegion(text)
+  if (!settings.gamePath.trim()) throw new Error('请先选择游戏目录，或手动选择区服')
+  const inspection = await inspectGameClient(settings.gamePath)
+  if (!inspection.valid) throw new Error(inspection.message)
+  if (inspection.region.region) return inspection.region.region
+  throw new Error(inspection.region.message)
 }
 function parseDate(value: string | undefined) {
   const match = value?.match(/^(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2}):(\d{2})$/)

@@ -5,7 +5,7 @@ import { DEFAULT_API_CONFIG } from './api-config.ts'
 
 export const regionSchema = z.enum(SUPPORTED_REGIONS)
 export const settingsSchema = z.object({
-  gamePath: z.string().max(1024), region: z.enum(['AUTO', ...SUPPORTED_REGIONS]),
+  gamePath: z.string().trim().max(1024), region: z.enum(['AUTO', ...SUPPORTED_REGIONS]),
   secondaryRegion: regionSchema, secondaryEnabled: z.boolean(),
   api: z.enum(['VORTEX', 'WG_PUBLIC']), wgApplicationId: z.string().regex(/^[a-zA-Z0-9]*$/).max(64),
   theme: z.enum(['light', 'dark', 'system']), winrate: z.enum(['account', 'weighted']), showNames: z.boolean(),
@@ -21,7 +21,7 @@ export const settingsSchema = z.object({
 const LEGACY_DEFAULT_TEXT_TEMPLATE = '我方精英：{AllyUnicumList}；待提升：{AllyApeList}。敌方精英：{EnemyUnicumList}；待提升：{EnemyApeList}。'
 
 export const DEFAULT_SETTINGS: Settings = {
-  gamePath: '', region: 'ASIA', secondaryRegion: 'EU', secondaryEnabled: false,
+  gamePath: '', region: 'AUTO', secondaryRegion: 'EU', secondaryEnabled: false,
   api: 'VORTEX', wgApplicationId: DEFAULT_API_CONFIG.wgApplicationId,
   theme: 'system', winrate: 'account', showNames: true, autoQuery: true, retryAttempts: 2, cacheMinutes: 15,
   lightPalette: 'graphite', darkPalette: 'graphite',

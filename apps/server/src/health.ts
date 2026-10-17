@@ -11,7 +11,7 @@ const probeName = 'ApeRadarHealthCheck'
 const maximumResponseBytes = 64 * 1024
 
 export function initialApiHealth(intervalMs = HEALTH_INTERVAL_MS): ApiHealth {
-  return { status: 'unknown', checking: false, checkedAt: null, intervalMs, checks: [] }
+  return { status: 'unknown', checking: false, checkedAt: null, intervalMs, checks: [], message: null }
 }
 
 // RU uses Vortex in player queries even when WG is selected.
@@ -88,5 +88,5 @@ export async function probeApiHealth(settings: Settings, regions: Region[], sign
   })
   signal.throwIfAborted()
   const active = checks.filter(item => item.active)
-  return { status: active.length && active.every(item => item.ok) ? 'healthy' : active.some(item => item.ok) ? 'degraded' : 'unavailable', checking: false, checkedAt: new Date().toISOString(), intervalMs: config.requests.healthIntervalMs, checks }
+  return { status: active.length && active.every(item => item.ok) ? 'healthy' : active.some(item => item.ok) ? 'degraded' : 'unavailable', checking: false, checkedAt: new Date().toISOString(), intervalMs: config.requests.healthIntervalMs, checks, message: null }
 }

@@ -23,6 +23,7 @@ const web: RadarBridge = {
   checkApiHealth: () => request('health'),
   saveSettings: settings => request('settings', settings), setMonitor: enabled => request('monitor', { enabled }),
   setWatch: input => request('watch', input), chooseGamePath: async () => null,
+  discoverGameClients: () => request('game-clients'), inspectGameClient: path => request('game-client', { path }),
   copyText: text => navigator.clipboard.writeText(text),
   async openProfile(player) {
     const domains = { ASIA: 'worldofwarships.asia', NA: 'worldofwarships.com', EU: 'worldofwarships.eu', RU: 'korabli.su' }

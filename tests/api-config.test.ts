@@ -140,6 +140,7 @@ describe('runtime configuration and persisted settings', () => {
     const config = mergeApiConfig({ requests: { healthIntervalMs: 1000 } })
     const service = new RadarService(new RadarDatabase(':memory:'), catalog, undefined, { fetcher }, runtime(config))
     try {
+      service.saveSettings(settings())
       service.startHealthChecks()
       await service.checkApiHealth()
       expect(fetcher).toHaveBeenCalledTimes(2)
@@ -155,6 +156,7 @@ describe('runtime configuration and persisted settings', () => {
     const provider = vi.fn(() => ({ query: async (players: ReturnType<typeof fixturePlayer>[], _signal: AbortSignal, emit: (player: ReturnType<typeof fixturePlayer>) => void) => { querySizes.push(players.length); for (const player of players) emit({ ...player, status: 'ready', stats: fixturePlayer().stats, cached: false, fetchedAt: new Date().toISOString() }) } }))
     const first = new RadarService(new RadarDatabase(filename), catalog, provider, {}, runtime())
     try {
+      first.saveSettings(settings())
       await first.importArena({ name: 'fixture.json', base64: Buffer.from(JSON.stringify(arena())).toString('base64') }, false)
       await first.query()
       await first.query()

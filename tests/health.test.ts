@@ -105,6 +105,7 @@ describe('health lifecycle', () => {
     try {
       expect(service.state().health).toMatchObject({ status: 'unknown', checking: false, checkedAt: null })
       expect(fetcher).not.toHaveBeenCalled()
+      service.saveSettings(settings())
       service.startHealthChecks()
       const first = service.checkApiHealth()
       expect(service.checkApiHealth()).toBe(first)
@@ -132,6 +133,7 @@ describe('health lifecycle', () => {
     }) as typeof fetch
     const service = new RadarService(new RadarDatabase(':memory:'), catalog, undefined, { fetcher })
     try {
+      service.saveSettings(settings())
       service.startHealthChecks()
       const previous = service.checkApiHealth().catch(error => error as Error)
       service.saveSettings({ ...service.state().settings, region: 'EU' })
@@ -143,5 +145,15 @@ describe('health lifecycle', () => {
       service.dispose()
       expect(await pending).toMatchObject({ name: 'AbortError' })
     } finally { finishAsia?.(); service.dispose() }
+  })
+  it('does not probe a guessed region when AUTO has no client evidence', async () => {
+    const fetcher = vi.fn(async () => available()) as unknown as typeof fetch
+    const service = new RadarService(new RadarDatabase(':memory:'), catalog, undefined, { fetcher })
+    try {
+      const state = await service.checkApiHealth()
+      expect(fetcher).not.toHaveBeenCalled()
+      expect(state.health).toMatchObject({ status: 'unknown', checking: false, checks: [] })
+      expect(state.health.message).toContain('选择游戏目录')
+    } finally { service.dispose() }
   })
 })

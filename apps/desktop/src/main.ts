@@ -9,6 +9,8 @@ import electronUpdater from 'electron-updater'
 import { RadarDatabase } from '@aperadar/server/database'
 import { RadarService } from '@aperadar/server/service'
 import { readArenaFile, readCatalog } from '@aperadar/server/arena'
+import { discoverGameClients } from '@aperadar/server/game-discovery'
+import { inspectGameClient } from '@aperadar/server/game-client'
 import { DOMAINS, WargamingApi } from '@aperadar/server/api'
 import { loadApiConfig } from '@aperadar/server/config'
 import { regionSchema } from '@aperadar/shared/settings'
@@ -94,6 +96,8 @@ async function createWindow() {
   handle('radar:query', input => service!.query((input ?? {}) as QueryOptions))
   handle('radar:cancel', () => service!.cancelQuery())
   handle('radar:health', () => service!.checkApiHealth())
+  handle('radar:game-clients', () => discoverGameClients())
+  handle('radar:game-client', input => inspectGameClient(z.string().max(1024).parse(input)))
   handle('radar:settings', input => service!.saveSettings(input))
   handle('radar:watch', input => service!.setWatch(input as WatchInput))
   handle('radar:monitor', enabled => service!.setMonitor(z.boolean().parse(enabled)))
@@ -152,9 +156,37 @@ async function createWindow() {
       })()`) as { filePath: string; managed: boolean; valueMatches: boolean; applicationIdSuffix: string; helpConnected: boolean }
       if (apiConfigResult.filePath !== runtimeConfig.filePath || apiConfigResult.managed !== !!runtimeConfig.config.wgApplicationId || !apiConfigResult.valueMatches || !apiConfigResult.helpConnected) throw new Error('Desktop API configuration assertion failed')
       if (runtimeConfig.config.wgApplicationId && apiConfigResult.applicationIdSuffix !== runtimeConfig.config.wgApplicationId.slice(-6)) throw new Error('Desktop application ID assertion failed')
+      const gameFixture = path.join(dataPath, 'game-client')
+      for (const directory of ['bin/12345/bin64', 'bin/12345/res', 'profile', 'replays']) mkdirSync(path.join(gameFixture, directory), { recursive: true })
+      const executableFixture = Buffer.alloc(128)
+      executableFixture.writeUInt16LE(0x5A4D, 0); executableFixture.writeUInt32LE(64, 60); executableFixture.writeUInt32LE(0x00004550, 64); executableFixture.writeUInt16LE(0x8664, 68); executableFixture.writeUInt16LE(0x0002, 86)
+      await Promise.all([
+        writeFile(path.join(gameFixture, 'WorldOfWarships.exe'), executableFixture),
+        writeFile(path.join(gameFixture, 'bin/12345/bin64/WorldOfWarships64.exe'), executableFixture),
+        writeFile(path.join(gameFixture, 'bin/12345/res/engine_config.xml'), '<engine_config.xml><customization><currentRealm>WW</currentRealm></customization></engine_config.xml>'),
+        writeFile(path.join(gameFixture, 'preferences.xml'), '<preferences.xml><scriptsPreferences><ui><1@fixture>0</1@fixture></ui><net_credentials><active_server>WOWS NA</active_server></net_credentials></scriptsPreferences></preferences.xml>'),
+        writeFile(path.join(gameFixture, 'profile/clientrunner.log'), 'Selected realm: na\n'),
+      ])
+      const originalGameSettings = service!.state().settings
+      const gameClientResult = await mainWindow.webContents.executeJavaScript(`(async()=>{
+        const api=window.aperadar, original=(await api.getState()).settings;
+        await api.saveSettings({...original,gamePath:${JSON.stringify(gameFixture)},region:'AUTO',autoQuery:false});
+        const client=await api.inspectGameClient(${JSON.stringify(gameFixture)});
+        const invalid=await api.inspectGameClient(${JSON.stringify(dataPath)});
+        location.hash='/settings/connection';
+        for(let i=0;i<80&&!document.querySelector('.game-region-result.detected');i++) await new Promise(resolve=>setTimeout(resolve,50));
+        const discovered=await api.discoverGameClients();
+        const monitor=await api.setMonitor(true);
+        await api.setMonitor(false);
+        const result={valid:client.valid,region:client.region.region,installationRealm:client.installationRealm,invalidRejected:!invalid.valid,regionVisible:document.querySelector('.game-region-result strong')?.textContent?.includes('NA')===true,pathVisible:document.getElementById('game-path')?.value===${JSON.stringify(gameFixture)},discoveryBridge:Array.isArray(discovered.clients),waitingForArena:monitor.monitor.enabled&&monitor.monitor.lastFile===null};
+        return result;
+      })()`) as { valid: boolean; region: string; installationRealm: string; invalidRejected: boolean; regionVisible: boolean; pathVisible: boolean; discoveryBridge: boolean; waitingForArena: boolean }
+      if (!gameClientResult.valid || gameClientResult.region !== 'NA' || gameClientResult.installationRealm !== 'WW' || !gameClientResult.invalidRejected || !gameClientResult.regionVisible || !gameClientResult.pathVisible || !gameClientResult.discoveryBridge || !gameClientResult.waitingForArena) throw new Error('Desktop game-client detection assertion failed')
+      service!.saveSettings(originalGameSettings)
+      await mainWindow.webContents.executeJavaScript("location.hash='/overview'")
       // Let the restored workspace finish its mount-time IPC requests before exiting.
       await new Promise(resolve => setTimeout(resolve, 400))
-      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
+      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null
       app.exit(0)

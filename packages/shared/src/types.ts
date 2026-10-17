@@ -1,4 +1,5 @@
 import type { UpdateState } from './updates'
+import type { GameClientDiscovery, GameClientInspection } from './game-client.ts'
 
 export type Region = 'ASIA' | 'NA' | 'EU' | 'RU' | 'CN'
 // CN remains readable in existing local snapshots and watch records.
@@ -58,7 +59,7 @@ export interface ApiHealthCheck {
 }
 export interface ApiHealth {
   status: 'unknown' | 'healthy' | 'degraded' | 'unavailable'; checking: boolean
-  checkedAt: string | null; intervalMs: number; checks: ApiHealthCheck[]
+  checkedAt: string | null; intervalMs: number; checks: ApiHealthCheck[]; message: string | null
 }
 export interface AppState {
   settings: Settings; battle: Battle | null; watchlist: WatchEntry[]; history: HistoryEntry[]
@@ -90,6 +91,8 @@ export interface RadarBridge {
   setMonitor(enabled: boolean): Promise<AppState>
   setWatch(input: WatchInput): Promise<AppState>
   chooseGamePath(): Promise<string | null>
+  discoverGameClients(): Promise<GameClientDiscovery>
+  inspectGameClient(path: string): Promise<GameClientInspection>
   copyText(text: string): Promise<void>
   openProfile(player: { accountId: string; region: Region; name: string }): Promise<void>
   windowControl(action: 'minimize' | 'maximize' | 'close'): void

@@ -17,6 +17,7 @@ export function HealthPanel({ state, notify }: { state: AppState; notify: (messa
       void bridge.checkApiHealth().catch(error => notify(String(error), true)).finally(() => setChecking(false))
     }}><Icon icon={faRotateRight} size={14} />立即检查</Button></div>
     <div className="health-summary" role="status"><Badge tone={health?.status === 'healthy' ? 'success' : health?.status === 'unavailable' ? 'danger' : 'neutral'}><Icon icon={health?.status === 'healthy' ? faCircleCheck : faCircleExclamation} size={12} />{busy ? '正在检查连接…' : labels[health?.status ?? 'unknown']}</Badge><span className="muted">{health?.checkedAt ? `上次检查 ${new Date(health.checkedAt).toLocaleTimeString('zh-CN')}` : '等待首次检测'}</span></div>
+    {health?.message && <p className="settings-description" role="status">{health.message}</p>}
     <div className="health-list">{health?.checks.map(check => <div className="health-row" key={`${check.source}-${check.region}`}>
       <span className={`health-indicator health-${check.status}`} aria-hidden="true" />
       <div className="health-endpoint"><strong>{check.source === 'WG_PUBLIC' ? 'Wargaming' : 'Vortex'}<span>{REGION_LABELS[check.region]}</span>{check.active && <Badge tone="brand">使用中</Badge>}</strong><small title={check.endpoint}>{check.message}</small></div>
