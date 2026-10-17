@@ -1,5 +1,27 @@
 # 验证记录
 
+## v1.0.2 release validation (2026-10-17)
+
+- Root, desktop, server, web, and shared packages use `1.0.2`.
+  `node scripts/verify-release-version.mjs v1.0.2` passed.
+- `pnpm check` passed type checking, 125 regression tests in 14 files, and design-token
+  validation. The added coverage exercises current WGC and Steam discovery, executable/build
+  validation, bounded region evidence, conflicting sources, routing changes, and monitor cancellation.
+- `pnpm dist:win` passed and generated `ApeRadar-Next-Setup-1.0.2-x64.exe`,
+  `ApeRadar-Next-1.0.2-x64.exe`, `latest.yml`, and the installer `.blockmap`.
+  Vite emitted a non-fatal JavaScript chunk-size warning.
+- `pnpm verify:updates` confirmed the installer version, filename, SHA-512, size, blockmap,
+  and portable companion file. `pnpm smoke:desktop` and `pnpm verify:package` passed against
+  isolated data and the generated v1.0.2 portable executable, including the new discovery IPC
+  and region-display assertions. Reports are retained in `artifacts/`.
+- Read-only checks against the local WGC installation and modern Steam library metadata passed.
+  A real 24-player replay changed its query routing from manual ASIA to detected NA; the provider
+  was mocked and the database was in memory, so that check made no real player API requests.
+- `pnpm test:api:live` was skipped because `WG_APPLICATION_ID` was not set. Update-controller
+  regression tests use simulated engines; neither those tests nor metadata verification establish
+  a real v1.0.1-to-v1.0.2 installation.
+- The tag-triggered workflow uses the English [v1.0.2 release notes](releases/v1.0.2.md).
+
 ## v1.0.1 release validation (2026-10-16)
 
 - Root, desktop, server, web, and shared packages use `1.0.1`.

@@ -10,7 +10,7 @@
   },
   "updates": {
     "mode": "disabled",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "downloadBridge": "function",
     "control": true
   },
@@ -20,6 +20,16 @@
     "valueMatches": true,
     "applicationIdSuffix": "56a0b8",
     "helpConnected": true
+  },
+  "gameClient": {
+    "valid": true,
+    "region": "NA",
+    "installationRealm": "WW",
+    "invalidRejected": true,
+    "regionVisible": true,
+    "pathVisible": true,
+    "discoveryBridge": true,
+    "waitingForArena": true
   },
   "darkStyle": {
     "theme": "dark",
@@ -61,5 +71,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792195061053"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792213998235"
 }
