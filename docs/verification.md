@@ -1,5 +1,35 @@
 # 验证记录
 
+## v1.0.3 release validation (2026-10-17)
+
+- Root, desktop, server, web, and shared packages use `1.0.3`.
+  `node scripts/verify-release-version.mjs v1.0.3` passed.
+- `pnpm check` passed type checking, 188 regression tests in 16 files, and
+  design-token validation. New coverage exercises catalog pagination and
+  validation, atomic writes, background lookup persistence and lifecycle,
+  original Chinese names, and ID precedence after upstream renaming.
+- `pnpm dist:win` passed, including the production web and desktop builds,
+  and generated `ApeRadar-Next-Setup-1.0.3-x64.exe`,
+  `ApeRadar-Next-1.0.3-x64.exe`, `latest.yml`, and the installer `.blockmap`.
+  Vite emitted a non-fatal JavaScript chunk-size warning.
+- `pnpm verify:updates` confirmed the installer version, filename, SHA-512,
+  size, blockmap, and portable companion file. `pnpm smoke:desktop` and
+  `pnpm verify:package` passed with isolated data, the latter using the generated
+  v1.0.3 portable executable. Reports are retained in `artifacts/`.
+- `pnpm test:api:live` passed the official ASIA, NA, and EU player API checks
+  and the bilingual encyclopedia lookups for Yamato, Xuan Wu, and ARP Yamato.
+  EU and ASIA Vortex checks passed; NA and RU Vortex checks remained partial
+  because some details were unavailable.
+- The separate full catalog audit found all 1,017 public ship IDs in each WG
+  region in the 1,026-entry bundled catalog. All 201 Japanese and Pan-Asian
+  ships have ID mappings, with no untranslated names beyond the two valid
+  submarine identifier names. Coverage does not prove every translation.
+- Update-controller regression tests use simulated engines. Neither those tests
+  nor metadata and packaged smoke checks establish an actual
+  v1.0.2-to-v1.0.3 installation; that installation was not performed.
+- The tag-triggered workflow uses the English
+  [v1.0.3 release notes](releases/v1.0.3.md).
+
 ## v1.0.2 release validation (2026-10-17)
 
 - Root, desktop, server, web, and shared packages use `1.0.2`.

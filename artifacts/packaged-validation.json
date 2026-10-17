@@ -1,8 +1,8 @@
 {
   "status": "passed",
-  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.0.2-x64.exe",
-  "bytes": 113177521,
-  "sha256": "39c70d3631e136ba4070a2aaaac7c412cb31cd765ec9863620b224d310a94427",
+  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.0.3-x64.exe",
+  "bytes": 113198205,
+  "sha256": "fb72902bc754af2260f6e4cfb0763c1e0789d95dd9a876eaad2252e9ec82bc04",
   "report": {
     "status": "passed",
     "result": {
@@ -15,12 +15,12 @@
     },
     "updates": {
       "mode": "disabled",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "downloadBridge": "function",
       "control": true
     },
     "apiConfiguration": {
-      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792214025407\\api-config.json",
+      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792223873832\\api-config.json",
       "managed": true,
       "valueMatches": true,
       "applicationIdSuffix": "56a0b8",
@@ -76,6 +76,6 @@
       "chrome": "152.0.7977.167"
     },
     "sqliteHeader": "SQLite format 3\u0000",
-    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792214025407"
+    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792223873832"
   }
 }

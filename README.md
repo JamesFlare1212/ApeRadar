@@ -87,7 +87,7 @@ w = 20% × min(本舰场次 / 60, 1)
 | `pnpm verify:updates` | 校验更新清单、安装包哈希、大小及配套发布文件 |
 | `pnpm verify:package` | 对实际便携版执行隐藏集成验证 |
 
-Portable executable: `release/ApeRadar-Next-1.0.2-x64.exe`; Windows installer: `release/ApeRadar-Next-Setup-1.0.2-x64.exe`; unpacked application: `release/win-unpacked/`. The Windows executables are unsigned. Cache and packaging directories are excluded from Vite file watching to avoid Windows file locks and unrelated page reloads during packaging.
+Portable executable: `release/ApeRadar-Next-1.0.3-x64.exe`; Windows installer: `release/ApeRadar-Next-Setup-1.0.3-x64.exe`; unpacked application: `release/win-unpacked/`. The Windows executables are unsigned. Cache and packaging directories are excluded from Vite file watching to avoid Windows file locks and unrelated page reloads during packaging.
 
 打包、安装和更新流程沿用 [brokenarrow-log-maggot](https://github.com/JamesFlare1212/brokenarrow-log-maggot)，发布源为本项目的 GitHub Releases。桌面版启动 15 秒后检查更新，此后每 4 分钟检查一次；左下角按钮依次提供检查、下载、圆环进度和重启安装，便携版发现更新后打开下载页。查询期间暂缓安装，浏览器预览和开发版会显示不可用原因。
 
