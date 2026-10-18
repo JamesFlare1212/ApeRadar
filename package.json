@@ -1,6 +1,6 @@
 {
   "name": "aperadar-next",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "packageManager": "pnpm@10.34.6",
   "description": "Modern local-first World of Warships battle intelligence desktop application",

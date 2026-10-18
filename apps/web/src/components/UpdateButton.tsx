@@ -63,6 +63,7 @@ export function UpdateButton({ inline = false, installBlocked = false, notify }:
         <span className="update-symbol"><Icon icon={icon} size={18} spin={['checking', 'installing'].includes(visualStatus) && !loadError} /></span>
       </span>}
       {inline && <span>{actionLabel}</span>}
+      {!inline && <span className="update-button-label" aria-hidden="true">{actionLabel}</span>}
       {!inline && (available || ready) && <span className="update-dot" aria-hidden="true" />}
     </Button>
     {!inline && <span className="sr-only" role="status" aria-atomic="true">{detail}</span>}

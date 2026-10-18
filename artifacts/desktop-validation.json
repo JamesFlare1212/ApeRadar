@@ -10,7 +10,7 @@
   },
   "updates": {
     "mode": "disabled",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "downloadBridge": "function",
     "control": true
   },
@@ -72,5 +72,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792281204754"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792283290824"
 }

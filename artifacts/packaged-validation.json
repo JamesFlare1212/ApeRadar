@@ -1,8 +1,8 @@
 {
   "status": "passed",
-  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.0.3-x64.exe",
-  "bytes": 113198205,
-  "sha256": "fb72902bc754af2260f6e4cfb0763c1e0789d95dd9a876eaad2252e9ec82bc04",
+  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.0.4-x64.exe",
+  "bytes": 113198433,
+  "sha256": "7a2d72cc13b72ec891b9a6e72d60e7a0fb6d322213983a24dcbd4ebd6d564997",
   "report": {
     "status": "passed",
     "result": {
@@ -15,12 +15,12 @@
     },
     "updates": {
       "mode": "disabled",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "downloadBridge": "function",
       "control": true
     },
     "apiConfiguration": {
-      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792223873832\\api-config.json",
+      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792283313403\\api-config.json",
       "managed": true,
       "valueMatches": true,
       "applicationIdSuffix": "56a0b8",
@@ -34,7 +34,8 @@
       "regionVisible": true,
       "pathVisible": true,
       "discoveryBridge": true,
-      "waitingForArena": true
+      "waitingForArena": true,
+      "quietMonitoring": true
     },
     "darkStyle": {
       "theme": "dark",
@@ -76,6 +77,6 @@
       "chrome": "152.0.7977.167"
     },
     "sqliteHeader": "SQLite format 3\u0000",
-    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792223873832"
+    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792283313403"
   }
 }
