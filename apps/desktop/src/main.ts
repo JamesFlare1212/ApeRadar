@@ -145,15 +145,14 @@ async function createWindow() {
       await writeFile(path.join(dataPath, 'desktop-dark.png'), (await mainWindow.webContents.capturePage()).toPNG())
       const apiConfigResult = await mainWindow.webContents.executeJavaScript(`(async()=>{
         const api=window.aperadar, original=(await api.getState()).settings;
-        await api.saveSettings({...original,api:'WG_PUBLIC'});
         location.hash='/settings/connection';
-        for(let i=0;i<40&&!document.getElementById('wg-key');i++) await new Promise(resolve=>setTimeout(resolve,50));
-        const state=await api.getState(), field=document.getElementById('wg-key');
-        const result={filePath:state.apiConfiguration.filePath,managed:field?.readOnly,valueMatches:field?.value===state.settings.wgApplicationId,applicationIdSuffix:state.settings.wgApplicationId.slice(-6),helpConnected:field?.getAttribute('aria-describedby')==='wg-key-help'};
+        for(let i=0;i<40&&!document.getElementById('api-type');i++) await new Promise(resolve=>setTimeout(resolve,50));
+        const state=await api.getState(), source=document.getElementById('api-type');
+        const result={filePath:state.apiConfiguration.filePath,managed:state.apiConfiguration.applicationIdManaged,defaultSource:original.api,selectedSource:source?.value,applicationIdSuffix:state.settings.wgApplicationId.slice(-6),applicationIdFieldRemoved:!document.getElementById('wg-key')&&!document.getElementById('wg-key-help')};
         await api.saveSettings(original); location.hash='/overview';
         return result;
-      })()`) as { filePath: string; managed: boolean; valueMatches: boolean; applicationIdSuffix: string; helpConnected: boolean }
-      if (apiConfigResult.filePath !== runtimeConfig.filePath || apiConfigResult.managed !== !!runtimeConfig.config.wgApplicationId || !apiConfigResult.valueMatches || !apiConfigResult.helpConnected) throw new Error('Desktop API configuration assertion failed')
+      })()`) as { filePath: string; managed: boolean; defaultSource: string; selectedSource: string; applicationIdSuffix: string; applicationIdFieldRemoved: boolean }
+      if (apiConfigResult.filePath !== runtimeConfig.filePath || apiConfigResult.managed !== !!runtimeConfig.config.wgApplicationId || apiConfigResult.defaultSource !== 'WG_PUBLIC' || apiConfigResult.selectedSource !== 'WG_PUBLIC' || !apiConfigResult.applicationIdFieldRemoved) throw new Error('Desktop API configuration assertion failed')
       if (runtimeConfig.config.wgApplicationId && apiConfigResult.applicationIdSuffix !== runtimeConfig.config.wgApplicationId.slice(-6)) throw new Error('Desktop application ID assertion failed')
       const gameFixture = path.join(dataPath, 'game-client')
       for (const directory of ['bin/12345/bin64', 'bin/12345/res', 'profile', 'replays']) mkdirSync(path.join(gameFixture, directory), { recursive: true })

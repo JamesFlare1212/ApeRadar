@@ -55,7 +55,7 @@ describe('transport and response boundaries', () => {
       else data = { '42': { hidden_profile: false, statistics: { pvp: { wins: 60, battles_count: 100 }, pvp_solo: { wins: 60, battles_count: 100 }, basic: { karma: 9 } } } }
       return Response.json({ status: 'ok', data })
     }) as typeof fetch
-    const api = new WargamingApi(settings(), { fetcher, spacing: 0 })
+    const api = new WargamingApi({ ...settings(), api: 'VORTEX' }, { fetcher, spacing: 0 })
     const result = [] as typeof player[]
     await api.query([player], new AbortController().signal, p => result.push(p as typeof player))
     expect(result[0].accountId).toBe('42'); expect(result[0].status).toBe('ready'); expect(result[0].stats?.ship.battles).toBe(20)

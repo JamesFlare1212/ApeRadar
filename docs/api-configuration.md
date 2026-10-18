@@ -9,8 +9,9 @@ partial overrides as described below.
 The development desktop app, browser development service, and `pnpm test:api:live` load this file.
 Production desktop builds bundle these defaults and create an editable `api-config.json` in the
 Electron user-data directory on first launch, alongside `aperadar.sqlite`. Existing configuration
-files are preserved across restarts and application updates. The connection settings show the active
-configuration path when its WG ID is managed by the file.
+files are preserved across restarts and application updates. New installations and restored defaults
+use WG Public API. Existing saved source preferences are preserved. The WG Application ID is configured
+outside the Settings interface.
 
 ## Overrides and precedence
 
@@ -18,9 +19,9 @@ configuration path when its WG ID is managed by the file.
    working directory. An explicitly selected file must exist.
 2. `WG_APPLICATION_ID` overrides the `wgApplicationId` field for the current process.
 3. A nonempty configured WG ID takes precedence over the ID saved in the application's Settings.
-   The Settings field displays the effective ID as read-only and identifies its source.
-4. Set `wgApplicationId` to an empty string and unset `WG_APPLICATION_ID` to edit the ID in Settings.
-   Changing other preferences while the ID is managed does not overwrite the previously saved ID.
+4. If the configured ID is empty and `WG_APPLICATION_ID` is unset, the previously saved ID remains a
+   compatibility fallback. Changing other preferences while the ID is managed does not overwrite that
+   saved ID. To change the active ID, edit the configuration file or environment variable and restart.
 
 An alternative file can contain only the fields to override; remaining fields use the bundled
 defaults. In the following example, replace `YOUR_APPLICATION_ID` with the ID registered for your

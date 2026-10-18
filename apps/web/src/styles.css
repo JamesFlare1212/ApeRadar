@@ -25,7 +25,7 @@
 .game-region-result strong { color: var(--text); font-size: var(--text-sm); }
 .game-region-result p,.game-region-evidence { font-size: var(--text-xs); line-height: 1.7; margin-top: var(--space-1); }
 .game-region-evidence { display: grid; gap: var(--space-1); overflow-wrap: anywhere; }
-@media(max-width:600px) { .game-client-option { flex-wrap: wrap; }.game-client-option>.badge { margin-left: calc(var(--space-3) + 17px); }.game-discovery-heading { align-items: flex-start; }.game-client-settings .input-with-button { flex-wrap: wrap; }.game-client-settings .input-with-button .input { flex-basis: 100%; } }
+@media(max-width:600px) { .game-client-option { flex-wrap: wrap; }.game-client-option>.badge { margin-left: calc(var(--space-3) + 17px); }.game-discovery-heading { align-items: flex-start; }.game-client-settings .input-with-button > .button { flex: 0 0 42px; width: 42px; min-height: 42px; padding: 0; }.game-client-settings .input-with-button > .button > span { display: none; } }
 
 @theme inline {
   --color-bg: var(--background); --color-surface: var(--surface); --color-ink: var(--text);

@@ -45,7 +45,7 @@ describe('API health probes', () => {
   it('uses only the selected sources for the aggregate and preserves HTTP failures without retrying', async () => {
     let count = 0
     const fetcher = (async (input: unknown) => { count++; return String(input).includes('vortex.') ? available() : new Response('blocked', { status: 429 }) }) as typeof fetch
-    const health = await probeApiHealth(settings(), ['ASIA'], signal(), { fetcher })
+    const health = await probeApiHealth({ ...settings(), api: 'VORTEX' }, ['ASIA'], signal(), { fetcher })
     expect(count).toBe(2)
     expect(health.status).toBe('healthy')
     expect(health.checks[1]).toMatchObject({ status: 'error', httpStatus: 429, failure: 'http', message: '请求过于频繁' })

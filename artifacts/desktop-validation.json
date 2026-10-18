@@ -10,16 +10,17 @@
   },
   "updates": {
     "mode": "disabled",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "downloadBridge": "function",
     "control": true
   },
   "apiConfiguration": {
     "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\config\\api.json",
     "managed": true,
-    "valueMatches": true,
+    "defaultSource": "WG_PUBLIC",
+    "selectedSource": "WG_PUBLIC",
     "applicationIdSuffix": "56a0b8",
-    "helpConnected": true
+    "applicationIdFieldRemoved": true
   },
   "gameClient": {
     "valid": true,
@@ -72,5 +73,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792283290824"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792302829914"
 }

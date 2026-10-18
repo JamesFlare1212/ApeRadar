@@ -22,7 +22,7 @@ const LEGACY_DEFAULT_TEXT_TEMPLATE = '我方精英：{AllyUnicumList}；待提�
 
 export const DEFAULT_SETTINGS: Settings = {
   gamePath: '', region: 'AUTO', secondaryRegion: 'EU', secondaryEnabled: false,
-  api: 'VORTEX', wgApplicationId: DEFAULT_API_CONFIG.wgApplicationId,
+  api: 'WG_PUBLIC', wgApplicationId: DEFAULT_API_CONFIG.wgApplicationId,
   theme: 'system', winrate: 'account', showNames: true, autoQuery: true, retryAttempts: 2, cacheMinutes: 15,
   lightPalette: 'graphite', darkPalette: 'graphite',
   apeThreshold: 47, unicumThreshold: 58, minUnicumBattles: 500, minApeBattles: 0,
