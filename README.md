@@ -1,8 +1,20 @@
-# ApeRadar Next
+# ApeRadar Next（海猴雷达）
+
+**ApeRadar 的中文名是「海猴雷达」**，是一款面向《战舰世界》（World of Warships）的本地桌面战绩助手。自动监测游戏阵容，也支持手动导入阵容 JSON 或回放，集中展示双方舰长的账号/加权胜率、单船场均伤害与对比图表，并提供对局历史、关注名单、备注和导出功能。战绩数据用于了解阵容，不代表本场胜负预测。
 
 基于 ApeRadar 发布包机制研究，用 **React + Vite + Tailwind CSS + Electron + Node.js + TypeScript + SQLite** 实现的桌面重写版。包管理器统一为 **pnpm**。
 
-![浅色桌面界面](artifacts/desktop-light.png)
+## 界面预览
+
+以下截图来自当前版本的 Electron 桌面应用，使用内置合成示例阵容，不包含真实玩家战绩。
+
+浅色主题：双方阵容、胜率、单船场均伤害与胜率分布。
+
+![海猴雷达浅色主题：示例阵容与双方胜率分布](artifacts/desktop-light.png)
+
+深色主题：相同示例阵容在深色外观下的显示效果。
+
+![海猴雷达深色主题：示例阵容与双方胜率分布](artifacts/desktop-dark.png)
 
 ## 启动
 
