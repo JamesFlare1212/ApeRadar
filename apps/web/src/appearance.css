@@ -116,10 +116,12 @@
 .update-dot { position: absolute; top: 6px; right: 6px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 2px var(--sidebar-bg); }
 @media (min-width: 481px) {
   .sidebar-main-navigation > nav + nav { margin-top: 6px; }
-  /* Reserve fixed icon slots and wrap only when the sidebar is too narrow for both. */
-  .sidebar .sidebar-settings { padding-left: calc((var(--sidebar-rail-width) - 42px) / 2 - var(--sidebar-inset)); }
-  .app-shell[data-sidebar] .sidebar-settings > .nav-item { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+  .sidebar .sidebar-settings { flex-wrap: nowrap; }
+  .app-shell[data-sidebar] .sidebar-settings > .nav-item { flex: 1; height: 42px; padding: 0 0 0 calc((var(--sidebar-rail-width) - 20px) / 2 - var(--sidebar-inset) - 1px); justify-content: flex-start; }
   .sidebar-settings > .sidebar-update { flex: none; width: 42px; height: 42px; }
+  /* Stack fixed icon slots when the sidebar is collapsed. */
+  .app-shell[data-sidebar='collapsed'] .sidebar-settings { flex-wrap: wrap; padding-left: calc((var(--sidebar-rail-width) - 42px) / 2 - var(--sidebar-inset)); }
+  .app-shell[data-sidebar='collapsed'] .sidebar-settings > .nav-item { flex: none; width: 42px; padding: 0; justify-content: center; }
 }
 @media (max-width: 480px) {
   .app-shell[data-sidebar] > .sidebar { height: 48px; min-height: 48px; padding: 0; }
