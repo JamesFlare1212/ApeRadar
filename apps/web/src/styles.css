@@ -59,10 +59,10 @@ input[type='checkbox'] { accent-color: var(--accent); }
 .skip-link { position: fixed; top: -80px; left: 20px; z-index: 999; padding: 12px; background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }.skip-link:focus { top: 10px; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: var(--button-height); padding: 0 var(--space-4); border: 1px solid var(--border); border-radius: var(--button-radius); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast); }
 .button-primary { color: var(--button-fg); background: var(--button-bg); border-color: var(--button-bg); }.button-primary:hover:not(:disabled) { background: var(--button-hover-bg); border-color: var(--button-hover-bg); }
-.button-secondary { color: var(--text); background: var(--surface); }.button-secondary:hover:not(:disabled) { background: var(--surface-muted); border-color: var(--text-muted); }
-.button-ghost { color: var(--text-secondary); background: transparent; border-color: transparent; }.button-ghost:hover:not(:disabled) { background: var(--surface-muted); color: var(--text); }
+.button-secondary { color: var(--text); background: var(--surface); }.button-secondary:hover:not(:disabled) { background: var(--control-hover-bg); border-color: var(--text-muted); }
+.button-ghost { color: var(--text-secondary); background: transparent; border-color: transparent; }.button-ghost:hover:not(:disabled) { background: var(--control-hover-bg); color: var(--text); }
 .button-danger { background: var(--danger); color: hsl(var(--p-white)); border-color: var(--danger); }.button-danger:hover { filter: brightness(.93); }
-.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); transition: background var(--duration-fast), color var(--duration-fast); }.icon-button:hover { background: var(--surface-muted); color: var(--text); }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); transition: background var(--duration-fast), color var(--duration-fast); }.icon-button:hover { background: var(--control-hover-bg); color: var(--text); }
 .badge { display: inline-flex; align-items: center; gap: 5px; min-height: 21px; padding: 2px 7px; border-radius: 5px; background: var(--surface-muted); color: var(--text-muted); font-size: 10px; line-height: 1.4; font-weight: 500; white-space: nowrap; }
 .badge-brand { color: var(--accent); background: var(--accent-soft); }.badge-success { color: var(--success); background: var(--success-soft); }.badge-ally { color: var(--ally); background: var(--ally-soft); }.badge-enemy { color: var(--enemy); background: var(--enemy-soft); }.badge-elite { color: var(--elite); background: var(--elite-soft); }.badge-danger { color: var(--danger); background: var(--danger-soft); }
 .input { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid var(--input-border); border-radius: var(--radius-md); background: var(--input-bg); color: var(--text); font-size: var(--text-sm); transition: border-color var(--duration-fast); }.input::placeholder { color: var(--text-muted); opacity: 1; }.input:focus { border-color: var(--input-focus); }.input:focus-visible { outline-width: 2px; outline-offset: 1px; }textarea.input { resize: vertical; line-height: 1.8; }
@@ -79,7 +79,7 @@ input[type='checkbox'] { accent-color: var(--accent); }
 .titlebar-breadcrumb strong { overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
 .desktop-window-controls { display: flex; flex-shrink: 0; height: 100%; app-region: no-drag; -webkit-app-region: no-drag; }
 .desktop-window-controls .icon-button { width: 46px; height: 100%; border-radius: 0; color: var(--text-secondary); }
-.desktop-window-controls .icon-button:hover { background: var(--surface-muted); color: var(--text); }
+.desktop-window-controls .icon-button:hover { background: var(--control-hover-bg); color: var(--text); }
 .desktop-window-controls .icon-button:focus-visible { outline-offset: -3px; }
 .desktop-window-controls .window-close:hover { background: var(--danger); color: hsl(var(--p-white)); }
 .sidebar { position: fixed; z-index: 30; top: 0; left: 0; bottom: 0; width: var(--sidebar-width); --sidebar-inset: 16px; padding: 24px var(--sidebar-inset) 0; color: var(--sidebar-text); background: var(--sidebar-bg); display: flex; flex-direction: column; }
@@ -141,7 +141,7 @@ input[type='checkbox'] { accent-color: var(--accent); }
 .sidebar-header .brand-next { display: none; }
 .sidebar-header .brand small { font-size: 7px; letter-spacing: 1px; white-space: nowrap; }
 .sidebar-header .sidebar-toggle { flex-shrink: 0; width: 28px; height: 34px; color: var(--sidebar-text); }
-.sidebar-header .sidebar-toggle:hover { background: var(--surface-muted); color: var(--text); }
+.sidebar-header .sidebar-toggle:hover { background: var(--sidebar-hover-bg); color: var(--text); }
 
 @media (min-width: 481px) {
   .app-shell { --sidebar-rail-width: 74px; }

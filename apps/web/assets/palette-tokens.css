@@ -139,6 +139,7 @@
   --surface: var(--palette-surface-light);
   --surface-muted: var(--palette-muted-light);
   --surface-hover: color-mix(in srgb, var(--palette-muted-light) 70%, var(--surface));
+  --control-hover-bg: color-mix(in srgb, var(--palette-accent-light) 16%, var(--surface));
   --accent: var(--palette-accent-light);
   --accent-hover: var(--palette-accent-hover-light);
   --accent-soft: var(--palette-accent-soft-light);
@@ -149,8 +150,9 @@
   --text: hsl(var(--p-slate-800));
   --sidebar-bg: var(--palette-sidebar-light);
   --sidebar-text: var(--text-secondary);
-  --sidebar-active: var(--accent);
-  --sidebar-active-bg: var(--accent-soft);
+  --sidebar-hover-bg: color-mix(in srgb, var(--accent) 16%, var(--sidebar-bg));
+  --sidebar-active: var(--text);
+  --sidebar-active-bg: color-mix(in srgb, var(--accent) 24%, var(--sidebar-bg));
   --sidebar-border: var(--border-subtle);
   --appearance-selected: var(--accent);
   --appearance-orb-glint: #ffffff;
@@ -175,6 +177,7 @@
   --surface: var(--palette-surface-dark);
   --surface-muted: var(--palette-muted-dark);
   --surface-hover: color-mix(in srgb, var(--palette-muted-dark) 70%, var(--surface));
+  --control-hover-bg: var(--surface-muted);
   --accent: var(--palette-accent-dark);
   --accent-hover: var(--palette-accent-hover-dark);
   --accent-soft: var(--palette-accent-soft-dark);
@@ -182,6 +185,7 @@
   --border: var(--palette-border-dark);
   --sidebar-bg: var(--palette-sidebar-dark);
   --sidebar-text: var(--text-muted);
+  --sidebar-hover-bg: var(--surface-muted);
   --sidebar-active: var(--accent);
   --sidebar-active-bg: var(--accent-soft);
   --sidebar-border: var(--border-subtle);
