@@ -55,7 +55,11 @@ function inspectAppearance() {
   }
   probe.remove()
   const previews = [...document.querySelectorAll('.mode-preview, .palette-sample')]
-  if (previews.some(element => element.getBoundingClientRect().height < 24)) throw new Error('Appearance artwork did not render')
+  const undersizedPreviews = previews.flatMap(element => {
+    const rect = element.getBoundingClientRect()
+    return rect.height < 24 ? [{ className: element.className, width: rect.width, height: rect.height }] : []
+  })
+  if (undersizedPreviews.length) throw new Error('Appearance artwork did not render: ' + JSON.stringify({ width: innerWidth, fontSize: getComputedStyle(document.body).fontSize, previews: undersizedPreviews }))
   const toolbarGroups = [...document.querySelectorAll('.roster-toolbar > div')].map(element => element.getBoundingClientRect())
   if (toolbarGroups.length === 2 && Math.min(toolbarGroups[0].right, toolbarGroups[1].right) - Math.max(toolbarGroups[0].left, toolbarGroups[1].left) > 1 && Math.min(toolbarGroups[0].bottom, toolbarGroups[1].bottom) - Math.max(toolbarGroups[0].top, toolbarGroups[1].top) > 1) throw new Error('Roster toolbar controls overlap')
   const overflow = document.documentElement.scrollWidth > innerWidth

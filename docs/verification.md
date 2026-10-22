@@ -18,6 +18,9 @@
 - The first packaged check timed out at 120 seconds. Its application later
   completed a passing smoke report after about 140 seconds; the verification
   limit was increased to 180 seconds and the complete rerun passed.
+- Initial GitHub CI rejected undersized appearance previews. Compact padding
+  on narrow palette cards leaves more room for the swatches at large font sizes;
+  the size guard also reports measured dimensions when a preview is too small.
 - `pnpm verify:updates` validated the installer filename, version, SHA-512,
   size, blockmap, and portable companion file.
 - Live API checks were not run because `WG_APPLICATION_ID` was not set.

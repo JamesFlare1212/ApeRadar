@@ -27,7 +27,7 @@ export function AppearanceSettings({ draft, change }: { draft: Settings; change:
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" role="group" aria-label="配色选择">
           {palettes.map(({ key, label }) => {
             const pairSelected = draft.lightPalette === key && draft.darkPalette === key
-            return <Card key={key} role="group" aria-label={label} data-palette={key} className={`relative min-w-0 gap-3 p-3 ${pairSelected ? 'border-primary bg-primary/5' : ''}`}>
+            return <Card key={key} role="group" aria-label={label} data-palette={key} className={`relative min-w-0 gap-3 p-2 sm:p-3 ${pairSelected ? 'border-primary bg-primary/5' : ''}`}>
               <Button id={`palette-${key}`} variant="ghost" className="absolute inset-0 z-0 h-full w-full rounded-[inherit] p-0" aria-label={`${label} · 选择整组配色`} aria-pressed={pairSelected} onClick={() => change({ lightPalette: key, darkPalette: key }, 0)} />
               <div className="pointer-events-none relative z-10 flex justify-center gap-3 py-2">
                 {(['light', 'dark'] as const).map(mode => {
