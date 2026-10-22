@@ -5,6 +5,7 @@ import { Button } from '../ui.js'
 import { Card, CardContent, CardHeader } from '../ui/card.js'
 import { FieldDescription, FieldLabel } from '../ui/field.js'
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group.js'
+import { TypographySettings } from './TypographySettings.js'
 
 const modes = [{ key: 'system', label: '跟随系统', icon: faDesktop }, { key: 'light', label: '浅色', icon: faSun }, { key: 'dark', label: '深色', icon: faMoon }] as const
 const palettes: { key: ColorPalette; label: string }[] = [{ key: 'graphite', label: '石墨' }, { key: 'cyan', label: '青空' }, { key: 'orange', label: '暖橙' }, { key: 'violet', label: '紫夜' }, { key: 'forest', label: '森林' }, { key: 'ocean', label: '深海' }]
@@ -44,5 +45,6 @@ export function AppearanceSettings({ draft, change }: { draft: Settings; change:
         </div>
       </CardContent>
     </Card>
+    <TypographySettings draft={draft} change={change} />
   </>
 }

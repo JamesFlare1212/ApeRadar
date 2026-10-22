@@ -37,6 +37,7 @@ export interface Settings {
   api: 'VORTEX' | 'WG_PUBLIC'; wgApplicationId: string
   theme: 'light' | 'dark' | 'system'; winrate: 'account' | 'weighted'; showNames: boolean
   lightPalette: ColorPalette; darkPalette: ColorPalette
+  fontFamily: string; fontSize: number
   autoQuery: boolean; retryAttempts: number; cacheMinutes: number
   apeThreshold: number; unicumThreshold: number; minUnicumBattles: number; minApeBattles: number
   weights: { solo: number; div2: number; div3: number; shipMax: number; shipBattles: number }

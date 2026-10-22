@@ -22,7 +22,7 @@ import { readInstallRecord, writeInstallRecord } from './updates/install-record'
 import { validateUi } from './smoke/ui'
 import { validateNarrowNavigation } from './smoke/navigation'
 import { validateUpdatePresentation } from './smoke/updates'
-import { validateAppearance } from './smoke/appearance'
+import { validateAppearance, validateTypography } from './smoke/appearance'
 
 const smoke = process.argv.includes('--smoke-test')
 if (smoke || process.env.APERADAR_DATA_DIR) {
@@ -196,6 +196,7 @@ async function createWindow() {
       await new Promise(resolve => setTimeout(resolve, 400))
       const ui = await validateUi(mainWindow)
       const updatePresentation = await validateUpdatePresentation(mainWindow, updates!.status())
+      const typography = await validateTypography(mainWindow)
       const appearance = await validateAppearance(mainWindow)
       await mainWindow.webContents.executeJavaScript("(async()=>{for(let i=0;i<60&&!document.querySelector('[data-slot=chart] .winrate-point');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('[data-slot=chart]').scrollIntoView({block:'center'});await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));})()")
       await writeFile(path.join(dataPath, 'desktop-chart.png'), (await mainWindow.webContents.capturePage()).toPNG())
@@ -211,7 +212,7 @@ async function createWindow() {
       const narrowNavigation = await validateNarrowNavigation(mainWindow)
       const narrowDialog = await mainWindow.webContents.executeJavaScript("(async()=>{location.hash='/overview';for(let i=0;i<40&&!document.querySelector('.player-name-button');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('.player-name-button').click();for(let i=0;i<40&&!document.querySelector('[role=dialog]');i++) await new Promise(resolve=>setTimeout(resolve,50));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));const rect=document.querySelector('[role=dialog]').getBoundingClientRect();return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:innerWidth,height:innerHeight};})()") as { left: number; right: number; top: number; bottom: number; width: number; height: number }
       if (narrowDialog.left < 0 || narrowDialog.right > narrowDialog.width || narrowDialog.top < 0 || narrowDialog.bottom > narrowDialog.height) throw new Error('The narrow player dialog is outside the viewport')
-      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, updatePresentation, appearance, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
+      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, updatePresentation, appearance, typography, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null
       app.exit(0)

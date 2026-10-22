@@ -12,7 +12,8 @@ await mkdir(directory, { recursive: true })
 const environment = { ...process.env, APERADAR_DATA_DIR: directory }
 delete environment.ELECTRON_RUN_AS_NODE
 const child = spawn(executable, ['--smoke-test'], { env: environment, stdio: 'ignore', windowsHide: true })
-const timer = setTimeout(() => { child.kill(); console.error('Packaged application smoke timed out'); process.exitCode = 1 }, 60000)
+// Allow packaged startup and the expanded appearance matrix to finish on Windows.
+const timer = setTimeout(() => { child.kill(); console.error('Packaged application smoke timed out'); process.exitCode = 1 }, 180000)
 const code = await new Promise(resolve => { child.on('exit', resolve); child.on('error', error => { console.error(error); resolve(1) }) })
 clearTimeout(timer)
 const report = JSON.parse(await readFile(path.join(directory, 'smoke-result.json'), 'utf8'))

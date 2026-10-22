@@ -1,8 +1,8 @@
 {
   "status": "passed",
-  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.0.6-x64.exe",
-  "bytes": 113418471,
-  "sha256": "4dd82506bc2c4e27cc88ff5b640efc92f73371cd75f8d462c53174b2b19bd1f6",
+  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.1.0-x64.exe",
+  "bytes": 114037546,
+  "sha256": "c1239e9c2a50fb1e4995ef6ed3c1adbc373317e145b9398ee899bc7618bd0103",
   "report": {
     "status": "passed",
     "result": {
@@ -15,12 +15,12 @@
     },
     "updates": {
       "mode": "disabled",
-      "version": "1.0.6",
+      "version": "1.1.0",
       "downloadBridge": "function",
       "control": true
     },
     "apiConfiguration": {
-      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792564632151\\api-config.json",
+      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792704336444\\api-config.json",
       "managed": true,
       "defaultSource": "WG_PUBLIC",
       "selectedSource": "WG_PUBLIC",
@@ -37,6 +37,88 @@
       "discoveryBridge": true,
       "waitingForArena": true,
       "quietMonitoring": true
+    },
+    "ui": {
+      "sidebarPreference": true,
+      "rosterOrder": true,
+      "chartRankingAndKeyboardTooltip": true,
+      "playerWatchToggleAndPersistence": true,
+      "playerDialogAndTabs": true,
+      "watchMenuKeyboardAndScrolling": true,
+      "watchMenuToggleAndPersistence": true,
+      "winrateTabsKeyboardAndPersistence": true,
+      "switchAutosave": true,
+      "chartPrivacy": true,
+      "appearanceRadioKeyboardAndPalette": true,
+      "typographySelectLayoutStable": true,
+      "typographySelectScrollbarPreserved": true,
+      "regionSelectStickyHeaderPreserved": true,
+      "typographyPreviewAutosaveAndReset": true,
+      "selectAutosave": true,
+      "fieldErrorRecovery": true,
+      "emptyNumericField": true,
+      "fullRosterWithoutFilters": true,
+      "historyImportSearchAndLoad": true,
+      "listItemsAndEmptyState": true,
+      "watchTypeSelect": true,
+      "watchRemovalConfirmation": true,
+      "helpAccordion": true,
+      "skipLinkPreservesRoute": true
+    },
+    "updatePresentation": {
+      "simulated": true,
+      "determinateProgress": true,
+      "indeterminateProgress": true,
+      "checkingSpinner": true,
+      "readyBadge": true
+    },
+    "appearance": {
+      "views": 240,
+      "dialogViews": 144,
+      "textChecks": 14724,
+      "minimumTextContrast": 4.53100417231784,
+      "minimumControlContrast": 3.470932120091245,
+      "widths": [
+        1440,
+        390
+      ],
+      "palettes": 6,
+      "themes": 2
+    },
+    "typography": {
+      "views": 16,
+      "sizes": [
+        12,
+        20
+      ],
+      "widths": [
+        1440,
+        390
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ]
+    },
+    "narrowLayout": {
+      "width": 390,
+      "scrollWidth": 384
+    },
+    "narrowNavigation": {
+      "escapeAndFocus": true,
+      "navigateAndClose": true
+    },
+    "narrowDialog": {
+      "left": 16,
+      "right": 374,
+      "top": 16,
+      "bottom": 828,
+      "width": 390,
+      "height": 844
+    },
+    "lightStyle": {
+      "theme": "",
+      "background": "rgb(245, 246, 248)"
     },
     "darkStyle": {
       "theme": "dark",
@@ -78,6 +160,6 @@
       "chrome": "152.0.7977.167"
     },
     "sqliteHeader": "SQLite format 3\u0000",
-    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792564632151"
+    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792704336444"
   }
 }

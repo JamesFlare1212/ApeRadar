@@ -1,6 +1,9 @@
 @layer base {
   * { box-sizing: border-box; @apply border-border; }
-  html, body, #root { width: 100%; min-height: 100%; }
+  html, body, #root { min-height: 100%; }
+  /* An automatic body width lets modal scrollbar compensation preserve the content width. */
+  html, #root { width: 100%; }
+  html { font-size: var(--font-size-root); }
   body { margin: 0; background: var(--background); color: var(--text); font: 400 var(--text-base)/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
   button, input, select, textarea { font-family: inherit; }
   button { cursor: pointer; }
@@ -14,14 +17,17 @@
   ::selection { background: var(--accent-soft); color: var(--accent); }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-thumb { background: var(--control-border); border-radius: 6px; }
+
+  /* Preserve the viewport scroll container for scrollbars and sticky headers; Select intercepts background wheel/touch events. */
+  body[data-scroll-locked]:has([data-slot='select-content']):not(:has([role='dialog'], [role='alertdialog'])) { overflow: visible !important; margin-right: 0 !important; }
 }
 
 .muted { color: var(--text-muted); }
 .numeric { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
 .brand-mark { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 27%; background: var(--accent); color: var(--on-accent); }
 .startup-screen { display: flex; min-height: 100dvh; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px; color: var(--text-muted); }
-.startup-screen strong { color: var(--text); font-size: 26px; }
-.startup-screen strong span { color: var(--accent); font-size: 14px; }
+.startup-screen strong { color: var(--text); font-size: 1.625rem; }
+.startup-screen strong span { color: var(--accent); font-size: 0.875rem; }
 .startup-screen p { max-width: 560px; text-align: center; }
 .skip-link { position: fixed; top: -80px; left: 20px; z-index: 100; padding: 12px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); }
 .skip-link:focus { top: 10px; }
@@ -30,7 +36,7 @@
 [data-sonner-toaster] { --width: min(400px, calc(100vw - 32px)); }
 
 @media (max-width: 767px) {
-  [data-slot='input'], [data-slot='input-group-control'], [data-slot='textarea'] { font-size: 16px; }
+  [data-slot='input'], [data-slot='input-group-control'], [data-slot='textarea'] { font-size: 1rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

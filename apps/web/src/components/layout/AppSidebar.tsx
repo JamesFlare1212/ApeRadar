@@ -29,7 +29,7 @@ export function AppSidebar({ settingsMode, activeKey, items, state, onSelect, on
     <SidebarHeader className="flex-row items-center gap-2 py-4 group-data-[collapsible=icon]:justify-center">
       <Button variant="ghost" className="min-w-0 flex-1 justify-start px-2 group-data-[collapsible=icon]:hidden" aria-label={settingsMode ? '返回工作区' : 'ApeRadar 首页'} onClick={() => activate(onHome)}>
         {settingsMode ? <Icon icon={faSliders} size={24} /> : <BrandMark size={30} />}
-        <span className="min-w-0 text-left"><strong className="block text-base">{settingsMode ? '设置' : 'ApeRadar'}</strong><small className="block text-[9px] tracking-wider text-muted-foreground">{settingsMode ? 'MAKE IT YOURS' : 'BATTLE INTELLIGENCE'}</small></span>
+        <span className="min-w-0 text-left"><strong className="block text-base">{settingsMode ? '设置' : 'ApeRadar'}</strong><small className="block text-[0.5625rem] tracking-wider text-muted-foreground">{settingsMode ? 'MAKE IT YOURS' : 'BATTLE INTELLIGENCE'}</small></span>
       </Button>
       <SidebarTrigger aria-label={isMobile ? '关闭导航' : open ? '收起侧栏' : '展开侧栏'} aria-expanded={isMobile ? undefined : open} aria-controls="app-sidebar" className="size-8 shrink-0" />
     </SidebarHeader>

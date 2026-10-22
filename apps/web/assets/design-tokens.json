@@ -45,8 +45,11 @@
     "radius-md": ".625rem",
     "radius-lg": ".875rem",
     "radius-xl": "1.125rem",
-    "font-body": "'Inter Variable', 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei', sans-serif",
-    "font-numeric": "'Inter Variable', 'Segoe UI', sans-serif",
+    "font-body-default": "'Inter Variable', 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei', sans-serif",
+    "font-numeric-default": "'Inter Variable', 'Segoe UI', sans-serif",
+    "font-body": "var(--font-body-default)",
+    "font-numeric": "var(--font-numeric-default)",
+    "font-size-root": "16px",
     "text-xs": ".75rem",
     "text-sm": ".8125rem",
     "text-base": ".875rem",
@@ -154,7 +157,7 @@
   "paletteSource": "apps/web/assets/palette-tokens.css",
   "palettes": [
     {
-      "selector": ":root,\r\n:root[data-palette='graphite']",
+      "selector": ":root,\n:root[data-palette='graphite']",
       "tokens": {
         "palette-background-light": "#f5f6f8",
         "palette-surface-light": "#ffffff",

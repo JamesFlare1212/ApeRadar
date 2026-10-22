@@ -1,5 +1,31 @@
 # 验证记录
 
+## v1.1.0 release validation (2026-10-22)
+
+- Root, desktop, server, web, and shared packages use `1.1.0`.
+  `node scripts/verify-release-version.mjs v1.1.0` passed.
+- `pnpm check` passed type checking, 214 regression tests in 18 files, and
+  design-token validation. `pnpm dist:win` passed the production builds and
+  generated the Windows x64 installer, portable executable, `latest.yml`, and
+  installer blockmap.
+- `pnpm smoke:desktop` and `pnpm verify:package` passed with isolated data.
+  The packaged check ran `ApeRadar-Next-1.1.0-x64.exe`; its executable digest
+  and full report are retained in `artifacts/packaged-validation.json`.
+- Desktop coverage includes 240 page combinations, 144 dialog states, and
+  16 typography combinations across both themes and widths of 1440 and 390
+  CSS pixels. Regression checks verify font persistence, reset behavior,
+  scrollbar visibility, sticky headers, and select keyboard navigation.
+- The first packaged check timed out at 120 seconds. Its application later
+  completed a passing smoke report after about 140 seconds; the verification
+  limit was increased to 180 seconds and the complete rerun passed.
+- `pnpm verify:updates` validated the installer filename, version, SHA-512,
+  size, blockmap, and portable companion file.
+- Live API checks were not run because `WG_APPLICATION_ID` was not set.
+  Metadata checks and simulated updater tests do not establish an actual
+  v1.0.6-to-v1.1.0 installation; that installation was not performed.
+- The tag-triggered release uses the English
+  [v1.1.0 release notes](releases/v1.1.0.md).
+
 ## shadcn/ui branch validation (2026-10-22)
 
 - `pnpm check` passed all workspace type checks, 200 regression tests in 17 files, and

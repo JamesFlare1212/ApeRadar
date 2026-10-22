@@ -4,13 +4,16 @@ import { SUPPORTED_REGIONS } from './types.ts'
 import { DEFAULT_API_CONFIG } from './api-config.ts'
 
 export const regionSchema = z.enum(SUPPORTED_REGIONS)
+export const fontFamilySchema = z.string().trim().max(100).regex(/^[^\u0000-\u001f\u007f]*$/)
+export const fontSizeSchema = z.number().int().min(12).max(20)
 export const settingsSchema = z.object({
-  gamePath: z.string().trim().max(1024), region: z.enum(['AUTO', ...SUPPORTED_REGIONS]),
+  gamePath: z.string().trim().max(1024), region: z.enum(['AUTO', ...SUPPORTED_REGIONS]).default('AUTO'),
   secondaryRegion: regionSchema, secondaryEnabled: z.boolean(),
   api: z.enum(['VORTEX', 'WG_PUBLIC']), wgApplicationId: z.string().regex(/^[a-zA-Z0-9]*$/).max(64),
   theme: z.enum(['light', 'dark', 'system']), winrate: z.enum(['account', 'weighted']), showNames: z.boolean(),
   lightPalette: z.enum(['graphite', 'cyan', 'orange', 'violet', 'forest', 'ocean']).default('graphite'),
   darkPalette: z.enum(['graphite', 'cyan', 'orange', 'violet', 'forest', 'ocean']).default('graphite'),
+  fontFamily: fontFamilySchema.default(''), fontSize: fontSizeSchema.default(14),
   autoQuery: z.boolean(), retryAttempts: z.number().int().min(0).max(3), cacheMinutes: z.number().int().min(1).max(1440),
   apeThreshold: z.number().finite().min(0).max(100), unicumThreshold: z.number().finite().min(0).max(100),
   minUnicumBattles: z.number().int().min(0).max(1000000), minApeBattles: z.number().int().min(0).max(1000000),
@@ -25,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   api: 'WG_PUBLIC', wgApplicationId: DEFAULT_API_CONFIG.wgApplicationId,
   theme: 'system', winrate: 'account', showNames: true, autoQuery: true, retryAttempts: 2, cacheMinutes: 15,
   lightPalette: 'graphite', darkPalette: 'graphite',
+  fontFamily: '', fontSize: 14,
   apeThreshold: 47, unicumThreshold: 58, minUnicumBattles: 500, minApeBattles: 0,
   weights: { solo: 5, div2: 2, div3: 1, shipMax: 20, shipBattles: 60 },
   textTemplate: '我方上等马：{AllyUnicumList}。我方下等马：{AllyApeList}。我方隐藏马：{AllyHiddenList}。敌方上等马：{EnemyUnicumList}。敌方下等马：{EnemyApeList}。敌方隐藏马：{EnemyHiddenList}。',

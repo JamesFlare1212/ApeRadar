@@ -154,3 +154,54 @@ export async function validateAppearance(window: BrowserWindow) {
   }
   return { views: results.reduce((sum, result) => sum + result.views, 0), dialogViews: results.reduce((sum, result) => sum + result.dialogViews, 0), textChecks: results.reduce((sum, result) => sum + result.textCount, 0), minimumTextContrast: Math.min(...results.map(result => result.minimumTextContrast)), minimumControlContrast: Math.min(...results.map(result => result.minimumControlContrast)), widths: [1440, 390], palettes: 6, themes: 2 }
 }
+
+export async function validateTypography(window: BrowserWindow) {
+  const bounds = window.getContentBounds(), minimumSize = window.getMinimumSize()
+  const results: { views: number; minimumSize: number; maximumSize: number }[] = []
+  window.setMinimumSize(320, 560)
+  try {
+    for (const width of [1440, 390]) {
+      window.setContentSize(width, 1000)
+      results.push(await window.webContents.executeJavaScript(`(async () => {
+        const inspect = ${inspectAppearance.toString()};
+        const waitForLayout = ${waitForAppearanceLayout.toString()};
+        const api = window.aperadar, original = (await api.getState()).settings;
+        const frame = () => new Promise(resolve => { const timer = setTimeout(resolve, 40); requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(timer); resolve(); })); });
+        let views = 0;
+        try {
+          for (const fontSize of [12, 20]) for (const theme of ['light', 'dark']) {
+            location.hash = '/overview';
+            await api.saveSettings({ ...original, theme, fontFamily: 'Segoe UI', fontSize });
+            for (let attempt = 0; attempt < 60; attempt++) {
+              await frame();
+              if (Math.abs(parseFloat(getComputedStyle(document.body).fontSize) - fontSize) < .1) break;
+            }
+            for (const route of ['overview', 'settings/appearance']) {
+              location.hash = '/' + route;
+              const selector = route === 'overview' ? '.rate' : '#interface-font-size';
+              await waitForLayout(${width}, selector);
+              const state = inspect();
+              if (state.overflow || state.failures.length) {
+                const overflowing = [...document.querySelectorAll('main *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).slice(0, 10).map(element => ({ tag: element.tagName, className: element.getAttribute('class'), text: element.textContent.slice(0, 70), right: element.getBoundingClientRect().right }));
+                throw new Error(JSON.stringify({ width: innerWidth, fontSize, theme, route, overflowing, ...state }));
+              }
+              if (Math.abs(parseFloat(getComputedStyle(document.body).fontSize) - fontSize) > .1) throw new Error('Typography did not settle');
+              for (const element of document.querySelectorAll('.rate, .damage-column.numeric')) {
+                if (!element.getBoundingClientRect().width) continue;
+                const range = document.createRange(); range.selectNodeContents(element);
+                const rect = range.getBoundingClientRect(), cell = element.closest('td').getBoundingClientRect();
+                if (rect.left < cell.left - 1 || rect.right > cell.right + 1) throw new Error('Roster statistics overflow at font size ' + fontSize + ': ' + element.textContent);
+              }
+              views++;
+            }
+          }
+        } finally { await api.saveSettings(original); location.hash = '/overview'; await frame(); }
+        return { views, minimumSize: 12, maximumSize: 20 };
+      })()`))
+    }
+  } finally {
+    window.setContentBounds(bounds)
+    window.setMinimumSize(minimumSize[0], minimumSize[1])
+  }
+  return { views: results.reduce((sum, result) => sum + result.views, 0), sizes: [12, 20], widths: [1440, 390], themes: ['light', 'dark'] }
+}

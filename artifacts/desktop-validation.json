@@ -10,12 +10,12 @@
   },
   "updates": {
     "mode": "disabled",
-    "version": "1.0.6",
+    "version": "1.1.0",
     "downloadBridge": "function",
     "control": true
   },
   "apiConfiguration": {
-    "filePath": "C:\\Users\\james\\.t3\\worktrees\\aperadar\\t3-2dc03e7d\\config\\api.json",
+    "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\config\\api.json",
     "managed": true,
     "defaultSource": "WG_PUBLIC",
     "selectedSource": "WG_PUBLIC",
@@ -37,18 +37,25 @@
     "sidebarPreference": true,
     "rosterOrder": true,
     "chartRankingAndKeyboardTooltip": true,
+    "playerWatchToggleAndPersistence": true,
     "playerDialogAndTabs": true,
     "watchMenuKeyboardAndScrolling": true,
-    "winrateSelection": true,
+    "watchMenuToggleAndPersistence": true,
+    "winrateTabsKeyboardAndPersistence": true,
     "switchAutosave": true,
     "chartPrivacy": true,
     "appearanceRadioKeyboardAndPalette": true,
+    "typographySelectLayoutStable": true,
+    "typographySelectScrollbarPreserved": true,
+    "regionSelectStickyHeaderPreserved": true,
+    "typographyPreviewAutosaveAndReset": true,
     "selectAutosave": true,
     "fieldErrorRecovery": true,
     "emptyNumericField": true,
-    "rosterSearchAndShipFilter": true,
+    "fullRosterWithoutFilters": true,
     "historyImportSearchAndLoad": true,
     "listItemsAndEmptyState": true,
+    "watchTypeSelect": true,
     "watchRemovalConfirmation": true,
     "helpAccordion": true,
     "skipLinkPreservesRoute": true
@@ -63,7 +70,7 @@
   "appearance": {
     "views": 240,
     "dialogViews": 144,
-    "textChecks": 14796,
+    "textChecks": 14724,
     "minimumTextContrast": 4.53100417231784,
     "minimumControlContrast": 3.470932120091245,
     "widths": [
@@ -72,6 +79,21 @@
     ],
     "palettes": 6,
     "themes": 2
+  },
+  "typography": {
+    "views": 16,
+    "sizes": [
+      12,
+      20
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
   },
   "narrowLayout": {
     "width": 390,
@@ -133,5 +155,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\worktrees\\aperadar\\t3-2dc03e7d\\.test-data\\desktop-1792695270033"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792704067724"
 }

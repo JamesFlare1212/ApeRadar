@@ -14,8 +14,10 @@
   --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
   --space-5: 1.25rem; --space-6: 1.5rem; --space-7: 1.75rem; --space-8: 2rem; --space-10: 2.5rem;
   --radius-sm: .375rem; --radius-md: .625rem; --radius-lg: .875rem; --radius-xl: 1.125rem;
-  --font-body: 'Inter Variable', 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei', sans-serif;
-  --font-numeric: 'Inter Variable', 'Segoe UI', sans-serif;
+  --font-body-default: 'Inter Variable', 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  --font-numeric-default: 'Inter Variable', 'Segoe UI', sans-serif;
+  --font-body: var(--font-body-default); --font-numeric: var(--font-numeric-default);
+  --font-size-root: 16px;
   --text-xs: .75rem; --text-sm: .8125rem; --text-base: .875rem; --text-lg: 1rem;
   --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
   --duration-fast: 140ms; --duration-normal: 200ms; --ease-out: cubic-bezier(.2,.7,.2,1);

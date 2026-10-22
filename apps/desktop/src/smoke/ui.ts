@@ -180,6 +180,78 @@ export async function validateUi(window: BrowserWindow) {
       await waitFor(async () => { const settings = (await api.getState()).settings; return settings.lightPalette === 'cyan' && settings.darkPalette === 'cyan' && settings.theme === 'light'; }, 'Selecting a palette pair did not restore both swatches');
       result.appearanceRadioKeyboardAndPalette = true;
 
+      const measureSelectLayout = trigger => {
+        const elements = [document.querySelector('.main-inner'), trigger.closest('[data-slot=card]'), trigger];
+        const header = document.querySelector('.app-titlebar').getBoundingClientRect();
+        return [...elements.flatMap(element => { const rect = element.getBoundingClientRect(); return [rect.left, rect.width]; }), header.top, header.bottom];
+      };
+      for (const [section, id] of [['appearance', 'interface-font'], ['appearance', 'interface-font-size'], ['connection', 'region']]) {
+        location.hash = '/settings/' + section;
+        await waitFor(() => document.getElementById(id), 'Select settings did not render: ' + id);
+        const trigger = document.getElementById(id);
+        trigger.scrollIntoView({ block: 'center' });
+        assert(scrollY > 0, 'The sticky header regression requires a scrolled page');
+        assert(Math.abs(document.querySelector('.app-titlebar').getBoundingClientRect().top) < .5, 'The header was not pinned before opening the select');
+        assert(document.documentElement.scrollHeight > innerHeight, 'The scrollbar regression requires a scrollable page');
+        const scrollbar = { width: innerWidth - document.documentElement.clientWidth, height: document.documentElement.scrollHeight, top: scrollY };
+        const before = measureSelectLayout(trigger);
+        openMenu(trigger);
+        await waitFor(() => document.querySelector('[role=listbox]') && document.body.hasAttribute('data-scroll-locked'), 'The typography menu did not lock background scrolling');
+        const opened = measureSelectLayout(trigger);
+        assert(opened.every((value, index) => Math.abs(value - before[index]) < .5), 'Opening the typography select shifted the layout: ' + JSON.stringify({ id, before, opened }));
+        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight === scrollbar.height, 'Opening the typography select changed the page scrollbar');
+        assert(Math.abs(scrollY - scrollbar.top) < .5, 'Opening the typography select changed the page scroll position');
+        const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 100 });
+        document.body.dispatchEvent(wheel);
+        assert(wheel.defaultPrevented, 'Background wheel scrolling was not blocked while the select was open');
+        await waitFor(() => document.activeElement?.matches('[role=option]'), 'The typography select did not focus an option');
+        const focusedOption = document.activeElement;
+        focusedOption.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+        await waitFor(() => document.activeElement !== focusedOption && document.activeElement?.matches('[role=option]'), 'Arrow navigation did not move to the next typography option');
+        document.querySelector('[role=listbox]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+        await waitFor(() => !document.querySelector('[role=listbox]') && !document.body.hasAttribute('data-scroll-locked'), 'The typography menu did not release background scrolling');
+        const closed = measureSelectLayout(trigger);
+        assert(closed.every((value, index) => Math.abs(value - before[index]) < .5), 'Closing the typography select shifted the layout');
+        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight === scrollbar.height, 'Closing the typography select changed the page scrollbar');
+        await waitFor(() => document.activeElement === trigger, 'The typography select did not restore focus');
+      }
+      result.typographySelectLayoutStable = true;
+      result.typographySelectScrollbarPreserved = true;
+      result.regionSelectStickyHeaderPreserved = true;
+
+      location.hash = '/settings/appearance';
+      await waitFor(() => document.getElementById('interface-font'), 'Typography settings did not reopen');
+
+      const chooseFontOption = async (id, label) => {
+        openMenu(document.getElementById(id));
+        await waitFor(() => document.querySelector('[role=listbox]'), 'The typography select did not open');
+        const option = [...document.querySelectorAll('[role=option]')].find(element => element.textContent === label);
+        assert(option, 'The typography option is missing: ' + label);
+        option.focus(); option.click();
+      };
+      await chooseFontOption('interface-font', 'Segoe UI');
+      await chooseFontOption('interface-font-size', '20 px');
+      await waitFor(async () => { const settings = (await api.getState()).settings; return settings.fontFamily === 'Segoe UI' && settings.fontSize === 20; }, 'Typography was not autosaved');
+      assert(Math.abs(parseFloat(getComputedStyle(document.body).fontSize) - 20) < .1, 'The interface font size was not applied');
+      assert(getComputedStyle(document.querySelector('[aria-label="字体预览"] .numeric')).fontFamily.includes('Segoe UI'), 'Numeric text did not inherit the interface font');
+      assert(JSON.parse(localStorage.getItem('aperadar.appearance')).fontSize === 20, 'Typography was not cached for startup');
+      location.hash = '/overview';
+      await waitFor(() => document.querySelector('.rate'), 'The roster did not reopen');
+      assert(Math.abs(parseFloat(getComputedStyle(document.querySelector('.rate')).fontSize) - 20) < .1, 'Roster text did not scale with the interface');
+      location.hash = '/settings/appearance';
+      await waitFor(() => document.getElementById('interface-font'), 'Typography settings did not reopen');
+      assert(document.getElementById('interface-font').textContent === 'Segoe UI', 'The saved font selection was lost');
+      await chooseFontOption('interface-font', '自定义字体…');
+      await waitFor(() => document.getElementById('custom-interface-font'), 'The custom font input did not render');
+      fill(document.getElementById('custom-interface-font'), 'ApeRadar Unavailable Font');
+      await waitFor(async () => (await api.getState()).settings.fontFamily === 'ApeRadar Unavailable Font', 'The custom font was not saved');
+      assert(getComputedStyle(document.body).fontFamily.includes('Inter Variable'), 'Unavailable fonts have no default fallback');
+      document.querySelector('[aria-label="重置字体与字号"]').click();
+      await waitFor(async () => { const settings = (await api.getState()).settings; return settings.fontFamily === '' && settings.fontSize === 14; }, 'Typography reset was not saved');
+      assert(Math.abs(parseFloat(getComputedStyle(document.body).fontSize) - 14) < .1, 'The default font size was not restored');
+      assert((await api.getState()).settings.lightPalette === 'cyan', 'Typography reset changed unrelated appearance preferences');
+      result.typographyPreviewAutosaveAndReset = true;
+
       location.hash = '/settings/connection';
       await waitFor(() => document.getElementById('api-type'), 'Connection settings did not render');
       const source = document.getElementById('api-type');
