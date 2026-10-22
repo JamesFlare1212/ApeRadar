@@ -33,7 +33,6 @@ export function SettingsPage({ state, section, onSave, notify }: { state: AppSta
       <SettingsCard icon={faSliders} title="信息与隐私" description="调整默认显示方式，保留自己需要的信息。">
         <Field><FieldLabel htmlFor="rate-mode">默认胜率口径</FieldLabel><ChoiceSelect id="rate-mode" value={draft.winrate} onValueChange={value => update('winrate', value)} options={[{ value: 'account', label: '账号胜率' }, { value: 'weighted', label: '加权胜率' }]} /></Field>
         <SettingsToggle checked={draft.showNames} onChange={value => update('showNames', value)} label="显示舰长名称" description="关闭后隐藏名称，也会在文本和导出文件中省略昵称。" />
-        <Notice title="你的记录，留在本机" icon={<Icon icon={faShieldHalved} size={18} />}>对局和关注名单保存在本地。战绩查询仅访问你选择的数据源；应用不向第三方推送整场阵容。</Notice>
       </SettingsCard>
       <div className="settings-reset"><p className="text-sm text-muted-foreground">更改即时生效，并自动保存在本机。</p><Button onClick={() => setResetOpen(true)}><Icon icon={faRotateLeft} size={14} />恢复默认设置</Button></div>
     </>}

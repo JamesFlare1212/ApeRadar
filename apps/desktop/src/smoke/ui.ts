@@ -1,6 +1,10 @@
 import type { BrowserWindow } from 'electron'
+import type { RadarPlayer } from '@aperadar/shared/types'
+import { sortRosterPlayers } from '@aperadar/shared/roster'
 
 export async function validateUi(window: BrowserWindow) {
+  const initialRoster = await window.webContents.executeJavaScript('window.aperadar.getState().then(state => state.battle.players)') as RadarPlayer[]
+  const expectedRosterKeys = (['ally', 'enemy'] as const).flatMap(team => sortRosterPlayers(initialRoster.filter(player => player.team === team)).map(player => player.key))
   return window.webContents.executeJavaScript(`(async () => {
     const api = window.aperadar;
     const original = (await api.getState()).settings;
@@ -39,8 +43,8 @@ export async function validateUi(window: BrowserWindow) {
 
       const roster = (await api.getState()).battle.players;
       const rosterButtons = [...document.querySelectorAll('.player-name-button')];
-      const expectedOrder = ['ally', 'enemy'].flatMap(team => roster.filter(player => player.team === team));
-      assert(rosterButtons.every((button, index) => button.getAttribute('aria-label').startsWith(expectedOrder[index].name + ' ·')), 'The roster no longer preserves imported player order');
+      const expectedOrder = ${JSON.stringify(expectedRosterKeys)}.map(key => roster.find(player => player.key === key));
+      assert(rosterButtons.every((button, index) => button.getAttribute('aria-label').startsWith(expectedOrder[index].name + ' ·')), 'The roster does not follow game-style ship order');
       result.rosterOrder = true;
       const publicPlayers = roster.filter(player => player.status === 'ready' && player.stats?.overall.battles > 0);
       await waitFor(() => document.querySelectorAll('.winrate-point').length === publicPlayers.length, 'The chart lost public player samples');
@@ -65,6 +69,34 @@ export async function validateUi(window: BrowserWindow) {
       shipTab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, ctrlKey: false }));
       await waitFor(() => shipTab.getAttribute('aria-selected') === 'true', 'Player statistics tab did not change');
       assert(document.querySelector('[role=dialog] [role=tabpanel]')?.textContent.includes('单船场均'), 'Ship statistics did not render');
+
+      const captain = expectedOrder[0];
+      const findWatch = async () => (await api.getState()).watchlist.find(entry => entry.region === captain.region && entry.accountId === captain.accountId);
+      const originalWatch = await findWatch();
+      const watchButton = label => [...document.querySelectorAll('[role=dialog] button[aria-pressed]')].find(button => button.textContent === label);
+      const selectedWatch = document.querySelector('[role=dialog] button[aria-pressed=true]');
+      if (selectedWatch) {
+        selectedWatch.click();
+        await waitFor(async () => !(await findWatch()) && selectedWatch.getAttribute('aria-pressed') === 'false', 'The existing watch mark did not toggle off');
+      }
+      const noteInput = document.querySelector('#player-watch-note');
+      fill(noteInput, 'Toggle regression note');
+      for (const [label, status] of [['值得信赖', 'positive'], ['需要留意', 'negative'], ['疑似异常', 'suspected']]) {
+        const button = watchButton(label);
+        button.click();
+        await waitFor(async () => button.getAttribute('aria-pressed') === 'true' && (await findWatch())?.status === status, 'The watch mark did not persist: ' + status);
+        assert((await findWatch()).note === 'Toggle regression note', 'Selecting a watch mark lost the note');
+        button.click();
+        await waitFor(async () => !(await findWatch()) && !document.querySelector('[role=dialog] button[aria-pressed=true]'), 'Clicking the selected watch mark did not cancel it: ' + status);
+        assert(noteInput.value === 'Toggle regression note', 'Cancelling a watch mark cleared the draft note');
+      }
+      watchButton('值得信赖').click();
+      await waitFor(() => watchButton('值得信赖').getAttribute('aria-pressed') === 'true', 'The positive mark did not select');
+      watchButton('需要留意').click();
+      await waitFor(async () => (await findWatch())?.status === 'negative' && watchButton('需要留意').getAttribute('aria-pressed') === 'true' && watchButton('值得信赖').getAttribute('aria-pressed') === 'false', 'Switching watch marks did not replace the selection');
+      await api.setWatch(originalWatch ?? { region: captain.region, accountId: captain.accountId, name: captain.name, status: null });
+      result.playerWatchToggleAndPersistence = true;
+
       document.querySelector('[aria-label=关闭窗口]').click();
       await waitFor(() => !document.querySelector('[role=dialog]'), 'Player details did not close');
       await waitFor(() => document.activeElement === player, 'Dialog focus did not return to the player');
@@ -78,11 +110,32 @@ export async function validateUi(window: BrowserWindow) {
       await waitFor(() => !document.querySelector('[role=menu]'), 'The watch menu did not close with Escape');
       result.watchMenuKeyboardAndScrolling = true;
 
+      const watchTrigger = document.querySelector('.player-table [data-slot=dropdown-menu-trigger]');
+      const selectWatchOption = async label => {
+        openMenu(watchTrigger);
+        await waitFor(() => document.querySelector('[role=menu]'), 'The watch menu did not open for selection');
+        [...document.querySelectorAll('[role=menuitem]')].find(item => item.textContent === label).click();
+        await waitFor(() => !document.querySelector('[role=menu]'), 'Selecting a watch option did not close the menu');
+      };
+      for (const [label, status] of [['值得信赖', 'positive'], ['需要留意', 'negative'], ['疑似异常', 'suspected']]) {
+        await api.setWatch({ region: captain.region, accountId: captain.accountId, name: captain.name, status, note: 'Menu toggle regression note' });
+        await waitFor(() => watchTrigger.classList.contains('watch-' + status), 'The watch menu trigger did not reflect its saved mark');
+        await selectWatchOption(label);
+        await waitFor(async () => !(await findWatch()) && watchTrigger.classList.contains('muted'), 'Selecting the checked menu option did not remove the mark: ' + status);
+      }
+      await selectWatchOption('值得信赖');
+      await waitFor(async () => (await findWatch())?.status === 'positive' && watchTrigger.classList.contains('watch-positive'), 'The menu did not add a watch mark');
+      await selectWatchOption('需要留意');
+      await waitFor(async () => (await findWatch())?.status === 'negative' && watchTrigger.classList.contains('watch-negative'), 'The menu did not switch watch marks');
+      await api.setWatch(originalWatch ?? { region: captain.region, accountId: captain.accountId, name: captain.name, status: null });
+      result.watchMenuToggleAndPersistence = true;
+
       const winrateTabs = document.querySelector('[role=tablist][aria-label=胜率显示口径]');
       const account = [...winrateTabs.querySelectorAll('[role=tab]')].find(element => element.textContent === '账号胜率');
       const weighted = [...winrateTabs.querySelectorAll('[role=tab]')].find(element => element.textContent === '加权胜率');
       weighted.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, ctrlKey: false }));
       await waitFor(async () => (await api.getState()).settings.winrate === 'weighted' && weighted.getAttribute('aria-selected') === 'true', 'Win-rate tab selection was not saved');
+      assert([...document.querySelectorAll('.player-name-button')].every((button, index) => button.getAttribute('aria-label').startsWith(expectedOrder[index].name + ' ·')), 'Changing the win-rate metric moved roster rows');
       const weightedPanel = document.getElementById(weighted.getAttribute('aria-controls'));
       assert(weightedPanel?.getAttribute('aria-labelledby') === weighted.id && weightedPanel.querySelectorAll('.player-table tbody tr').length === 24, 'The selected win-rate tab is not associated with the full roster');
       assert([...document.querySelectorAll('.team-winrate')].every(element => element.title.includes('加权胜率')), 'Team summaries did not use the selected win-rate mode');

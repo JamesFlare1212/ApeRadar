@@ -34,7 +34,6 @@
 .clan-tag { color: var(--text-muted); font-weight: 400; }
 .ship-name { display: block; overflow: hidden; margin-top: 2px; color: var(--text-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .tier { margin-right: 2px; color: var(--text-secondary); }
-.ship-type-text { display: none; }
 .rate { display: block; font: 600 14px/1.4 var(--font-numeric); font-variant-numeric: tabular-nums; }
 .rate-elite { color: var(--elite); }
 .rate-strong, .watch-positive { color: var(--success); }
@@ -74,5 +73,4 @@
   .player-table td:first-child { padding-left: 8px; }
   .player-name { font-size: 12px; }
 }
-@media (min-width: 1600px) { .ship-type-text { display: inline; } }
 @media (max-width: 767px) { .teams-grid { grid-template-columns: 1fr; gap: 16px; } }

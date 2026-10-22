@@ -1,4 +1,4 @@
-.settings-content { display: flex; min-width: 0; max-width: 1120px; flex-direction: column; gap: 24px; margin: 0 auto; }
+.settings-content { display: flex; width: 100%; min-width: 0; max-width: 1120px; flex-direction: column; gap: 24px; margin: 0 auto; }
 .settings-panel { min-width: 0; }
 .settings-reset { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
 .data-path { padding: 12px; border-radius: var(--radius-sm); background: var(--surface-muted); font: 13px/1.7 ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }

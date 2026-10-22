@@ -5,7 +5,7 @@ import { Icon } from '../Icon.js'
 import { BrandMark } from './BrandMark.js'
 import { Badge, Button } from '../ui.js'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert.js'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, SidebarTrigger, useSidebar } from '../ui/sidebar.js'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from '../ui/sidebar.js'
 import { UpdateButton } from '../updates/UpdateButton.js'
 
 interface NavigationItem { key: string; title: string; icon: IconDefinition }
@@ -48,7 +48,6 @@ export function AppSidebar({ settingsMode, activeKey, items, state, onSelect, on
         <Button variant="ghost" className="w-full justify-start px-2 text-xs" onClick={() => activate(onConnection)}><Icon icon={faWaveSquare} size={15} /><span>API {health}</span><Badge className={`ml-auto size-2 p-0 ${state.health?.status === 'healthy' ? 'bg-success' : state.health?.status === 'unavailable' ? 'bg-danger' : 'bg-muted-foreground'}`} aria-hidden="true" /></Button>
         {state.monitor.error && <Alert className="game-connection" variant="destructive"><AlertTitle>自动监测异常</AlertTitle><AlertDescription><p>{state.monitor.error}</p><Button variant="link" className="h-auto p-0 text-xs" onClick={() => activate(onConnection)}>检查游戏目录<Icon icon={faArrowRight} size={12} /></Button></AlertDescription></Alert>}
       </div>}
-      <SidebarSeparator className="mx-0 group-data-[collapsible=icon]:w-8" />
       <div className="flex w-full items-center gap-2 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:flex-col">
         <SidebarMenu className="min-w-0 flex-1 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:flex-none"><SidebarMenuItem><SidebarMenuButton type="button" tooltip={settingsMode ? '返回工作区' : '偏好设置'} aria-label={settingsMode ? '返回工作区' : '偏好设置'} onClick={() => activate(settingsMode ? onHome : onSettings)}><Icon icon={settingsMode ? faArrowLeft : faGear} size={18} /><span>{settingsMode ? '返回工作区' : '设置'}</span></SidebarMenuButton></SidebarMenuItem></SidebarMenu>
         <UpdateButton compact={!isMobile && !open} notify={notify} installBlocked={installBlocked} />
