@@ -1,5 +1,28 @@
 # 验证记录
 
+## shadcn/ui branch validation (2026-10-22)
+
+- `pnpm check` passed all workspace type checks, 200 regression tests in 17 files, and
+  design-token validation. `pnpm build` passed the production web and Electron builds.
+- `pnpm smoke:desktop` passed with an isolated database. It rendered 240 page combinations
+  (10 routes, six palettes, two themes, and widths of 1440 and 390 CSS pixels), plus 144 dialog
+  states. The 14,796 measured text samples had a minimum contrast of 4.53:1; control-boundary
+  tokens had a minimum of 3.47:1 across the tested surfaces. These measurements cover rendered
+  text and the specified token pairs, rather than a complete accessibility certification.
+- The smoke run also checked roster and history filtering, offline arena import and history
+  loading, original roster order, hidden-name behavior, chart keyboard tooltips, player tabs,
+  invalid and empty numeric inputs, autosave, cancellation and completion of watch removal,
+  safe initial focus, focus restoration, mobile navigation, appearance artwork, dialog bounds,
+  toolbar overlap, and horizontal overflow. Reports and screenshots are in `artifacts/`.
+- An earlier expanded smoke run timed out while waiting for animation frames in a hidden
+  Electron window. Frame waits now have a bounded timer fallback; the complete rerun passed.
+  The lockfile check also caught the registry's unused `cn` dependency left in the manifest
+  after a sandbox-blocked install hook; it was removed. A subsequent
+  `pnpm install --frozen-lockfile --ignore-scripts --offline` passed.
+- The update progress, spinner, and ready-state presentation checks use simulated updater
+  events. Live API checks, Windows release packaging, and actual version-to-version installation
+  were not run for this UI and directory-organization change.
+
 ## v1.0.3 release validation (2026-10-17)
 
 - Root, desktop, server, web, and shared packages use `1.0.3`.

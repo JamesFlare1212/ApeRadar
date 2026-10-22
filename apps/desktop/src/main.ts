@@ -19,6 +19,10 @@ import { UPDATE_RELEASES_URL } from '@aperadar/shared/updates'
 import { UpdateController } from './updates/controller'
 import { updateConfiguration } from './updates/config'
 import { readInstallRecord, writeInstallRecord } from './updates/install-record'
+import { validateUi } from './smoke/ui'
+import { validateNarrowNavigation } from './smoke/navigation'
+import { validateUpdatePresentation } from './smoke/updates'
+import { validateAppearance } from './smoke/appearance'
 
 const smoke = process.argv.includes('--smoke-test')
 if (smoke || process.env.APERADAR_DATA_DIR) {
@@ -81,6 +85,7 @@ async function createWindow() {
   const area = screen.getPrimaryDisplay().workAreaSize
   window = new BrowserWindow({ width: Math.max(960, Math.min(1480, area.width - 32)), height: Math.max(680, Math.min(1000, area.height - 32)), minWidth: 960, minHeight: 680, show: false, frame: false, backgroundColor: '#f5f7f9', title: 'ApeRadar Next', icon: path.join(root, 'resources', 'icon.png'), autoHideMenuBar: true, webPreferences: { preload: path.join(root, 'dist-electron', 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true, spellcheck: false } })
   const mainWindow = window
+    mainWindow.webContents.setBackgroundThrottling(false)
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   window.webContents.on('will-navigate', event => event.preventDefault())
   service.on('state', state => { if (!mainWindow.isDestroyed()) mainWindow.webContents.send('radar:changed', state) })
@@ -134,6 +139,8 @@ async function createWindow() {
       const defaultAppearance = await mainWindow.webContents.executeJavaScript("(async()=>{const api=window.aperadar;const state=await api.getState();const followsSystem=state.settings.theme==='system'&&document.documentElement.classList.contains('dark')===matchMedia('(prefers-color-scheme: dark)').matches;await api.saveSettings({...state.settings,theme:'light'});return followsSystem})()") as boolean
       if (!defaultAppearance) throw new Error('Desktop default theme does not follow the system')
       await new Promise(resolve => setTimeout(resolve, 200))
+      const lightStyle = await mainWindow.webContents.executeJavaScript("({theme:document.documentElement.className,background:getComputedStyle(document.body).backgroundColor})")
+      await mainWindow.webContents.executeJavaScript('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))')
       await writeFile(path.join(dataPath, 'desktop-light.png'), (await mainWindow.webContents.capturePage()).toPNG())
       const result = await mainWindow.webContents.executeJavaScript(`(async()=>{const api=window.aperadar;const original=await api.getState();const saved=await api.saveSettings({...original.settings,autoQuery:false,theme:'dark'});const demo=await api.loadDemo();await api.setWatch({region:'ASIA',accountId:'demo-1000',name:'Northbound',status:'positive',note:'desktop smoke'});const state=await api.getState();return {bridge:api.desktop,players:demo.battle.players.length,settings:saved.settings.theme,watchPersisted:state.watchlist.some(x=>x.accountId==='demo-1000'),heading:document.querySelector('h1')?.textContent,nodeAccess:typeof window.require};})()`) as Record<string, unknown>
       const sqlite = await readFile(path.join(dataPath, 'aperadar.sqlite'))
@@ -141,14 +148,14 @@ async function createWindow() {
       const updateResult = await mainWindow.webContents.executeJavaScript("(async()=>{const state=await window.aperadar.getUpdates();const button=document.querySelector('.sidebar-update button');return {mode:state.mode,version:state.currentVersion,downloadBridge:typeof window.aperadar.openUpdateDownload,control:!!button&&button.disabled};})()") as { mode: string; version: string; downloadBridge: string; control: boolean }
       if (updateResult.mode !== 'disabled' || updateResult.version !== app.getVersion() || updateResult.downloadBridge !== 'function' || !updateResult.control) throw new Error('Desktop update bridge assertion failed')
       await new Promise(resolve => setTimeout(resolve, 400))
-      const darkStyle = await mainWindow.webContents.executeJavaScript("({theme:document.documentElement.className,accent:getComputedStyle(document.documentElement).getPropertyValue('--accent'),row:getComputedStyle(document.querySelector('.self-row')).backgroundColor,button:getComputedStyle(document.querySelector('.button-primary')).backgroundColor})")
+      const darkStyle = await mainWindow.webContents.executeJavaScript("({theme:document.documentElement.className,accent:getComputedStyle(document.documentElement).getPropertyValue('--accent'),row:getComputedStyle(document.querySelector('.self-row')).backgroundColor,button:getComputedStyle(document.querySelector('[data-slot=button][data-variant=default]')).backgroundColor})")
       await writeFile(path.join(dataPath, 'desktop-dark.png'), (await mainWindow.webContents.capturePage()).toPNG())
       const apiConfigResult = await mainWindow.webContents.executeJavaScript(`(async()=>{
         const api=window.aperadar, original=(await api.getState()).settings;
         location.hash='/settings/connection';
         for(let i=0;i<40&&!document.getElementById('api-type');i++) await new Promise(resolve=>setTimeout(resolve,50));
         const state=await api.getState(), source=document.getElementById('api-type');
-        const result={filePath:state.apiConfiguration.filePath,managed:state.apiConfiguration.applicationIdManaged,defaultSource:original.api,selectedSource:source?.value,applicationIdSuffix:state.settings.wgApplicationId.slice(-6),applicationIdFieldRemoved:!document.getElementById('wg-key')&&!document.getElementById('wg-key-help')};
+        const result={filePath:state.apiConfiguration.filePath,managed:state.apiConfiguration.applicationIdManaged,defaultSource:original.api,selectedSource:source?.getAttribute('data-value'),applicationIdSuffix:state.settings.wgApplicationId.slice(-6),applicationIdFieldRemoved:!document.getElementById('wg-key')&&!document.getElementById('wg-key-help')};
         await api.saveSettings(original); location.hash='/overview';
         return result;
       })()`) as { filePath: string; managed: boolean; defaultSource: string; selectedSource: string; applicationIdSuffix: string; applicationIdFieldRemoved: boolean }
@@ -187,7 +194,24 @@ async function createWindow() {
       await mainWindow.webContents.executeJavaScript("location.hash='/overview'")
       // Let the restored workspace finish its mount-time IPC requests before exiting.
       await new Promise(resolve => setTimeout(resolve, 400))
-      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
+      const ui = await validateUi(mainWindow)
+      const updatePresentation = await validateUpdatePresentation(mainWindow, updates!.status())
+      const appearance = await validateAppearance(mainWindow)
+      await mainWindow.webContents.executeJavaScript("(async()=>{for(let i=0;i<60&&!document.querySelector('[data-slot=chart] .winrate-point');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('[data-slot=chart]').scrollIntoView({block:'center'});await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));})()")
+      await writeFile(path.join(dataPath, 'desktop-chart.png'), (await mainWindow.webContents.capturePage()).toPNG())
+      await mainWindow.webContents.executeJavaScript('scrollTo(0,0)')
+      await mainWindow.webContents.executeJavaScript("(async()=>{location.hash='/settings/appearance';for(let i=0;i<40&&!document.getElementById('theme-heading');i++) await new Promise(resolve=>setTimeout(resolve,50));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));})()")
+      await writeFile(path.join(dataPath, 'desktop-settings.png'), (await mainWindow.webContents.capturePage()).toPNG())
+      mainWindow.setMinimumSize(320, 560)
+      mainWindow.setContentSize(390, 844)
+      await mainWindow.webContents.executeJavaScript('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))')
+      const narrowLayout = await mainWindow.webContents.executeJavaScript("({width:innerWidth,scrollWidth:document.documentElement.scrollWidth})") as { width: number; scrollWidth: number }
+      if (narrowLayout.width !== 390 || narrowLayout.scrollWidth > narrowLayout.width) throw new Error('The narrow settings layout overflows')
+      await writeFile(path.join(dataPath, 'desktop-settings-narrow.png'), (await mainWindow.webContents.capturePage()).toPNG())
+      const narrowNavigation = await validateNarrowNavigation(mainWindow)
+      const narrowDialog = await mainWindow.webContents.executeJavaScript("(async()=>{location.hash='/overview';for(let i=0;i<40&&!document.querySelector('.player-name-button');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('.player-name-button').click();for(let i=0;i<40&&!document.querySelector('[role=dialog]');i++) await new Promise(resolve=>setTimeout(resolve,50));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));const rect=document.querySelector('[role=dialog]').getBoundingClientRect();return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:innerWidth,height:innerHeight};})()") as { left: number; right: number; top: number; bottom: number; width: number; height: number }
+      if (narrowDialog.left < 0 || narrowDialog.right > narrowDialog.width || narrowDialog.top < 0 || narrowDialog.bottom > narrowDialog.height) throw new Error('The narrow player dialog is outside the viewport')
+      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, updatePresentation, appearance, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null
       app.exit(0)

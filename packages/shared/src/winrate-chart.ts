@@ -17,16 +17,22 @@ export function buildRankedWinrateChart(battle: Battle, settings: Settings) {
     entries.sort((a, b) => a.rate - b.rate)
     entries.forEach((entry, index) => { entry.position = entries.length === 1 ? .5 : index / (entries.length - 1) })
   }
-  // Keep the familiar 30–70% range, extending in ten-point steps for actual outliers.
+  // Fit both teams to five-point bounds, with a twenty-point minimum span for flat samples.
   const rates = [...teams.ally, ...teams.enemy].map(entry => entry.rate)
-  const low = Math.max(0, Math.floor(Math.min(.3, ...rates) * 10))
-  const high = Math.min(10, Math.ceil(Math.max(.7, ...rates) * 10))
+  const stepsPerUnit = 20
+  const minimumSpanSteps = 4
+  let low = Math.max(0, Math.min(stepsPerUnit, Math.floor((rates.length ? Math.min(...rates) : .3) * stepsPerUnit)))
+  let high = Math.max(0, Math.min(stepsPerUnit, Math.ceil((rates.length ? Math.max(...rates) : .7) * stepsPerUnit)))
+  while (high - low < minimumSpanSteps) {
+    if (low > 0) low--
+    if (high - low < minimumSpanSteps && high < stepsPerUnit) high++
+  }
   return {
     ...teams,
     counts: { ally: teams.ally.length, enemy: teams.enemy.length },
-    min: low / 10,
-    max: high / 10,
-    ticks: Array.from({ length: high - low + 1 }, (_, index) => (low + index) / 10),
+    min: low / stepsPerUnit,
+    max: high / stepsPerUnit,
+    ticks: Array.from({ length: high - low + 1 }, (_, index) => (low + index) / stepsPerUnit),
   }
 }
 

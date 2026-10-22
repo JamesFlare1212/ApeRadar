@@ -1,0 +1,35 @@
+.settings-content { display: flex; min-width: 0; max-width: 1120px; flex-direction: column; gap: 24px; margin: 0 auto; }
+.settings-panel { min-width: 0; }
+.settings-reset { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+.data-path { padding: 12px; border-radius: var(--radius-sm); background: var(--surface-muted); font: 13px/1.7 ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+.input-with-button { display: flex; align-items: center; gap: 8px; }
+.input-with-button .input { min-width: 0; flex: 1; }
+.game-region-result > div { min-width: 0; grid-column-start: 2; }
+.game-region-result.detected > svg { color: var(--success); }
+.game-region-evidence { display: grid; gap: 4px; margin-top: 8px; font-size: 12px; overflow-wrap: anywhere; }
+.settings-section { display: flex; min-width: 0; flex-direction: column; gap: 16px; padding: 24px; }
+.settings-panel-title { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.settings-panel-title > div { min-width: 0; flex: 1; }
+.settings-section-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+.settings-description { color: var(--text-muted); font-size: 13px; line-height: 1.8; }
+.settings-panel-title .settings-description { margin-top: 8px; }
+.update-version { display: flex; flex-wrap: wrap; align-items: baseline; gap: 9px 13px; padding: 8px 0; }
+.update-version > strong { font-size: 21px; font-weight: 600; letter-spacing: -.5px; }
+.update-version > strong > span { margin-left: 3px; color: var(--accent); font-size: 13px; letter-spacing: 0; }
+.update-version > .numeric { color: var(--text-muted); font-size: 13px; }
+.update-progress { display: flex; align-items: center; gap: 14px; color: var(--text-muted); font-size: 12px; }
+.update-progress > [data-slot='progress'] { min-width: 0; flex: 1; }
+.update-progress > span { white-space: nowrap; }
+.update-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.update-actions > .muted { font-size: 12px; }
+.update-download-fallback { align-self: flex-start; }
+.button.update-button { position: relative; width: 40px; height: 40px; padding: 0; color: var(--sidebar-text); }
+.button.update-button-compact { width: 32px; height: 32px; }
+.button.update-button:not(:disabled):is(:hover, :focus-visible) { background: var(--sidebar-hover-bg); color: var(--text); }
+.button.update-button[aria-busy='true'] { opacity: 1; }
+
+@media (max-width: 767px) { .settings-section { padding: 20px; } }
+@media (max-width: 600px) {
+  .game-client-settings .input-with-button > .button { width: 36px; min-height: 36px; flex: 0 0 36px; padding: 0; }
+  .game-client-settings .input-with-button > .button > span { display: none; }
+}

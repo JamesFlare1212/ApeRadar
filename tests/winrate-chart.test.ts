@@ -52,7 +52,7 @@ describe('ranked winrate chart', () => {
   it('handles empty and wholly unavailable battles with a finite default axis', () => {
     for (const players of [[], [{ ...player('hidden', .6), status: 'hidden' as const }]]) {
       expect(buildRankedWinrateChart(battle(players), settings())).toEqual({
-        ally: [], enemy: [], counts: { ally: 0, enemy: 0 }, min: .3, max: .7, ticks: [.3, .4, .5, .6, .7],
+        ally: [], enemy: [], counts: { ally: 0, enemy: 0 }, min: .3, max: .7, ticks: [.3, .35, .4, .45, .5, .55, .6, .65, .7],
       })
     }
   })
@@ -75,15 +75,17 @@ describe('ranked winrate chart', () => {
   })
 
   it.each([
-    [[.31, .69], .3, .7], [[.29, .71], .2, .8], [[0, 1], 0, 1], [[.2, .86], .2, .9],
-  ])('expands the percentage axis to include %j with ten-point ticks', (rates, min, max) => {
+    [[.31, .69], .3, .7], [[.29, .71], .25, .75], [[0, 1], 0, 1], [[.2, .86], .2, .9],
+    [[.4577, .6309], .45, .65], [[.45, .65], .45, .65], [[.49, .51], .4, .6], [[.5, .5], .4, .6], [[0, 0], 0, .2], [[1, 1], .8, 1],
+  ])('fits the percentage axis to %j with five-point ticks and a safe minimum span', (rates, min, max) => {
     const chart = buildRankedWinrateChart(battle(rates.map((rate, index) => player(`${index}`, rate))), settings())
     expect(chart.min).toBe(min)
     expect(chart.max).toBe(max)
+    expect(chart.max - chart.min).toBeGreaterThanOrEqual(.2 - Number.EPSILON)
     expect(chart.ticks[0]).toBe(min)
     expect(chart.ticks.at(-1)).toBe(max)
     expect(chart.ticks.every(tick => Number.isFinite(tick) && tick >= 0 && tick <= 1)).toBe(true)
-    chart.ticks.slice(1).forEach((tick, index) => expect(tick - chart.ticks[index]).toBeCloseTo(.1))
+    chart.ticks.slice(1).forEach((tick, index) => expect(tick - chart.ticks[index]).toBeCloseTo(.05))
     expect(rates.every(rate => chart.min <= rate && rate <= chart.max)).toBe(true)
   })
 })

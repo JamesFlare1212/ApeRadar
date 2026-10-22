@@ -79,7 +79,37 @@ Renderer 只持有可序列化状态与界面逻辑。它通过 `RadarBridge` �
 
 Radix 提供对话框与下拉菜单。受控对话框显式恢复触发元素焦点；阵容保留游戏文件中的原始顺序，战绩查询只更新原位置，搜索与舰种筛选保持剩余行的相对顺序。图表提供文本说明，姓名遮蔽也应用到摘要与 CSV。
 
-## 外部依赖与取舍
+## UI composition and source layout
+
+The application boundaries follow [T3 Code's apps directory](https://github.com/pingdotgg/t3code/tree/main/apps):
+`web` owns the React renderer, `desktop` owns Electron and IPC, and `server` owns local services.
+Portable types and algorithms remain in `packages/shared`.
+
+Within `apps/web/src`, independently loaded pages live in `routes/`. The settings route renders
+six sections. Application components are grouped into `components/layout`, `components/battle`,
+`components/settings`, and `components/updates`. React state hooks live in `hooks/`; bridge access,
+appearance state, settings persistence, and chart data transformations live in `lib/`.
+
+`components/ui/` contains the local shadcn/ui primitives and is the only layer importing Radix.
+`components/ui.tsx` composes those primitives into shared buttons, notices, search inputs, dialogs,
+confirmation dialogs, selects, and empty states. Add missing primitives with the configuration in
+`apps/web/components.json`. Destructive confirmations use Alert Dialog, focus the cancel action,
+retain failed operations, and restore focus to the invoking control or page heading.
+
+`styles.css` is the Tailwind and token entry point. Its `styles/` imports group application layout,
+battle tables, settings, help content, and appearance artwork. Shared controls retain their shadcn/ui
+styles; application CSS handles layout and domain-specific presentation. Foreground, danger-button
+foreground, and control-boundary tokens are defined for both themes. The ship icon PNG references
+remain beside their SVG redrawings for the provenance recorded in `sources.json`.
+
+Desktop validation lives in `apps/desktop/src/smoke/`. The appearance checks render every route at
+1440 and 390 CSS pixels in both themes and all six palettes. Chromium resolves inherited colors,
+alpha blending, `color-mix`, and SVG text fills before contrast is measured. The checks also cover
+dialog states, control boundaries, appearance artwork, horizontal overflow, and roster-toolbar
+overlap. They use isolated data and synthetic arena files; they do not establish live API or actual
+version-to-version update behavior.
+
+## Runtime dependencies and tradeoffs
 
 网络适配器按已恢复的客户端协议实现，不推定第三方服务内部机制。WG 采用三次共享请求与每玩家一次本舰请求；Vortex 可在明确隐藏时提前结束后续详情。代理只影响指定 WG 请求，界面明确它会收到查询信息。没有整场上传模块。
 

@@ -7,6 +7,18 @@
 - Preserve localized application text and translation resources in their intended languages.
 - Follow the existing TypeScript, React, Electron, and pnpm workspace conventions.
 
+## UI Components
+
+- Use shadcn/ui for new or modified application UI. Reuse the local components in
+  `apps/web/src/components/ui/` and the shared wrappers in `apps/web/src/components/ui.tsx`.
+- Compose existing shadcn/ui components for complex controls. When a suitable component is missing,
+  add it using the existing `apps/web/components.json` configuration before building a custom control
+  or introducing another UI library.
+- Keep Radix primitive imports within the shadcn/ui component layer. Application code should consume
+  the local shadcn/ui components and wrappers.
+- Style components with the existing semantic design tokens, support light and dark themes, and
+  preserve keyboard accessibility and existing interaction behavior.
+
 ## Validation
 
 - Run checks appropriate to the change. For application changes, use `pnpm check` for type checking,

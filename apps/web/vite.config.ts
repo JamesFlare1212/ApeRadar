@@ -10,6 +10,7 @@ const workspaceRoot = path.resolve(root, '../..')
 export default defineConfig({
   root,
   base: './',
+  resolve: { alias: { '@': path.resolve(root, 'src') } },
   plugins: [react(), tailwindcss(), {
     name: 'aperadar-local-development-service',
     transformIndexHtml(html, context) { return context.server ? html.replace("script-src 'self';", "script-src 'self' 'unsafe-inline';") : html },
