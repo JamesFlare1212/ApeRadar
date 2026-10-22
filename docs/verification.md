@@ -21,6 +21,9 @@
 - Initial GitHub CI rejected undersized appearance previews. Compact padding
   on narrow palette cards leaves more room for the swatches at large font sizes;
   the size guard also reports measured dimensions when a preview is too small.
+- A CI retry exposed a scrollbar-check timing issue while client discovery
+  updated the page height. The check now waits for discovery and verifies
+  scrollbar visibility rather than requiring a fixed document height.
 - `pnpm verify:updates` validated the installer filename, version, SHA-512,
   size, blockmap, and portable companion file.
 - Live API checks were not run because `WG_APPLICATION_ID` was not set.

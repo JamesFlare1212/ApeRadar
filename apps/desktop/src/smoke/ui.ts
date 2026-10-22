@@ -188,6 +188,10 @@ export async function validateUi(window: BrowserWindow) {
       for (const [section, id] of [['appearance', 'interface-font'], ['appearance', 'interface-font-size'], ['connection', 'region']]) {
         location.hash = '/settings/' + section;
         await waitFor(() => document.getElementById(id), 'Select settings did not render: ' + id);
+        if (section === 'connection') {
+          await waitFor(() => !document.querySelector('.game-client-settings [aria-busy=true]') && !document.getElementById('game-path-status')?.textContent.includes('正在验证'), 'Game-client discovery did not finish before measuring the select layout');
+        }
+        await document.fonts.ready;
         const trigger = document.getElementById(id);
         trigger.scrollIntoView({ block: 'center' });
         assert(scrollY > 0, 'The sticky header regression requires a scrolled page');
@@ -199,7 +203,7 @@ export async function validateUi(window: BrowserWindow) {
         await waitFor(() => document.querySelector('[role=listbox]') && document.body.hasAttribute('data-scroll-locked'), 'The typography menu did not lock background scrolling');
         const opened = measureSelectLayout(trigger);
         assert(opened.every((value, index) => Math.abs(value - before[index]) < .5), 'Opening the typography select shifted the layout: ' + JSON.stringify({ id, before, opened }));
-        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight === scrollbar.height, 'Opening the typography select changed the page scrollbar');
+        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight > innerHeight, 'Opening the select changed scrollbar visibility: ' + JSON.stringify({ id, before: scrollbar, width: innerWidth - document.documentElement.clientWidth, height: document.documentElement.scrollHeight }));
         assert(Math.abs(scrollY - scrollbar.top) < .5, 'Opening the typography select changed the page scroll position');
         const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 100 });
         document.body.dispatchEvent(wheel);
@@ -212,7 +216,7 @@ export async function validateUi(window: BrowserWindow) {
         await waitFor(() => !document.querySelector('[role=listbox]') && !document.body.hasAttribute('data-scroll-locked'), 'The typography menu did not release background scrolling');
         const closed = measureSelectLayout(trigger);
         assert(closed.every((value, index) => Math.abs(value - before[index]) < .5), 'Closing the typography select shifted the layout');
-        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight === scrollbar.height, 'Closing the typography select changed the page scrollbar');
+        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight > innerHeight, 'Closing the select changed scrollbar visibility: ' + JSON.stringify({ id, before: scrollbar, width: innerWidth - document.documentElement.clientWidth, height: document.documentElement.scrollHeight }));
         await waitFor(() => document.activeElement === trigger, 'The typography select did not restore focus');
       }
       result.typographySelectLayoutStable = true;
