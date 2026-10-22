@@ -1,0 +1,78 @@
+.roster-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.roster-toolbar h2 { font-size: 15px; white-space: nowrap; }
+.teams-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.team-card { overflow: hidden; container: roster / inline-size; }
+.team-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 15px 16px; border-bottom: 1px solid var(--border); }
+.team-heading > .flex { min-width: 0; align-items: baseline; }
+.team-heading h2 { font-size: 14px; white-space: nowrap; }
+.team-heading > .text-xs { font-size: 11px; letter-spacing: .5px; white-space: nowrap; }
+.team-icon { display: flex; align-self: center; color: var(--ally); }
+.team-enemy .team-icon { color: var(--enemy-text); }
+.team-winrate { flex-shrink: 0; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.player-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.player-table thead { background: var(--table-header-bg); }
+.player-table th { height: 36px; padding: 0 8px; color: var(--text-muted); text-align: right; font-size: 12px; font-weight: 400; }
+.player-table th:first-child { padding-left: 16px; text-align: left; }
+.player-table th:last-child { width: 36px; padding-right: 12px; }
+.player-table th.winrate-column { width: 74px; }
+.player-table th.damage-column { width: 90px; }
+.player-table th.battles-column { width: 74px; }
+.player-table tbody tr:hover { background: var(--table-row-hover); }
+.player-table tbody tr.self-row { background: var(--accent-soft); }
+.player-table td { height: var(--table-row-height); padding: 9px 8px; border-bottom: 1px solid var(--border); text-align: right; font-size: 12px; }
+.player-table td:first-child { padding-left: 13px; text-align: left; }
+.player-table tr:last-child td { border-bottom: 0; }
+.player-table td:last-child { padding: 5px 5px 5px 0; }
+.player-identity { display: flex; min-width: 0; align-items: center; gap: 9px; }
+.ship-glyph { display: grid; width: 32px; height: 32px; flex-shrink: 0; place-items: center; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-muted); }
+.ship-type-icon { display: block; flex-shrink: 0; object-fit: contain; filter: invert(1); }
+:root.dark .ship-type-icon { filter: none; }
+.player-name-button.button { display: block; min-width: 0; height: auto; flex: 1; justify-content: flex-start; padding: 2px 0; border-radius: var(--radius-sm); color: var(--text); text-align: left; white-space: normal; }
+.player-name-button:hover .player-name { color: var(--accent); }
+.player-name-line { display: flex; min-width: 0; align-items: center; gap: 6px; white-space: nowrap; }
+.player-name { display: block; min-width: 0; overflow: hidden; font-size: 13px; font-weight: 500; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
+.clan-tag { color: var(--text-muted); font-weight: 400; }
+.ship-name { display: block; overflow: hidden; margin-top: 2px; color: var(--text-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.tier { margin-right: 2px; color: var(--text-secondary); }
+.ship-type-text { display: none; }
+.rate { display: block; font: 600 14px/1.4 var(--font-numeric); font-variant-numeric: tabular-nums; }
+.rate-elite { color: var(--elite); }
+.rate-strong, .watch-positive { color: var(--success); }
+.rate-average { color: var(--text-secondary); }
+.rate-low, .watch-negative { color: var(--enemy-text); }
+.rate-unknown { color: var(--text-muted); }
+.watch-suspected { color: var(--danger); }
+.player-table .numeric { color: var(--text-secondary); }
+.player-table td.damage-column { color: var(--text); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.player-table td.battles-column { color: var(--text-muted); }
+.player-table .icon-button { width: 28px; height: 32px; }
+.table-action-placeholder { display: inline-block; width: 28px; }
+.status-cell > span, .retry-inline { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; font-size: 12px; }
+.retry-inline { height: auto; max-width: 100%; flex-wrap: wrap; padding: 4px; color: var(--enemy-text); white-space: normal; }
+.retry-inline > span { text-decoration: underline; text-underline-offset: 3px; }
+.team-footer { display: flex; min-height: 36px; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 14px; border-top: 1px solid var(--border); background: var(--surface-hover); color: var(--text-muted); font-size: 11px; }
+.legend-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ally); }
+.team-enemy .legend-dot { background: var(--enemy); }
+.player-hidden .player-name { color: var(--text-muted); font-weight: 400; }
+.player-hidden .ship-glyph { opacity: .5; }
+.roster-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 24px; }
+.roster-actions > p { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 12px; }
+.roster-actions > div { margin-left: auto; }
+.winrate-point { cursor: pointer; stroke: var(--surface); stroke-width: 1.5; }
+.winrate-point-ally { fill: var(--ally); }
+.winrate-point-enemy { fill: var(--enemy); }
+.winrate-point:focus-visible { outline: none; stroke: var(--text); stroke-width: 3px; }
+
+@container roster (max-width: 470px) { .player-table .battles-column { display: none; } }
+@container roster (max-width: 400px) { .team-heading > .text-xs { display: none; } }
+@container roster (max-width: 360px) {
+  .player-table th.winrate-column { width: 68px; }
+  .player-table th.damage-column { width: 82px; }
+  .player-table th:last-child { width: 32px; }
+  .player-identity { gap: 6px; }
+  .ship-glyph { width: 28px; height: 30px; }
+  .player-table td:first-child { padding-left: 8px; }
+  .player-name { font-size: 12px; }
+}
+@media (min-width: 1600px) { .ship-type-text { display: inline; } }
+@media (max-width: 767px) { .teams-grid { grid-template-columns: 1fr; gap: 16px; } }

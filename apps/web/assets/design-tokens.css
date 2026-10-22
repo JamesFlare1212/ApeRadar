@@ -34,6 +34,7 @@
   --ally: hsl(var(--p-blue-700)); --ally-soft: hsl(var(--p-blue-50));
   --enemy: hsl(var(--p-amber-600)); --enemy-text: hsl(var(--p-amber-700)); --enemy-soft: hsl(var(--p-amber-50));
   --danger: hsl(var(--p-red-700)); --danger-soft: hsl(var(--p-red-50));
+  --on-danger: hsl(var(--p-white)); --control-border: hsl(var(--p-slate-500));
   --elite: hsl(var(--p-purple-700)); --elite-soft: hsl(var(--p-purple-50));
   --sidebar-bg: hsl(var(--p-slate-950)); --sidebar-text: hsl(var(--p-slate-300));
   --sidebar-active: var(--accent); --sidebar-active-bg: var(--accent-soft);
@@ -51,14 +52,21 @@
   --ally: hsl(var(--p-blue-400)); --ally-soft: hsl(var(--p-blue-700) / .15);
   --enemy: hsl(var(--p-amber-400)); --enemy-text: hsl(var(--p-amber-400)); --enemy-soft: hsl(var(--p-amber-700) / .15);
   --danger: hsl(var(--p-red-400)); --danger-soft: hsl(var(--p-red-700) / .15);
+  --on-danger: hsl(var(--p-slate-950)); --control-border: hsl(var(--p-slate-400));
   --elite: hsl(var(--p-purple-400)); --elite-soft: hsl(var(--p-purple-700) / .18);
 }
 /* Component tokens: explicit states, independent of the chosen palette. */
 :root {
+  --radius: .625rem;
+  --popover: var(--surface); --popover-foreground: var(--text);
+  --sidebar: var(--sidebar-bg); --sidebar-foreground: var(--sidebar-text);
+  --sidebar-primary: var(--accent); --sidebar-primary-foreground: var(--on-accent);
+  --sidebar-accent: var(--sidebar-active-bg); --sidebar-accent-foreground: var(--sidebar-active);
+  --sidebar-ring: var(--accent);
   --button-bg: var(--accent); --button-fg: var(--on-accent); --button-hover-bg: var(--accent-hover);
   --button-radius: var(--radius-md); --button-height: 2.5rem;
   --card-bg: var(--surface); --card-border: var(--border); --card-radius: var(--radius-lg); --card-padding: var(--space-5);
-  --input-bg: var(--surface); --input-border: var(--border); --input-focus: var(--accent);
+  --input-bg: var(--surface); --input-border: var(--control-border); --input-focus: var(--accent);
   --table-row-height: 3.2rem; --table-row-hover: var(--surface-hover); --table-header-bg: var(--surface-muted);
   --sidebar-width: 13.5rem; --dialog-radius: var(--radius-xl);
 }

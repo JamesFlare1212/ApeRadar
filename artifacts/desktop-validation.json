@@ -15,7 +15,7 @@
     "control": true
   },
   "apiConfiguration": {
-    "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\config\\api.json",
+    "filePath": "C:\\Users\\james\\.t3\\worktrees\\aperadar\\t3-2dc03e7d\\config\\api.json",
     "managed": true,
     "defaultSource": "WG_PUBLIC",
     "selectedSource": "WG_PUBLIC",
@@ -32,6 +32,66 @@
     "discoveryBridge": true,
     "waitingForArena": true,
     "quietMonitoring": true
+  },
+  "ui": {
+    "sidebarPreference": true,
+    "rosterOrder": true,
+    "chartRankingAndKeyboardTooltip": true,
+    "playerDialogAndTabs": true,
+    "watchMenuKeyboardAndScrolling": true,
+    "winrateSelection": true,
+    "switchAutosave": true,
+    "chartPrivacy": true,
+    "appearanceRadioKeyboardAndPalette": true,
+    "selectAutosave": true,
+    "fieldErrorRecovery": true,
+    "emptyNumericField": true,
+    "rosterSearchAndShipFilter": true,
+    "historyImportSearchAndLoad": true,
+    "listItemsAndEmptyState": true,
+    "watchRemovalConfirmation": true,
+    "helpAccordion": true,
+    "skipLinkPreservesRoute": true
+  },
+  "updatePresentation": {
+    "simulated": true,
+    "determinateProgress": true,
+    "indeterminateProgress": true,
+    "checkingSpinner": true,
+    "readyBadge": true
+  },
+  "appearance": {
+    "views": 240,
+    "dialogViews": 144,
+    "textChecks": 14796,
+    "minimumTextContrast": 4.53100417231784,
+    "minimumControlContrast": 3.470932120091245,
+    "widths": [
+      1440,
+      390
+    ],
+    "palettes": 6,
+    "themes": 2
+  },
+  "narrowLayout": {
+    "width": 390,
+    "scrollWidth": 384
+  },
+  "narrowNavigation": {
+    "escapeAndFocus": true,
+    "navigateAndClose": true
+  },
+  "narrowDialog": {
+    "left": 16,
+    "right": 374,
+    "top": 16,
+    "bottom": 828,
+    "width": 390,
+    "height": 844
+  },
+  "lightStyle": {
+    "theme": "",
+    "background": "rgb(245, 246, 248)"
   },
   "darkStyle": {
     "theme": "dark",
@@ -73,5 +133,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792564609885"
+  "dataPath": "C:\\Users\\james\\.t3\\worktrees\\aperadar\\t3-2dc03e7d\\.test-data\\desktop-1792695270033"
 }
