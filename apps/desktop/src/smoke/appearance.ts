@@ -58,7 +58,23 @@ function inspectAppearance() {
   if (previews.some(element => element.getBoundingClientRect().height < 24)) throw new Error('Appearance artwork did not render')
   const toolbarGroups = [...document.querySelectorAll('.roster-toolbar > div')].map(element => element.getBoundingClientRect())
   if (toolbarGroups.length === 2 && Math.min(toolbarGroups[0].right, toolbarGroups[1].right) - Math.max(toolbarGroups[0].left, toolbarGroups[1].left) > 1 && Math.min(toolbarGroups[0].bottom, toolbarGroups[1].bottom) - Math.max(toolbarGroups[0].top, toolbarGroups[1].top) > 1) throw new Error('Roster toolbar controls overlap')
-  return { textCount, minimumTextContrast, minimumControlContrast, failures, overflow: document.documentElement.scrollWidth > innerWidth }
+  const overflow = document.documentElement.scrollWidth > innerWidth
+  const overflowingElements = overflow ? [...document.querySelectorAll('#main-content *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).slice(0, 10).map(element => ({ tag: element.tagName, className: element.getAttribute('class'), right: element.getBoundingClientRect().right, width: element.getBoundingClientRect().width })) : []
+  return { textCount, minimumTextContrast, minimumControlContrast, failures, overflow, scrollWidth: document.documentElement.scrollWidth, overflowingElements }
+}
+
+// ResizeObserver updates the chart after the viewport and its container have resized.
+async function waitForAppearanceLayout(expectedWidth: number, selector?: string) {
+  await document.fonts.ready
+  let stableFrames = 0
+  const chartSizes = () => [...document.querySelectorAll('[data-slot=chart]')].map(container => ({ containerWidth: container.clientWidth, plotWidth: container.querySelector('.recharts-wrapper')?.getBoundingClientRect().width }))
+  for (let attempt = 0; attempt < 60; attempt++) {
+    await new Promise<void>(resolve => { const timer = setTimeout(resolve, 40); requestAnimationFrame(() => { clearTimeout(timer); resolve() }) })
+    const ready = innerWidth === expectedWidth && (!selector || !!document.querySelector(selector)) && chartSizes().every(size => size.plotWidth === undefined || Math.abs(size.plotWidth - size.containerWidth) < 2)
+    stableFrames = ready ? stableFrames + 1 : 0
+    if (stableFrames >= 2) return
+  }
+  throw new Error(JSON.stringify({ message: 'Appearance layout did not settle', expectedWidth, width: innerWidth, selector, charts: chartSizes() }))
 }
 
 export async function validateAppearance(window: BrowserWindow) {
@@ -70,12 +86,14 @@ export async function validateAppearance(window: BrowserWindow) {
       window.setContentSize(width, 1000)
       results.push(await window.webContents.executeJavaScript(`(async () => {
         const inspect = ${inspectAppearance.toString()};
+        const waitForLayout = ${waitForAppearanceLayout.toString()};
         const api = window.aperadar, original = (await api.getState()).settings;
         const routes = { overview: '.winrate-point', history: '[aria-label="搜索历史对局"]', watchlist: '[aria-label="搜索关注名单"]', help: '[data-slot=accordion-trigger]', 'settings/appearance': '#theme-heading', 'settings/general': '#rate-mode', 'settings/connection': '#api-type', 'settings/ratings': '#ape-threshold', 'settings/text': '#text-template', 'settings/about': '#update-heading' };
         const frame = () => new Promise(resolve => { const timer = setTimeout(resolve, 40); requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(timer); resolve(); })); });
         const result = { views: 0, dialogViews: 0, textCount: 0, minimumTextContrast: Infinity, minimumControlContrast: Infinity };
         const wait = async condition => { for (let attempt = 0; attempt < 60; attempt++) { await frame(); if (condition()) return; } throw new Error('Dialog state did not settle'); };
-        const check = context => {
+        const check = async (context, selector) => {
+          await waitForLayout(${width}, selector);
           const state = inspect();
           if (state.overflow || state.failures.length) throw new Error(JSON.stringify({ width: innerWidth, ...context, ...state }));
           result.textCount += state.textCount;
@@ -91,38 +109,36 @@ export async function validateAppearance(window: BrowserWindow) {
             if (document.documentElement.dataset.palette !== palette || document.documentElement.classList.contains('dark') !== (theme === 'dark')) throw new Error('Appearance did not settle: ' + theme + '/' + palette);
             for (const [route, selector] of Object.entries(routes)) {
               location.hash = '/' + route;
-              for (let attempt = 0; attempt < 60; attempt++) { await frame(); if (document.querySelector(selector)) break; }
-              if (!document.querySelector(selector)) throw new Error('Page did not render: ' + route);
               const context = { palette, theme, route };
-              check(context);
+              await check(context, selector);
               result.views++;
               if (route === 'overview') {
                 document.querySelector('.player-name-button').click();
                 await wait(() => document.querySelector('[role=dialog]'));
-                check({ ...context, dialog: 'player-account' }); result.dialogViews++;
+                await check({ ...context, dialog: 'player-account' }); result.dialogViews++;
                 const shipTab = [...document.querySelectorAll('[role=tab]')].find(element => element.textContent === '单船统计');
                 shipTab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, ctrlKey: false }));
                 await wait(() => shipTab.getAttribute('aria-selected') === 'true');
-                check({ ...context, dialog: 'player-ship' }); result.dialogViews++;
+                await check({ ...context, dialog: 'player-ship' }); result.dialogViews++;
                 await closeDialog();
                 [...document.querySelectorAll('button')].find(element => element.textContent === '生成文字摘要').click();
                 await wait(() => document.getElementById('battle-summary'));
-                check({ ...context, dialog: 'battle-summary' }); result.dialogViews++;
+                await check({ ...context, dialog: 'battle-summary' }); result.dialogViews++;
                 await closeDialog();
               } else if (route === 'watchlist') {
                 document.querySelector('[aria-label^="编辑 "]').click();
                 await wait(() => document.getElementById('edit-watch-note'));
-                check({ ...context, dialog: 'watch-note' }); result.dialogViews++;
+                await check({ ...context, dialog: 'watch-note' }); result.dialogViews++;
                 await closeDialog();
                 document.querySelector('[aria-label^="移除 "]').click();
                 await wait(() => document.querySelector('[role=alertdialog]'));
-                check({ ...context, dialog: 'watch-removal' }); result.dialogViews++;
+                await check({ ...context, dialog: 'watch-removal' }); result.dialogViews++;
                 document.querySelector('[data-slot=alert-dialog-cancel]').click();
                 await wait(() => !document.querySelector('[role=alertdialog]'));
               } else if (route === 'settings/general') {
                 [...document.querySelectorAll('button')].find(element => element.textContent === '恢复默认设置').click();
                 await wait(() => document.querySelector('[role=alertdialog]'));
-                check({ ...context, dialog: 'settings-reset' }); result.dialogViews++;
+                await check({ ...context, dialog: 'settings-reset' }); result.dialogViews++;
                 document.querySelector('[data-slot=alert-dialog-cancel]').click();
                 await wait(() => !document.querySelector('[role=alertdialog]'));
               }
