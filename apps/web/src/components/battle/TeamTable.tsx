@@ -11,13 +11,12 @@ import { SHIP_LABELS } from '@aperadar/shared/types'
 import { formatNumber, formatPercent, playerRate, skillLevel, SKILL_LABELS } from '@aperadar/shared/statistics'
 import { Badge, Button } from '../ui.js'
 
-export function TeamTable({ team, players, averageWinrate, settings, watchlist, search, shipFilter, onPlayer, onWatch, onRetry, querying }: { team: Team; players: RadarPlayer[]; averageWinrate: number | null; settings: Settings; watchlist: WatchEntry[]; search: string; shipFilter: string; onPlayer: (key: string) => void; onWatch: (input: WatchInput) => void; onRetry: () => void; querying: boolean }) {
+export function TeamTable({ team, players, averageWinrate, settings, watchlist, onPlayer, onWatch, onRetry, querying }: { team: Team; players: RadarPlayer[]; averageWinrate: number | null; settings: Settings; watchlist: WatchEntry[]; onPlayer: (key: string) => void; onWatch: (input: WatchInput) => void; onRetry: () => void; querying: boolean }) {
   // Preserve the game's imported roster order, including while statistics update.
-  const visiblePlayers = players.filter(p => (!shipFilter || p.ship.type === shipFilter) && (!search || `${settings.showNames ? p.name + " " + p.clanTag : ""} ${p.ship.name} ${p.ship.nameEn}`.toLowerCase().includes(search.toLowerCase())))
   return <Card role="region" className={`gap-0 py-0 team-card team-${team}`} aria-label={team === 'ally' ? '我方阵容' : '敌方阵容'}>
     <div className="team-heading"><div className="flex items-center gap-2"><span className="team-icon"><Icon icon={faFlag} size={17} /></span><h2>{team === 'ally' ? '我方阵容' : '敌方阵容'}</h2><span className={`team-winrate text-${team}`} title={`${team === 'ally' ? '我方' : '敌方'}平均${settings.winrate === 'account' ? '账号' : '加权'}胜率：${formatPercent(averageWinrate)}`} aria-label={`${team === 'ally' ? '我方' : '敌方'}平均胜率 ${formatPercent(averageWinrate)}`}>{formatPercent(averageWinrate)}</span></div><span className="text-xs muted">{team === 'ally' ? 'ALLIED TEAM' : 'OPPOSING TEAM'}</span></div>
     <Table className="player-table"><TableHeader><TableRow><TableHead scope="col">舰长 / 舰船</TableHead><TableHead scope="col" className="winrate-column">胜率</TableHead><TableHead scope="col" className="damage-column" title="当前舰船累计伤害 ÷ 本舰场次">单船场均</TableHead><TableHead scope="col" className="battles-column">总场次</TableHead><TableHead scope="col"><span className="sr-only">关注操作</span><Icon icon={faEllipsis} size={17} /></TableHead></TableRow></TableHeader>
-    <TableBody>{visiblePlayers.map(player => {
+    <TableBody>{players.map(player => {
       const level = skillLevel(player, settings)
       const watch = watchlist.find(w => w.accountId === player.accountId && w.region === player.region)
       const masked = settings.showNames ? player.name : `${player.name.slice(0, 1)}${'•'.repeat(Math.min(player.name.length - 1, 9))}`
@@ -28,7 +27,7 @@ export function TeamTable({ team, players, averageWinrate, settings, watchlist, 
         <TableCell><WatchMenu name={settings.showNames ? player.name : "已隐藏舰长名称"} player={player} entry={watch} onWatch={onWatch} /></TableCell>
       </TableRow>
     })}</TableBody></Table>
-    {visiblePlayers.length === 0 && <Empty className="py-8 md:py-8"><EmptyHeader><EmptyDescription>没有匹配的舰长或舰船，请调整筛选。</EmptyDescription></EmptyHeader></Empty>}
-    <div className="team-footer"><span className="legend-dot" />{team === 'ally' ? '我方' : '敌方'}可见战绩 {players.filter(p => p.status === 'ready').length} / {players.length}<span className="ml-auto">{search || shipFilter ? `显示 ${visiblePlayers.length} 人` : '点击舰长查看详细统计'}</span></div>
+    {players.length === 0 && <Empty className="py-8 md:py-8"><EmptyHeader><EmptyDescription>暂无舰长或舰船数据。</EmptyDescription></EmptyHeader></Empty>}
+    <div className="team-footer"><span className="legend-dot" />{team === 'ally' ? '我方' : '敌方'}可见战绩 {players.filter(p => p.status === 'ready').length} / {players.length}<span className="ml-auto">点击舰长查看详细统计</span></div>
   </Card>
 }

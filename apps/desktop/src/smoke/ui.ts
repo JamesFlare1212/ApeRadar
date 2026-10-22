@@ -64,7 +64,7 @@ export async function validateUi(window: BrowserWindow) {
       const shipTab = [...document.querySelectorAll('[role=tab]')].find(element => element.textContent === '单船统计');
       shipTab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, ctrlKey: false }));
       await waitFor(() => shipTab.getAttribute('aria-selected') === 'true', 'Player statistics tab did not change');
-      assert(document.querySelector('[role=tabpanel]')?.textContent.includes('单船场均'), 'Ship statistics did not render');
+      assert(document.querySelector('[role=dialog] [role=tabpanel]')?.textContent.includes('单船场均'), 'Ship statistics did not render');
       document.querySelector('[aria-label=关闭窗口]').click();
       await waitFor(() => !document.querySelector('[role=dialog]'), 'Player details did not close');
       await waitFor(() => document.activeElement === player, 'Dialog focus did not return to the player');
@@ -78,10 +78,21 @@ export async function validateUi(window: BrowserWindow) {
       await waitFor(() => !document.querySelector('[role=menu]'), 'The watch menu did not close with Escape');
       result.watchMenuKeyboardAndScrolling = true;
 
-      const weighted = [...document.querySelectorAll('[data-slot=toggle-group-item]')].find(element => element.textContent === '加权胜率');
-      weighted.click();
-      await waitFor(async () => (await api.getState()).settings.winrate === 'weighted', 'Win-rate selection was not saved');
-      result.winrateSelection = true;
+      const winrateTabs = document.querySelector('[role=tablist][aria-label=胜率显示口径]');
+      const account = [...winrateTabs.querySelectorAll('[role=tab]')].find(element => element.textContent === '账号胜率');
+      const weighted = [...winrateTabs.querySelectorAll('[role=tab]')].find(element => element.textContent === '加权胜率');
+      weighted.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, ctrlKey: false }));
+      await waitFor(async () => (await api.getState()).settings.winrate === 'weighted' && weighted.getAttribute('aria-selected') === 'true', 'Win-rate tab selection was not saved');
+      const weightedPanel = document.getElementById(weighted.getAttribute('aria-controls'));
+      assert(weightedPanel?.getAttribute('aria-labelledby') === weighted.id && weightedPanel.querySelectorAll('.player-table tbody tr').length === 24, 'The selected win-rate tab is not associated with the full roster');
+      assert([...document.querySelectorAll('.team-winrate')].every(element => element.title.includes('加权胜率')), 'Team summaries did not use the selected win-rate mode');
+      weighted.focus();
+      weighted.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      await waitFor(() => document.activeElement === account, 'The win-rate arrow key did not move focus');
+      account.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      await waitFor(async () => (await api.getState()).settings.winrate === 'account' && account.getAttribute('aria-selected') === 'true', 'Keyboard win-rate selection was not saved');
+      assert([...document.querySelectorAll('.team-winrate')].every(element => element.title.includes('账号胜率')), 'Team summaries did not restore account win rates');
+      result.winrateTabsKeyboardAndPersistence = true;
 
       location.hash = '/settings/general';
       await waitFor(() => document.getElementById('rate-mode'), 'General settings did not render');
@@ -148,21 +159,9 @@ export async function validateUi(window: BrowserWindow) {
       result.emptyNumericField = true;
 
       location.hash = '/overview';
-      await waitFor(() => document.querySelector('[aria-label=搜索阵容]'), 'The roster search did not render');
-      const rosterSearch = document.querySelector('[aria-label=搜索阵容]');
-      fill(rosterSearch, 'no-matching-ship-xyz');
-      await waitFor(() => !document.querySelector('.player-table tbody tr'), 'The roster search did not filter both teams');
-      fill(rosterSearch, '大和');
-      await waitFor(() => document.querySelectorAll('.player-table tbody tr').length === 2, 'The ship search did not find both teams');
-      fill(rosterSearch, '');
-      await waitFor(() => document.querySelectorAll('.player-table tbody tr').length === 24, 'Clearing the roster search did not restore the roster');
-      openMenu(document.querySelector('[aria-label=筛选舰种]'));
-      await waitFor(() => document.querySelector('[role=listbox]'), 'The ship filter did not open');
-      const destroyer = [...document.querySelectorAll('[role=option]')].find(element => element.textContent === '驱逐舰');
-      destroyer.focus(); destroyer.click();
-      const destroyerCount = (await api.getState()).battle.players.filter(player => player.ship.type === 'Destroyer').length;
-      await waitFor(() => document.querySelectorAll('.player-table tbody tr').length === destroyerCount, 'The ship filter did not preserve the matching players');
-      result.rosterSearchAndShipFilter = true;
+      await waitFor(() => document.querySelectorAll('.player-table tbody tr').length === 24, 'The full roster did not render after navigation');
+      assert(!document.querySelector('[aria-label=搜索阵容], [aria-label=筛选舰种]'), 'Removed roster filters are still present');
+      result.fullRosterWithoutFilters = true;
 
       const beforeImport = (await api.getState()).settings;
       await api.saveSettings({ ...beforeImport, region: 'ASIA', autoQuery: false });
@@ -190,6 +189,22 @@ export async function validateUi(window: BrowserWindow) {
       fill(search, '');
       await waitFor(() => document.querySelector('[data-slot=item]'), 'Clearing the search did not restore the list');
       result.listItemsAndEmptyState = true;
+
+      const watchFilter = document.querySelector('[aria-label=关注类型]');
+      assert(watchFilter?.getAttribute('data-slot') === 'select-trigger', 'The watch filter must use shadcn Select');
+      const watchEntries = (await api.getState()).watchlist;
+      openMenu(watchFilter);
+      await waitFor(() => document.querySelector('[role=listbox]'), 'The watch type select did not open');
+      const positiveOption = [...document.querySelectorAll('[role=option]')].find(element => element.textContent === '值得信赖');
+      positiveOption.focus(); positiveOption.click();
+      await waitFor(() => document.querySelectorAll('[data-slot=item]').length === watchEntries.filter(entry => entry.status === 'positive').length, 'The watch type select did not filter entries');
+      assert(watchFilter.getAttribute('data-value') === 'positive', 'The watch type select label is stale');
+      openMenu(watchFilter);
+      await waitFor(() => document.querySelector('[role=listbox]'), 'The watch type select did not reopen');
+      const allOption = [...document.querySelectorAll('[role=option]')].find(element => element.textContent === '全部标记');
+      allOption.focus(); allOption.click();
+      await waitFor(() => document.querySelectorAll('[data-slot=item]').length === watchEntries.length, 'Selecting all watch types did not restore entries');
+      result.watchTypeSelect = true;
 
       const watched = (await api.getState()).watchlist[0];
       const watchCount = (await api.getState()).watchlist.length;
