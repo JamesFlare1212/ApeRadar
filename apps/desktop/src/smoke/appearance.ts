@@ -66,11 +66,13 @@ function inspectAppearance() {
     const reference = row.closest('table')!.querySelector<HTMLTableRowElement>('tbody tr:not(.player-hidden)')!
     const button = row.querySelector('.player-name-button')!.getBoundingClientRect()
     const referenceButton = reference.querySelector('.player-name-button')!.getBoundingClientRect()
+    const rowHeight = row.getBoundingClientRect().height
+    const referenceRowHeight = reference.getBoundingClientRect().height
     const ship = row.querySelector('.ship-name')!.getBoundingClientRect()
     const status = row.querySelector('.player-status')!.getBoundingClientRect()
     const sharedLine = Math.abs(ship.top + ship.height / 2 - status.top - status.height / 2) < 1
-    if (!sharedLine || status.left < ship.right || status.right > button.right + 1 || button.height > referenceButton.height + 1 || row.getBoundingClientRect().height > reference.getBoundingClientRect().height + 1) {
-      throw new Error('Hidden-player rows must keep the standard two-line height without overlapping ship and status text: ' + JSON.stringify({ buttonHeight: button.height, referenceButtonHeight: referenceButton.height, sharedLine, shipRight: ship.right, statusLeft: status.left, statusRight: status.right, buttonRight: button.right }))
+    if (!sharedLine || status.left < ship.right || status.right > button.right + 1 || button.height > referenceButton.height + 1 || rowHeight > referenceRowHeight + 1) {
+      throw new Error('Hidden-player rows must keep the standard two-line height without overlapping ship and status text: ' + JSON.stringify({ width: innerWidth, fontSize: getComputedStyle(document.body).fontSize, rowHeight, referenceRowHeight, buttonHeight: button.height, referenceButtonHeight: referenceButton.height, sharedLine, shipRight: ship.right, statusLeft: status.left, statusRight: status.right, buttonRight: button.right }))
     }
   }
   const overflow = document.documentElement.scrollWidth > innerWidth

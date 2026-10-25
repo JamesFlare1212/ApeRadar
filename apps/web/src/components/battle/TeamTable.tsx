@@ -43,7 +43,7 @@ export function TeamTable({ team, players, averageWinrate, settings, watchlist, 
               <Hint content={`${name} · ${player.ship.name}`}><Button variant="plain" className="player-name-button" aria-label={`${name} · ${player.ship.name}，查看详细统计`} onClick={() => onPlayer(player.key)}>
                 <span className="player-name-line"><span className="player-name truncate">{settings.showNames && player.clanTag && <span className="clan-tag">[{player.clanTag}] </span>}{masked}</span>{player.isSelf && <Badge tone="brand" className="shrink-0 px-1 py-0">你</Badge>}</span>
                 <span className="player-ship-line"><span className="ship-name truncate"><span className="tier">{player.ship.tier === 11 ? <Icon icon={Star} /> : ['','I','II','III','IV','V','VI','VII','VIII','IX','X'][player.ship.tier] ?? '?'}</span> {player.ship.name}</span>
-                  {player.status === 'hidden' && <Badge className="player-status px-1 py-0"><Icon icon={EyeOff} />战绩已隐藏</Badge>}
+                  {player.status === 'hidden' && <Badge className="player-status border-0 px-1 py-0 leading-[inherit]"><Icon icon={EyeOff} />战绩已隐藏</Badge>}
                 </span>
               </Button></Hint>
             </div></TableCell>
