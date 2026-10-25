@@ -1,4 +1,4 @@
-import { faCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+import { CircleHelp } from 'lucide-react'
 import type { ShipType } from '@aperadar/shared/types'
 import { Icon } from '../Icon.js'
 import aircarrierIcon from '../../assets/ship-types/aircarrier.svg'
@@ -11,6 +11,6 @@ const shipIcons: Record<Exclude<ShipType, 'Unknown'>, string> = {
   AirCarrier: aircarrierIcon, Battleship: battleshipIcon, Cruiser: cruiserIcon, Destroyer: destroyerIcon, Submarine: submarineIcon,
 }
 export function ShipGlyph({ type, size = 27 }: { type: ShipType; size?: number }) {
-  if (type === 'Unknown') return <Icon icon={faCircleQuestion} size={size} />
+  if (type === 'Unknown') return <Icon icon={CircleHelp} size={size} />
   return <img className="ship-type-icon" src={shipIcons[type]} width={size} height={size} alt="" aria-hidden="true" draggable={false} />
 }

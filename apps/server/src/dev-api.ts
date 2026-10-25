@@ -4,7 +4,7 @@ import { readCatalog } from './arena.ts'
 import { RadarDatabase } from './database.ts'
 import { RadarService } from './service.ts'
 import { message } from './api.ts'
-import type { FilePayload, QueryOptions, WatchInput } from '@aperadar/shared/types'
+import type { QueryOptions, WatchInput } from '@aperadar/shared/types'
 import { initialUpdateState } from '@aperadar/shared/updates'
 import appPackage from '../../../package.json'
 import { loadApiConfig } from './config.ts'
@@ -41,7 +41,6 @@ export async function createDevApi(catalogPath: string, dataDirectory: string, c
         case '/api/updates/download':
         case '/api/updates/install':
           result = initialUpdateState(appPackage.version, 'disabled', '浏览器预览不支持应用更新，请在正式桌面版本中检查。'); break
-        case '/api/import': result = await service.importArena(input as FilePayload); break
         case '/api/demo': result = service.loadDemo(); break
         case '/api/history': result = service.loadBattle(String((input as { id: string }).id)); break
         case '/api/query': result = await service.query(input as QueryOptions); break

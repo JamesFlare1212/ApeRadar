@@ -1,9 +1,12 @@
 import type { BrowserWindow } from 'electron'
-import type { RadarPlayer } from '@aperadar/shared/types'
+import type { Battle } from '@aperadar/shared/types'
+import type { RadarDatabase } from '@aperadar/server/database'
 import { sortRosterPlayers } from '@aperadar/shared/roster'
 
-export async function validateUi(window: BrowserWindow) {
-  const initialRoster = await window.webContents.executeJavaScript('window.aperadar.getState().then(state => state.battle.players)') as RadarPlayer[]
+export async function validateUi(window: BrowserWindow, database: RadarDatabase) {
+  const initialBattle = await window.webContents.executeJavaScript('window.aperadar.getState().then(state => state.battle)') as Battle
+  const initialRoster = initialBattle.players
+  database.saveBattle({ ...initialBattle, id: 'smoke-history-snapshot', sourceName: 'tempArenaInfo.json', isDemo: false, map: 'Smoke_Test_Waters_'.repeat(8), players: initialRoster.slice(0, 1) })
   const expectedRosterKeys = (['ally', 'enemy'] as const).flatMap(team => sortRosterPlayers(initialRoster.filter(player => player.team === team)).map(player => player.key))
   return window.webContents.executeJavaScript(`(async () => {
     const api = window.aperadar;
@@ -30,22 +33,96 @@ export async function validateUi(window: BrowserWindow) {
       location.hash = '/overview';
       await waitFor(() => document.querySelectorAll('.player-table tbody tr').length === 24, 'The roster did not render');
       assert(document.querySelectorAll('[data-slot=table]').length === 2, 'The roster must use shadcn tables');
+      assert(typeof api.openFile === 'undefined' && typeof api.importArena === 'undefined', 'The renderer still exposes manual file import');
+      assert(!document.querySelector('input[type=file], .drop-overlay') && ![...document.querySelectorAll('button')].some(button => button.textContent.includes('打开阵容')), 'The removed manual file import UI is still present');
+      result.manualFileImportRemoved = true;
 
       const sidebar = document.querySelector('[data-slot=sidebar][data-state]');
       const sidebarState = sidebar.getAttribute('data-state');
-      const sidebarTrigger = document.querySelector('[data-slot=sidebar-header] [data-slot=sidebar-trigger]');
+      const sidebarTrigger = document.querySelector('.app-titlebar [data-sidebar=trigger]');
+      assert(sidebarTrigger && !document.querySelector('[data-slot=sidebar-header] [data-sidebar=trigger]'), 'The sidebar toggle must remain in the content header');
+      assert(!document.querySelector('#app-sidebar [aria-label="打开阵容文件"]'), 'The removed sidebar import action is still present');
+      assert(![...document.querySelectorAll('.roster-actions button')].some(button => button.textContent.includes('导出 CSV')), 'The removed roster CSV action is still present');
+      const container = document.getElementById('app-sidebar');
+      const measureSidebar = () => {
+        const rect = container.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, width: rect.width, top: rect.top,
+          brandTop: container.querySelector('.sidebar-brand').getBoundingClientRect().top,
+          navigationTop: container.querySelector('.sidebar-main-navigation button').getBoundingClientRect().top,
+          footerTop: container.querySelector('[data-slot=sidebar-footer]').getBoundingClientRect().top,
+          headerTop: document.querySelector('.app-titlebar').getBoundingClientRect().top,
+          gapWidth: document.querySelector('[data-slot=sidebar-gap]').getBoundingClientRect().width,
+          contentLeft: document.querySelector('[data-slot=sidebar-inset]').getBoundingClientRect().left };
+      };
+      const sidebarMotion = document.createElement('style');
+      sidebarMotion.textContent = '.app-sidebar { transition: left 200ms linear, right 200ms linear !important; } [data-slot=sidebar-gap] { transition: width 200ms linear !important; }';
+      document.head.append(sidebarMotion);
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      const beforeSidebar = measureSidebar();
       sidebarTrigger.click();
       await waitFor(() => sidebar.getAttribute('data-state') !== sidebarState, 'The sidebar did not toggle');
+      container.getBoundingClientRect();
+      const slide = container.getAnimations().find(animation => animation instanceof CSSTransition && ['left', 'right'].includes(animation.transitionProperty));
+      assert(slide, 'The sidebar did not create a horizontal CSS transition');
+      // Seek the real transition so hidden-window frame timing cannot skip its midpoint.
+      slide.pause();
+      slide.currentTime = 100;
+      const movingSidebar = measureSidebar();
+      const targetLeft = sidebar.getAttribute('data-state') === 'collapsed' ? -beforeSidebar.width : 0;
+      assert(Math.abs(movingSidebar.left - beforeSidebar.left) > .5 && Math.abs(movingSidebar.left - targetLeft) > .5, 'The sidebar did not animate horizontally');
+      for (const animation of [...container.getAnimations(), ...document.querySelector('[data-slot=sidebar-gap]').getAnimations()]) animation.finish();
+      await waitFor(() => Math.abs(container.getBoundingClientRect().left - targetLeft) < .5, 'The sidebar slide did not finish');
+      await waitFor(() => Math.abs(document.querySelector('[data-slot=sidebar-gap]').getBoundingClientRect().width - (targetLeft === 0 ? beforeSidebar.width : 0)) < .5, 'The sidebar layout gap did not finish sliding');
+      sidebarMotion.remove();
       assert(localStorage.getItem('aperadar.sidebar') === sidebar.getAttribute('data-state'), 'The sidebar preference was not persisted');
+      assert(sidebarTrigger.getAttribute('aria-expanded') === String(sidebar.getAttribute('data-state') === 'expanded'), 'The header toggle did not announce the sidebar state');
+      const afterSidebar = measureSidebar();
+      for (const key of ['width', 'top', 'brandTop', 'navigationTop', 'footerTop', 'headerTop']) {
+        assert(Math.abs(beforeSidebar[key] - afterSidebar[key]) < .5 && Math.abs(beforeSidebar[key] - movingSidebar[key]) < .5, 'Toggling the sidebar changed its vertical layout or width: ' + key);
+      }
+      const collapsedSidebar = sidebar.getAttribute('data-state') === 'collapsed' ? afterSidebar : beforeSidebar;
+      const expandedSidebar = sidebar.getAttribute('data-state') === 'expanded' ? afterSidebar : beforeSidebar;
+      assert(collapsedSidebar.right <= .5 && collapsedSidebar.gapWidth < .5 && collapsedSidebar.contentLeft <= 8.5, 'The collapsed sidebar leaves a mini rail or reserved space');
+      assert(expandedSidebar.left >= 0 && expandedSidebar.gapWidth > 100, 'The expanded sidebar did not restore its width');
+      if (sidebar.getAttribute('data-state') === 'collapsed') {
+        sidebarTrigger.focus();
+        container.querySelector('.sidebar-brand').focus();
+        assert(container.inert && document.activeElement === sidebarTrigger, 'The hidden sidebar still accepts keyboard focus');
+      }
+      const assertSidebarControlsVisible = () => {
+        if (sidebar.getAttribute('data-state') === 'collapsed') return;
+        const rail = container.getBoundingClientRect();
+        const controls = document.querySelectorAll('#app-sidebar .sidebar-brand, #app-sidebar .sidebar-main-navigation button, #app-sidebar .sidebar-connection, #app-sidebar [aria-label=偏好设置], #app-sidebar .sidebar-update button');
+        assert([...controls].every(control => {
+          const rect = control.getBoundingClientRect();
+          return rect.width >= 24 && rect.height >= 24 && rect.left >= rail.left && rect.right <= rail.right && rect.top >= 0 && rect.bottom <= innerHeight;
+        }), 'A sidebar control is clipped or too small after toggling');
+      };
+      assertSidebarControlsVisible();
       sidebarTrigger.click();
       await waitFor(() => sidebar.getAttribute('data-state') === sidebarState, 'The sidebar did not restore');
+      assertSidebarControlsVisible();
       result.sidebarPreference = true;
+      result.sidebarOffcanvasWithoutVerticalShift = true;
+      result.removedSidebarImportAndRosterExport = true;
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, bubbles: true, cancelable: true }));
+      await waitFor(() => sidebar.getAttribute('data-state') !== sidebarState, 'The sidebar keyboard shortcut did not toggle');
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, bubbles: true, cancelable: true }));
+      await waitFor(() => sidebar.getAttribute('data-state') === sidebarState, 'The sidebar keyboard shortcut did not restore');
+      result.sidebarHeaderAndKeyboardToggle = true;
 
       const roster = (await api.getState()).battle.players;
       const rosterButtons = [...document.querySelectorAll('.player-name-button')];
       const expectedOrder = ${JSON.stringify(expectedRosterKeys)}.map(key => roster.find(player => player.key === key));
       assert(rosterButtons.every((button, index) => button.getAttribute('aria-label').startsWith(expectedOrder[index].name + ' ·')), 'The roster does not follow game-style ship order');
       result.rosterOrder = true;
+      assert([...document.querySelectorAll('.player-hidden')].every(row => {
+        const identity = row.querySelector('.player-identity').getBoundingClientRect();
+        const firstCell = row.cells[0].getBoundingClientRect();
+        const actionCell = row.cells[row.cells.length - 1].getBoundingClientRect();
+        return identity.right > firstCell.right + 24 && identity.right <= actionCell.left && identity.width > 0;
+      }), 'Hidden-player identities do not use the empty statistics space or overlap watch actions');
+      result.hiddenIdentityUsesEmptyStatistics = true;
       const publicPlayers = roster.filter(player => player.status === 'ready' && player.stats?.overall.battles > 0);
       await waitFor(() => document.querySelectorAll('.winrate-point').length === publicPlayers.length, 'The chart lost public player samples');
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -73,34 +150,67 @@ export async function validateUi(window: BrowserWindow) {
       const captain = expectedOrder[0];
       const findWatch = async () => (await api.getState()).watchlist.find(entry => entry.region === captain.region && entry.accountId === captain.accountId);
       const originalWatch = await findWatch();
-      const watchButton = label => [...document.querySelectorAll('[role=dialog] button[aria-pressed]')].find(button => button.textContent === label);
-      const selectedWatch = document.querySelector('[role=dialog] button[aria-pressed=true]');
+      const watchButton = label => [...document.querySelectorAll('[role=dialog] [data-slot=toggle-group-item]')].find(button => button.textContent === label);
+      const isSelected = button => button?.getAttribute('data-state') === 'on';
+      const alertButton = label => [...document.querySelectorAll('[role=alertdialog] button')].find(button => button.textContent === label);
+      const confirmRemoval = async () => {
+        await waitFor(() => document.querySelector('[role=alertdialog]'), 'Watch removal did not ask for confirmation');
+        alertButton('移除关注').click();
+        await waitFor(() => !document.querySelector('[role=alertdialog]'), 'Watch removal confirmation did not close');
+      };
+      const selectedWatch = document.querySelector('[role=dialog] [data-slot=toggle-group-item][data-state=on]');
       if (selectedWatch) {
         selectedWatch.click();
-        await waitFor(async () => !(await findWatch()) && selectedWatch.getAttribute('aria-pressed') === 'false', 'The existing watch mark did not toggle off');
+        await confirmRemoval();
+        await waitFor(async () => !(await findWatch()), 'The confirmed watch mark did not toggle off');
       }
       const noteInput = document.querySelector('#player-watch-note');
-      fill(noteInput, 'Toggle regression note');
       for (const [label, status] of [['值得信赖', 'positive'], ['需要留意', 'negative'], ['疑似异常', 'suspected']]) {
+        fill(noteInput, 'Toggle regression note');
         const button = watchButton(label);
         button.click();
-        await waitFor(async () => button.getAttribute('aria-pressed') === 'true' && (await findWatch())?.status === status, 'The watch mark did not persist: ' + status);
+        await waitFor(async () => isSelected(button) && (await findWatch())?.status === status && !button.disabled, 'The watch mark did not persist: ' + status);
         assert((await findWatch()).note === 'Toggle regression note', 'Selecting a watch mark lost the note');
         button.click();
-        await waitFor(async () => !(await findWatch()) && !document.querySelector('[role=dialog] button[aria-pressed=true]'), 'Clicking the selected watch mark did not cancel it: ' + status);
-        assert(noteInput.value === 'Toggle regression note', 'Cancelling a watch mark cleared the draft note');
+        await waitFor(() => document.querySelector('[role=alertdialog]'), 'Removing the selected type did not require confirmation');
+        assert((await findWatch())?.note === 'Toggle regression note', 'Opening removal confirmation deleted the note');
+        alertButton('保留记录').click();
+        await waitFor(() => !document.querySelector('[role=alertdialog]'), 'Cancelling watch removal did not close confirmation');
+        assert(isSelected(button) && (await findWatch())?.status === status, 'Cancelling watch removal lost the saved mark');
+        button.click();
+        await confirmRemoval();
+        await waitFor(async () => !(await findWatch()) && !isSelected(button), 'Confirmed removal did not delete the watch: ' + status);
+        assert(noteInput.value === '', 'Confirmed deletion left the deleted note in the editor');
       }
       watchButton('值得信赖').click();
-      await waitFor(() => watchButton('值得信赖').getAttribute('aria-pressed') === 'true', 'The positive mark did not select');
+      await waitFor(() => isSelected(watchButton('值得信赖')) && !watchButton('值得信赖').disabled, 'The positive mark did not select');
+      watchButton('值得信赖').focus();
+      watchButton('值得信赖').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      await waitFor(() => document.activeElement === watchButton('需要留意'), 'The watch type group did not support arrow-key navigation');
       watchButton('需要留意').click();
-      await waitFor(async () => (await findWatch())?.status === 'negative' && watchButton('需要留意').getAttribute('aria-pressed') === 'true' && watchButton('值得信赖').getAttribute('aria-pressed') === 'false', 'Switching watch marks did not replace the selection');
-      await api.setWatch(originalWatch ?? { region: captain.region, accountId: captain.accountId, name: captain.name, status: null });
+      await waitFor(async () => (await findWatch())?.status === 'negative' && isSelected(watchButton('需要留意')) && !watchButton('需要留意').disabled, 'Switching watch marks did not replace the selection');
+      const saveNote = () => [...document.querySelectorAll('[role=dialog] button')].find(button => button.textContent === '保存备注');
+      fill(noteInput, 'Independent note regression');
+      await waitFor(() => !saveNote().disabled, 'Editing an existing note did not enable its save button');
+      saveNote().click();
+      await waitFor(async () => (await findWatch())?.note === 'Independent note regression' && !watchButton('需要留意').disabled, 'Saving a note without changing its mark failed');
+      fill(noteInput, 'Unsaved detail regression');
+      document.querySelector('[role=dialog] [aria-label=关闭窗口]').click();
+      await waitFor(() => document.querySelector('[role=alertdialog]'), 'Closing unsaved notes did not ask for confirmation');
+      assert((await findWatch())?.note === 'Independent note regression', 'An unsaved note was committed implicitly');
+      alertButton('继续编辑').click();
+      await waitFor(() => !document.querySelector('[role=alertdialog]'), 'Returning to the note editor did not close confirmation');
+      assert(noteInput.value === 'Unsaved detail regression', 'Cancelling close lost the note draft');
+      saveNote().click();
+      await waitFor(async () => (await findWatch())?.note === 'Unsaved detail regression' && !watchButton('需要留意').disabled, 'The preserved note draft did not save');
       result.playerWatchToggleAndPersistence = true;
+      result.independentNoteSaveAndUnsavedClose = true;
 
       document.querySelector('[aria-label=关闭窗口]').click();
       await waitFor(() => !document.querySelector('[role=dialog]'), 'Player details did not close');
       await waitFor(() => document.activeElement === player, 'Dialog focus did not return to the player');
       result.playerDialogAndTabs = true;
+      await api.setWatch(originalWatch ?? { region: captain.region, accountId: captain.accountId, name: captain.name, status: null });
 
       const bodyOverflow = document.body.style.overflow;
       openMenu(document.querySelector('.player-table [data-slot=dropdown-menu-trigger]'));
@@ -121,6 +231,9 @@ export async function validateUi(window: BrowserWindow) {
         await api.setWatch({ region: captain.region, accountId: captain.accountId, name: captain.name, status, note: 'Menu toggle regression note' });
         await waitFor(() => watchTrigger.classList.contains('watch-' + status), 'The watch menu trigger did not reflect its saved mark');
         await selectWatchOption(label);
+        await waitFor(() => document.querySelector('[role=alertdialog]'), 'The menu removed a mark without confirmation');
+        assert((await findWatch())?.note === 'Menu toggle regression note', 'The menu deleted a note before confirmation');
+        await confirmRemoval();
         await waitFor(async () => !(await findWatch()) && watchTrigger.classList.contains('muted'), 'Selecting the checked menu option did not remove the mark: ' + status);
       }
       await selectWatchOption('值得信赖');
@@ -138,13 +251,13 @@ export async function validateUi(window: BrowserWindow) {
       assert([...document.querySelectorAll('.player-name-button')].every((button, index) => button.getAttribute('aria-label').startsWith(expectedOrder[index].name + ' ·')), 'Changing the win-rate metric moved roster rows');
       const weightedPanel = document.getElementById(weighted.getAttribute('aria-controls'));
       assert(weightedPanel?.getAttribute('aria-labelledby') === weighted.id && weightedPanel.querySelectorAll('.player-table tbody tr').length === 24, 'The selected win-rate tab is not associated with the full roster');
-      assert([...document.querySelectorAll('.team-winrate')].every(element => element.title.includes('加权胜率')), 'Team summaries did not use the selected win-rate mode');
+      assert([...document.querySelectorAll('.team-winrate')].every(element => element.getAttribute('aria-label').includes('加权胜率')), 'Team summaries did not use the selected win-rate mode');
       weighted.focus();
       weighted.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
       await waitFor(() => document.activeElement === account, 'The win-rate arrow key did not move focus');
       account.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
       await waitFor(async () => (await api.getState()).settings.winrate === 'account' && account.getAttribute('aria-selected') === 'true', 'Keyboard win-rate selection was not saved');
-      assert([...document.querySelectorAll('.team-winrate')].every(element => element.title.includes('账号胜率')), 'Team summaries did not restore account win rates');
+      assert([...document.querySelectorAll('.team-winrate')].every(element => element.getAttribute('aria-label').includes('账号胜率')), 'Team summaries did not restore account win rates');
       result.winrateTabsKeyboardAndPersistence = true;
 
       location.hash = '/settings/general';
@@ -267,12 +380,21 @@ export async function validateUi(window: BrowserWindow) {
       assert(source.getAttribute('data-value') === 'VORTEX', 'The source label is stale');
       result.selectAutosave = true;
 
-      const cache = document.getElementById('cache-minutes');
+      let cache = document.getElementById('cache-minutes');
       const previousCache = (await api.getState()).settings.cacheMinutes;
       fill(cache, '0');
       await waitFor(() => document.getElementById('cache-minutes-error')?.getAttribute('role') === 'alert', 'The field error did not render');
       assert(cache.getAttribute('aria-invalid') === 'true' && cache.getAttribute('aria-describedby').includes('cache-minutes-error'), 'The field error is not associated with its input');
       assert((await api.getState()).settings.cacheMinutes === previousCache, 'An invalid field value was persisted');
+      location.hash = '/settings/general';
+      await waitFor(() => document.getElementById('rate-mode'), 'General settings did not retain the invalid draft');
+      const errorLink = document.querySelector('#settings-save-error a');
+      assert(errorLink?.textContent.includes('缓存时间'), 'The error summary did not identify the field in another section');
+      errorLink.click();
+      await waitFor(() => document.activeElement?.id === 'cache-minutes', 'The error summary did not navigate and focus the invalid control');
+      cache = document.getElementById('cache-minutes');
+      assert(cache.value === '0', 'Navigating to an error lost its invalid draft');
+      result.errorSummarySectionAndFocus = true;
       fill(cache, String(previousCache));
       await waitFor(() => !document.getElementById('cache-minutes-error'), 'The corrected field error did not clear');
       result.fieldErrorRecovery = true;
@@ -292,31 +414,27 @@ export async function validateUi(window: BrowserWindow) {
       assert(!document.querySelector('[aria-label=搜索阵容], [aria-label=筛选舰种]'), 'Removed roster filters are still present');
       result.fullRosterWithoutFilters = true;
 
-      const beforeImport = (await api.getState()).settings;
-      await api.saveSettings({ ...beforeImport, region: 'ASIA', autoQuery: false });
-      const arena = { matchGroup: 'pvp', mapName: 'Smoke_Test_Waters_'.repeat(8), dateTime: '22.10.2026 12:00:00', vehicles: [{ id: 42, name: 'SmokeCaptain', relation: 0, shipId: roster[0].ship.id }] };
-      await api.importArena({ name: 'smoke-history.json', base64: btoa(JSON.stringify(arena)) });
-      await api.loadDemo();
-      await api.saveSettings(beforeImport);
       location.hash = '/history';
-      await waitFor(() => document.querySelector('a[aria-label^="回看 "]'), 'Imported history did not render');
+      await waitFor(() => document.querySelector('a[aria-label^="回看 "]'), 'Saved history did not render');
       const historySearch = document.querySelector('[aria-label=搜索历史对局]');
       fill(historySearch, 'no-matching-map-xyz');
       await waitFor(() => !document.querySelector('a[aria-label^="回看 "]') && document.querySelector('[data-slot=empty]'), 'The history search did not filter records');
-      fill(historySearch, '');
+      [...document.querySelectorAll('[data-slot=empty-content] button')].find(button => button.textContent === '清除搜索').click();
       await waitFor(() => document.querySelector('a[aria-label^="回看 "]'), 'Clearing history search did not restore records');
+      assert(document.activeElement === historySearch, 'Clearing history search did not restore input focus');
       document.querySelector('a[aria-label^="回看 "]').click();
       await waitFor(() => location.hash === '#/overview' && document.querySelectorAll('.player-table tbody tr').length === 1, 'Loading history did not restore its roster');
       await api.loadDemo();
-      result.historyImportSearchAndLoad = true;
+      result.historySnapshotSearchAndLoad = true;
 
       location.hash = '/watchlist';
       await waitFor(() => document.querySelector('[aria-label=搜索关注名单]') && document.querySelector('[data-slot=item]'), 'The watch list did not use Item');
       const search = document.querySelector('[aria-label=搜索关注名单]');
       fill(search, 'no-matching-captain-xyz');
       await waitFor(() => document.querySelector('[data-slot=empty]'), 'The filtered list did not show Empty');
-      fill(search, '');
+      [...document.querySelectorAll('[data-slot=empty-content] button')].find(button => button.textContent === '清除搜索与筛选').click();
       await waitFor(() => document.querySelector('[data-slot=item]'), 'Clearing the search did not restore the list');
+      assert(document.activeElement === search, 'Clearing watch search did not restore input focus');
       result.listItemsAndEmptyState = true;
 
       const watchFilter = document.querySelector('[aria-label=关注类型]');

@@ -157,7 +157,7 @@
   "paletteSource": "apps/web/assets/palette-tokens.css",
   "palettes": [
     {
-      "selector": ":root,\n:root[data-palette='graphite']",
+      "selector": ":root,\r\n:root[data-palette='graphite']",
       "tokens": {
         "palette-background-light": "#f5f6f8",
         "palette-surface-light": "#ffffff",

@@ -34,10 +34,16 @@
     "quietMonitoring": true
   },
   "ui": {
+    "manualFileImportRemoved": true,
     "sidebarPreference": true,
+    "sidebarOffcanvasWithoutVerticalShift": true,
+    "removedSidebarImportAndRosterExport": true,
+    "sidebarHeaderAndKeyboardToggle": true,
     "rosterOrder": true,
+    "hiddenIdentityUsesEmptyStatistics": true,
     "chartRankingAndKeyboardTooltip": true,
     "playerWatchToggleAndPersistence": true,
+    "independentNoteSaveAndUnsavedClose": true,
     "playerDialogAndTabs": true,
     "watchMenuKeyboardAndScrolling": true,
     "watchMenuToggleAndPersistence": true,
@@ -50,10 +56,11 @@
     "regionSelectStickyHeaderPreserved": true,
     "typographyPreviewAutosaveAndReset": true,
     "selectAutosave": true,
+    "errorSummarySectionAndFocus": true,
     "fieldErrorRecovery": true,
     "emptyNumericField": true,
     "fullRosterWithoutFilters": true,
-    "historyImportSearchAndLoad": true,
+    "historySnapshotSearchAndLoad": true,
     "listItemsAndEmptyState": true,
     "watchTypeSelect": true,
     "watchRemovalConfirmation": true,
@@ -70,8 +77,8 @@
   "appearance": {
     "views": 240,
     "dialogViews": 144,
-    "textChecks": 14724,
-    "minimumTextContrast": 4.53100417231784,
+    "textChecks": 11664,
+    "minimumTextContrast": 4.70046540062233,
     "minimumControlContrast": 3.470932120091245,
     "widths": [
       1440,
@@ -119,7 +126,7 @@
     "theme": "dark",
     "accent": "#c4ccd5",
     "row": "rgb(40, 49, 58)",
-    "button": "rgb(196, 204, 213)"
+    "button": "oklab(0.698561 -0.00606236 -0.0229068 / 0.3)"
   },
   "versions": {
     "node": "24.22.0",
@@ -155,5 +162,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792705235513"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792941388579"
 }

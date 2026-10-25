@@ -1,12 +1,7 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import type { FontAwesomeIconProps } from '@fortawesome/react-fontawesome'
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { LucideIcon, LucideProps } from 'lucide-react'
 
-type IconProps = Omit<FontAwesomeIconProps, 'icon' | 'size'> & {
-  icon: IconDefinition
-  size?: number
-}
+type IconProps = LucideProps & { icon: LucideIcon }
 
-export function Icon({ size = 16, style, ...props }: IconProps) {
-  return <FontAwesomeIcon aria-hidden="true" focusable="false" {...props} style={{ width: size, height: size, ...style }} />
+export function Icon({ icon: Glyph, size = 16, ...props }: IconProps) {
+  return <Glyph size={size} aria-hidden="true" focusable="false" data-icon="inline-start" {...props} />
 }

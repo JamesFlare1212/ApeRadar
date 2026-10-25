@@ -18,6 +18,12 @@
   the local shadcn/ui components and wrappers.
 - Style components with the existing semantic design tokens, support light and dark themes, and
   preserve keyboard accessibility and existing interaction behavior.
+- Use the official shadcn/ui skill in `.agents/skills/shadcn/`. From the repository root, run
+  shadcn CLI commands with `pnpm dlx shadcn@latest <command> --cwd apps/web`.
+- The project-scoped Codex MCP configuration is in `.codex/config.toml` and starts shadcn in
+  `apps/web`. Its Windows command and absolute working directory target this local checkout;
+  update them when moving the checkout or using another operating system. Codex loads project
+  MCP configuration only after the project is trusted and the session is restarted.
 
 ## Validation
 
@@ -67,3 +73,9 @@ Use this release notes template, adjusting validation bullets to reflect the che
 
 - <Describe checks/tests that passed/failed.>
 ```
+
+## 开发守则
+
+- 优先使用shadcn/ui，只有在必要情况，询问用户后才可以不使用
+- 任务完成收尾时运行测试来验证改动
+- 除非用户说明，不然不要commit改动
