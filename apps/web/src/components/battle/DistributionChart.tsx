@@ -1,13 +1,14 @@
+import { cn } from '@/lib/utils.js'
+import { ChartNoAxesCombined } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
-import { faChartLine } from '@fortawesome/free-solid-svg-icons'
 import type { Battle, Settings, Team } from '@aperadar/shared/types'
 import { formatPercent } from '@aperadar/shared/statistics'
 import { buildRankedWinrateChart } from '@aperadar/shared/winrate-chart'
 import { rankedChartRows, type RankedChartRow } from '../../lib/rankedChartData.js'
 import { Icon } from '../Icon.js'
 import { EmptyState } from '../ui.js'
-import { Card, CardContent, CardHeader } from '../ui/card.js'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.js'
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltipContent } from '../ui/chart.js'
 
 const teamNames: Record<Team, string> = { ally: '我方', enemy: '敌方' }
@@ -43,7 +44,7 @@ export function DistributionChart({ battle, settings }: { battle: Battle; settin
       const x = props.cx, y = props.cy
       const show = () => { cancelDismiss(); setActive({ team, key: entry.player.key, x, y }) }
       const label = `${teamNames[team]}，队内升序第 ${entry.rank} / ${data.counts[team]} 位，${settings.showNames ? `${entry.player.name}，` : ''}${entry.player.ship.name}，${basis} ${formatPercent(entry.rate)}`
-      return <circle key={`${team}:${entry.player.key}`} className={`winrate-point winrate-point-${team}`} cx={x} cy={y} r={4.5} fill={`var(--color-${team})`} stroke="var(--surface)" strokeWidth={1.5} tabIndex={0} role="img" aria-label={label} aria-describedby={tooltipId} data-team={team} data-rank={entry.rank} data-rate={entry.rate}
+      return <circle key={`${team}:${entry.player.key}`} className={cn(`winrate-point winrate-point-${team}`)} cx={x} cy={y} r={4.5} fill={`var(--color-${team})`} stroke="var(--surface)" strokeWidth={1.5} tabIndex={0} role="img" aria-label={label} aria-describedby={tooltipId} data-team={team} data-rank={entry.rank} data-rate={entry.rate}
         onPointerEnter={show} onPointerLeave={dismiss} onFocus={show} onBlur={dismiss} onClick={show}
         onKeyDown={event => { if (event.key === 'Escape') { cancelDismiss(); setActive(null) } }} />
     }
@@ -58,12 +59,12 @@ export function DistributionChart({ battle, settings }: { battle: Battle; settin
   }, [rows, data, basis, settings.showNames, tooltipId])
 
   return <Card role="region" aria-label="胜率分布">
-    <CardHeader><h2 className="flex items-center gap-2 font-semibold"><Icon icon={faChartLine} size={18} />胜率分布</h2><p className="text-sm text-muted-foreground">{basis} · 双方各自从低到高</p></CardHeader>
+    <CardHeader><CardTitle><h2 className="flex items-center gap-2"><Icon icon={ChartNoAxesCombined} />胜率分布</h2></CardTitle></CardHeader>
     <CardContent>
       <p id={descriptionId} className="sr-only">纵轴为{basis}，双方分别按胜率从低到高排列，横向位置表示队内相对顺序。每个圆点代表一位玩家，我方 {data.counts.ally} 人，敌方 {data.counts.enemy} 人。隐藏或未取得的战绩不计入。悬停或聚焦圆点可查看具体数值。</p>
-      {rows.length ? <ChartContainer ref={plot} config={config} className="relative h-[420px] min-h-[420px] w-full aspect-auto" role="group" aria-label={`双方玩家${basis}升序对比`} aria-describedby={descriptionId} onPointerLeave={dismiss} overlay={point && active ? <div id={tooltipId} role="tooltip" className="absolute z-20 max-w-[calc(100%-1rem)]" style={{ left: Math.max(0, Math.min((plot.current?.clientWidth ?? 320) - 220, active.x)), top: active.y < 100 ? active.y + 14 : active.y - 95 }} onPointerEnter={cancelDismiss} onPointerLeave={dismiss}><ChartTooltipContent active label={settings.showNames ? point.player.name : `${teamNames[point.team]}第 ${point.rank} 位`} payload={[{ graphicalItemId: point.team, dataKey: point.team, name: point.team, value: point.rate, color: `var(--${point.team})` }]} formatter={() => <div className="grid min-w-40 gap-2"><span className="text-muted-foreground">{point.player.ship.name}</span><div className="flex justify-between gap-4"><span>{teamNames[point.team]} · 第 {point.rank} / {data.counts[point.team]} 位</span><strong className={`text-${point.team} tabular-nums`}>{formatPercent(point.rate)}</strong></div></div>} /></div> : null}>
+      {rows.length ? <ChartContainer ref={plot} config={config} className="relative h-[420px] min-h-[420px] w-full aspect-auto" role="group" aria-label={`双方玩家${basis}升序对比`} aria-describedby={descriptionId} onPointerLeave={dismiss} overlay={point && active ? <div id={tooltipId} role="tooltip" className="absolute z-20 max-w-[calc(100%-1rem)]" style={{ left: Math.max(0, Math.min((plot.current?.clientWidth ?? 320) - 220, active.x)), top: active.y < 100 ? active.y + 14 : active.y - 95 }} onPointerEnter={cancelDismiss} onPointerLeave={dismiss}><ChartTooltipContent active label={settings.showNames ? point.player.name : `${teamNames[point.team]}第 ${point.rank} 位`} payload={[{ graphicalItemId: point.team, dataKey: point.team, name: point.team, value: point.rate, color: `var(--${point.team})` }]} formatter={() => <div className="grid min-w-40 gap-2"><span className="text-muted-foreground">{point.player.ship.name}</span><div className="flex justify-between gap-4"><span>{teamNames[point.team]} · 第 {point.rank} / {data.counts[point.team]} 位</span><strong className={cn(`text-${point.team} tabular-nums`)}>{formatPercent(point.rate)}</strong></div></div>} /></div> : null}>
         {chart}
-      </ChartContainer> : <EmptyState icon={<Icon icon={faChartLine} size={28} />} title="尚无公开战绩">取得公开战绩后，这里将按胜率从低到高展示双方玩家。</EmptyState>}
+      </ChartContainer> : <EmptyState icon={<Icon icon={ChartNoAxesCombined} />} title="尚无公开战绩">取得公开战绩后，这里将按胜率从低到高展示双方玩家。</EmptyState>}
     </CardContent>
   </Card>
 }

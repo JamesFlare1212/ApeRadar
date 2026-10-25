@@ -1,4 +1,4 @@
-// Render the Font Awesome application mark into Windows application assets.
+// Render the Lucide application mark into Windows application assets.
 const { app, BrowserWindow } = require('electron')
 const fs = require('node:fs/promises')
 const path = require('node:path')

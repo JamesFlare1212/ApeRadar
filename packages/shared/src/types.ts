@@ -70,7 +70,6 @@ export interface AppState {
   apiConfiguration: { filePath: string | null; applicationIdManaged: boolean; applicationIdSource: 'environment' | 'file' | null }
   activities: Activity[]; shipVersion: string; dataLocation: string
 }
-export interface FilePayload { name: string; base64: string }
 export interface QueryOptions { force?: boolean; failedOnly?: boolean }
 export interface WatchInput { region: Region; accountId: string; name: string; status: WatchStatus | null; note?: string }
 export interface RadarBridge {
@@ -81,8 +80,6 @@ export interface RadarBridge {
   openUpdateDownload(): Promise<void>
   onUpdatesChanged(callback: (state: UpdateState) => void): () => void
   getState(): Promise<AppState>
-  importArena(file: FilePayload): Promise<AppState>
-  openFile(): Promise<AppState | null>
   loadDemo(): Promise<AppState>
   loadBattle(id: string): Promise<AppState>
   query(options?: QueryOptions): Promise<AppState>

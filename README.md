@@ -1,6 +1,6 @@
 # ApeRadar Next（海猴雷达）
 
-**ApeRadar 的中文名是「海猴雷达」**，是一款面向《战舰世界》（World of Warships）的本地桌面战绩助手。自动监测游戏阵容，也支持手动导入阵容 JSON 或回放，集中展示双方舰长的账号/加权胜率、单船场均伤害与对比图表，并提供对局历史、关注名单、备注和导出功能。战绩数据用于了解阵容，不代表本场胜负预测。
+**ApeRadar（海猴雷达）** is a local desktop companion for World of Warships. It automatically monitors the configured game directory and displays account and weighted win rates, ship average damage, comparison charts, battle history, watch records, notes, and editable text summaries. Statistics describe the roster and do not predict the current battle's outcome.
 
 基于 ApeRadar 发布包机制研究，用 **React + Vite + Tailwind CSS + Electron + Node.js + TypeScript + SQLite** 实现的桌面重写版。包管理器统一为 **pnpm**。
 
@@ -38,21 +38,21 @@ pnpm dev:web
 ## 使用
 
 1. Open Settings → Game connection. The app discovers current WGC and Steam clients and validates the selected installation. AUTO uses the active server in game preferences and recent startup logs; choose a region manually if evidence is unavailable or conflicting.
-2. Monitoring starts automatically and follows the configured game directory. A monitoring notice appears only when attention is needed. You can also use 「打开阵容」 or drag in `tempArenaInfo.json` / `.wowsreplay` to import a lineup manually.
-3. 查询结果逐位更新。阵容保留游戏文件中的原始顺序，可搜索舰长/船名、筛选舰种、切换账号/加权胜率，并打开详细统计。
-4. 点击星标维护本地关注与备注。在历史页回看快照，或主动导出 CSV、生成文字摘要。
+2. Monitoring starts automatically and follows the configured game directory. New `tempArenaInfo.json` files load automatically. A monitoring notice appears only when attention is needed.
+3. Results update per player. Roster order stays stable when switching account or weighted win rates. Open a captain to inspect detailed statistics; ship average damage remains visible when narrow layouts hide total battles.
+4. Use the star action to maintain local watch records and notes. Reopen saved snapshots from History, or generate and copy a text summary of the current battle.
 
-真实导入默认自动查询。设置中可以关闭此项，在离线环境先检查阵容。
+New game rosters trigger queries automatically by default. Disable automatic queries in Settings to review the detected roster before querying.
 
 ## 已实现
 
-- 阵容 JSON 与回放首块读取，正确处理 UTF-8 字节长度、BOM、空白和不完整文件。
+- Automatic roster JSON loading handles UTF-8, BOM, whitespace, and incomplete game files.
 - 亚/美/欧/俄服，以及按阵营分配区服的混合房间。
 - Vortex、WG 公共 API。WG 使用批量昵称、账号、军团查询；俄服自动使用 Vortex。
 - 全局请求并发上限、启动间隔、超时、429/5xx 退避、逐玩家错误恢复和取消。
 - SQLite 设置、对局快照、关注名单与有时效的战绩缓存；参数化 SQL 与 WAL。
 - 已验证的胜率算法、精英/海猴阈值、双方均值和升序胜率折线图。缺数据、隐藏与错误分别呈现。
-- 浅色/深色/系统主题、名称遮蔽、可编辑摘要和 CSV 导出。
+- Light, dark, and system themes; name privacy; editable text summaries.
 - Radix 焦点管理、Escape 关闭详情并恢复焦点、固定阵容顺序、键盘操作、375px 到桌面的响应布局。
 - Electron 沙箱、隔离 preload、有限类型桥、IPC 来源检查和自定义本地资源协议。
 
@@ -114,7 +114,7 @@ apps/
   desktop/              Electron 主进程、隔离 preload、桌面构建与验证脚本
     src/                main.ts / preload.ts
     build/              Windows 打包图标
-    resources/          Font Awesome 应用图标
+    resources/          Lucide application icon
     electron-builder.json Windows 打包配置
   server/               SQLite、文件监测、API 与查询生命周期
     src/                领域服务与浏览器开发接口

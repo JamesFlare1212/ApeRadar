@@ -25,6 +25,7 @@
 .muted { color: var(--text-muted); }
 .numeric { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
 .brand-mark { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 27%; background: var(--accent); color: var(--on-accent); }
+.brand-mark > svg { width: 56%; height: 56%; }
 .startup-screen { display: flex; min-height: 100dvh; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px; color: var(--text-muted); }
 .startup-screen strong { color: var(--text); font-size: 1.625rem; }
 .startup-screen strong span { color: var(--accent); font-size: 0.875rem; }

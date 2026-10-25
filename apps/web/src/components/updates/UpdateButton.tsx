@@ -1,9 +1,10 @@
+import { Download, RefreshCw, RotateCw } from 'lucide-react'
 import { useState } from 'react'
-import { faArrowRotateRight, faArrowsRotate, faDownload } from '@fortawesome/free-solid-svg-icons'
 import { bridge } from '../../lib/bridge.js'
 import { useUpdates } from '../../hooks/useUpdates.js'
 import { Icon } from '../Icon.js'
-import { Badge, Button } from '../ui.js'
+import { Badge, Button, Hint } from '../ui.js'
+import { cn } from '../../lib/utils.js'
 import { Progress } from '../ui/progress.js'
 import { Spinner } from '../ui/spinner.js'
 
@@ -34,7 +35,7 @@ export function UpdateButton({ inline = false, compact = false, installBlocked =
       : status === 'installing' ? '正在重启并安装…' : actionLabel
   const visualStatus = active ? status : pending ? ready ? 'installing' : available ? 'downloading' : 'checking' : available ? 'available' : status
   const downloadIcon = ['available', 'downloading'].includes(visualStatus)
-  const icon = downloadIcon ? faDownload : ready || visualStatus === 'installing' ? faArrowRotateRight : faArrowsRotate
+  const icon = downloadIcon ? Download : ready || visualStatus === 'installing' ? RotateCw : RefreshCw
   const detail = loadError || (disabled ? state?.disabledReason
     : blocked ? '更新已就绪，请等待当前查询完成后重启并安装。'
       : state?.error || (available ? `发现新版本 v${state?.availableVersion}。${state?.mode === 'portable' ? '打开下载页面后手动替换便携版。' : '下载完成后，点击“重启并安装”应用更新。'}`
@@ -54,14 +55,16 @@ export function UpdateButton({ inline = false, compact = false, installBlocked =
     finally { setPending(false) }
   }
 
-  return <div className={inline ? 'settings-update-action' : 'sidebar-update relative inline-flex shrink-0'}>
-    <Button variant={inline ? 'outline' : 'ghost'} className={inline ? 'settings-update-button' : compact ? 'update-button update-button-compact' : 'update-button'}
-      aria-label={label} aria-busy={busy} title={`${label}${detail && detail !== label ? `\n${detail}` : ''}${state ? `\nv${state.currentVersion}` : ''}`}
+  return <div className={cn(inline ? 'settings-update-action' : 'sidebar-update relative inline-flex shrink-0')}>
+    <Hint content={<><p>{detail || label}</p>{state && <p>当前版本 v{state.currentVersion}</p>}</>}><span className="inline-flex" tabIndex={busy || blocked || disabled ? 0 : undefined} aria-disabled={busy || blocked || disabled || undefined} aria-label={busy || blocked || disabled ? `${label}：${detail || label}` : undefined}>
+    <Button variant={inline ? 'outline' : 'ghost'} className={cn(inline ? 'settings-update-button' : 'update-button', !inline && compact && 'update-button-compact')}
+      aria-label={label} aria-busy={busy}
       disabled={busy || blocked || disabled} onClick={() => { void activate() }}>
-      {['checking', 'installing'].includes(visualStatus) && !loadError ? <Spinner aria-hidden="true" className="size-4" /> : <Icon icon={icon} size={inline ? 16 : 18} />}
+      {['checking', 'installing'].includes(visualStatus) && !loadError ? <Spinner aria-hidden="true" data-icon="inline-start" /> : <Icon icon={icon} />}
       {inline && <span>{actionLabel}</span>}
       {!inline && (available || ready) && <Badge tone="brand" className="absolute right-0.5 top-0.5 size-2.5 bg-primary p-0" aria-hidden="true" />}
     </Button>
+    </span></Hint>
     {!inline && visualStatus === 'downloading' && <Progress value={progress} className="absolute inset-x-1 bottom-0 h-1 w-auto" aria-label="更新下载进度" />}
     {!inline && <span className="sr-only" role="status" aria-atomic="true">{detail}</span>}
   </div>

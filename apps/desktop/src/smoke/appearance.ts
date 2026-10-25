@@ -62,6 +62,17 @@ function inspectAppearance() {
   if (undersizedPreviews.length) throw new Error('Appearance artwork did not render: ' + JSON.stringify({ width: innerWidth, fontSize: getComputedStyle(document.body).fontSize, previews: undersizedPreviews }))
   const toolbarGroups = [...document.querySelectorAll('.roster-toolbar > div')].map(element => element.getBoundingClientRect())
   if (toolbarGroups.length === 2 && Math.min(toolbarGroups[0].right, toolbarGroups[1].right) - Math.max(toolbarGroups[0].left, toolbarGroups[1].left) > 1 && Math.min(toolbarGroups[0].bottom, toolbarGroups[1].bottom) - Math.max(toolbarGroups[0].top, toolbarGroups[1].top) > 1) throw new Error('Roster toolbar controls overlap')
+  for (const row of document.querySelectorAll<HTMLTableRowElement>('.player-hidden')) {
+    const reference = row.closest('table')!.querySelector<HTMLTableRowElement>('tbody tr:not(.player-hidden)')!
+    const button = row.querySelector('.player-name-button')!.getBoundingClientRect()
+    const referenceButton = reference.querySelector('.player-name-button')!.getBoundingClientRect()
+    const ship = row.querySelector('.ship-name')!.getBoundingClientRect()
+    const status = row.querySelector('.player-status')!.getBoundingClientRect()
+    const sharedLine = Math.abs(ship.top + ship.height / 2 - status.top - status.height / 2) < 1
+    if (!sharedLine || status.left < ship.right || status.right > button.right + 1 || button.height > referenceButton.height + 1 || row.getBoundingClientRect().height > reference.getBoundingClientRect().height + 1) {
+      throw new Error('Hidden-player rows must keep the standard two-line height without overlapping ship and status text: ' + JSON.stringify({ buttonHeight: button.height, referenceButtonHeight: referenceButton.height, sharedLine, shipRight: ship.right, statusLeft: status.left, statusRight: status.right, buttonRight: button.right }))
+    }
+  }
   const overflow = document.documentElement.scrollWidth > innerWidth
   const overflowingElements = overflow ? [...document.querySelectorAll('#main-content *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).slice(0, 10).map(element => ({ tag: element.tagName, className: element.getAttribute('class'), right: element.getBoundingClientRect().right, width: element.getBoundingClientRect().width })) : []
   return { textCount, minimumTextContrast, minimumControlContrast, failures, overflow, scrollWidth: document.documentElement.scrollWidth, overflowingElements }

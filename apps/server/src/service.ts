@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events'
 import { createHash, randomUUID } from 'node:crypto'
-import type { Activity, AppState, Battle, FilePayload, QueryOptions, Settings, SupportedRegion, WatchInput } from '@aperadar/shared/types'
-import { fileSchema, querySchema, settingsSchema, watchSchema } from '@aperadar/shared/settings'
+import type { Activity, AppState, Battle, QueryOptions, Settings, SupportedRegion, WatchInput } from '@aperadar/shared/types'
+import { querySchema, settingsSchema, watchSchema } from '@aperadar/shared/settings'
 import { teamSummary } from '@aperadar/shared/statistics'
 import { buildBattle, getShip, latestArena, parseArenaBytes, readArenaFile, resolveRegion, type ShipCatalog } from './arena.ts'
 import { WargamingApi, message } from './api.ts'
@@ -18,7 +18,7 @@ export class RadarService extends EventEmitter {
   private settings: Settings
   private battle: Battle | null
   private activities: Activity[] = []
-  private queryState: AppState['query'] = { status: 'idle', done: 0, total: 0, message: '等待导入阵容' }
+  private queryState: AppState['query'] = { status: 'idle', done: 0, total: 0, message: '等待游戏阵容' }
   private monitorState: AppState['monitor'] = { enabled: true, lastFile: null, message: '正在等待游戏阵容文件…', error: null }
   private controller: AbortController | null = null
   private timer: ReturnType<typeof setInterval> | null = null
@@ -42,7 +42,7 @@ export class RadarService extends EventEmitter {
     this.health = initialApiHealth(this.healthOptions.config?.requests.healthIntervalMs)
     this.battle = database.lastBattle() ?? createDemo(this.catalog)
     this.applyShipDetails(this.battle)
-    this.log('info', '欢迎回来。导入阵容或连接游戏目录，开始查看战局。', false)
+    this.log('info', '欢迎回来。连接游戏目录，开始查看战局。', false)
     void this.refreshMissingShips(this.battle)
     this.startMonitor()
   }
@@ -109,24 +109,20 @@ export class RadarService extends EventEmitter {
     this.healthPending = pending
     return pending
   }
-  async importArena(input: FilePayload, autoQuery = true) {
-    const file = fileSchema.parse(input)
-    return this.importBytes(Buffer.from(file.base64, 'base64'), file.name, autoQuery)
-  }
   async importBytes(bytes: Buffer, filename: string, autoQuery = true, monitorGeneration?: number): Promise<AppState> {
     const settings = structuredClone(this.settings)
     const revision = this.routingRevision
     const region = await resolveRegion(settings)
     if (this.disposed) throw new Error('应用已关闭')
     if (monitorGeneration !== undefined && (monitorGeneration !== this.monitorGeneration || !this.monitorState.enabled)) return this.state()
-    if (revision !== this.routingRevision) throw new Error('游戏或区服设置已变更，请重新导入阵容')
+    if (revision !== this.routingRevision) throw new Error('游戏或区服设置已变更，请等待自动载入阵容')
     const battle = buildBattle(parseArenaBytes(bytes), filename, settings, region, this.catalog)
     this.stopQuery()
     this.battle = battle
     if (this.healthTimer && this.settings.region === 'AUTO') this.refreshHealth(true)
     this.database.saveBattle(battle)
-    this.queryState = { status: 'idle', done: 0, total: battle.players.filter(p => p.status !== 'bot').length, message: '阵容已导入，等待查询' }
-    this.log('success', `阵容已导入：${battle.players.length} 位玩家`)
+    this.queryState = { status: 'idle', done: 0, total: battle.players.filter(p => p.status !== 'bot').length, message: '阵容已载入，等待查询' }
+    this.log('success', `阵容已载入：${battle.players.length} 位玩家`)
     void this.refreshMissingShips(battle)
     if (autoQuery && this.settings.autoQuery) void this.query().catch(error => this.log('error', message(error)))
     return this.state()
@@ -153,9 +149,9 @@ export class RadarService extends EventEmitter {
   }
   async query(input: QueryOptions = {}): Promise<AppState> {
     const options = querySchema.parse(input)
-    if (!this.battle) throw new Error('请先导入阵容')
+    if (!this.battle) throw new Error('请先连接游戏并等待阵容载入')
     if (this.battle.isDemo) {
-      this.queryState = { status: 'complete', done: 24, total: 24, message: '示例对局无需联网；请导入真实阵容开始查询' }
+      this.queryState = { status: 'complete', done: 24, total: 24, message: '示例对局无需联网；连接游戏后将自动载入真实阵容' }
       this.publish()
       return this.state()
     }

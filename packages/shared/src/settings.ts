@@ -46,6 +46,5 @@ export function normalizeSettings(value: unknown): Settings {
   if (result.data.textTemplate === LEGACY_DEFAULT_TEXT_TEMPLATE) result.data.textTemplate = DEFAULT_SETTINGS.textTemplate
   return result.data
 }
-export const fileSchema = z.object({ name: z.string().min(1).max(260), base64: z.string().min(1).max(6_000_000) })
 export const watchSchema = z.object({ region: z.enum([...SUPPORTED_REGIONS, 'CN']), accountId: z.string().regex(/^[\w-]{1,40}$/), name: z.string().min(1).max(100), status: z.enum(['positive', 'negative', 'suspected']).nullable(), note: z.string().max(500).optional() })
 export const querySchema = z.object({ force: z.boolean().optional(), failedOnly: z.boolean().optional() })

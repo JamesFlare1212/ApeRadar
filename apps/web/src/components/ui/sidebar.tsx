@@ -191,7 +191,7 @@ function Sidebar({
           }
           side={side}
           onCloseAutoFocus={event => {
-            const trigger = [...document.querySelectorAll<HTMLButtonElement>('[data-slot="sidebar-trigger"][aria-controls]')].find(element => element.getAttribute('aria-controls') === props.id)
+            const trigger = [...document.querySelectorAll<HTMLButtonElement>('[data-sidebar="trigger"][aria-controls]')].find(element => element.getAttribute('aria-controls') === props.id)
             if (trigger) { event.preventDefault(); trigger.focus({ preventScroll: true }) }
           }}
         >
@@ -239,6 +239,7 @@ function Sidebar({
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
           className
         )}
+        inert={state === "collapsed" && collapsible === "offcanvas"}
         {...props}
       >
         <div

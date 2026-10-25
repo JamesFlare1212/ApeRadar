@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AppState, FilePayload, QueryOptions, RadarBridge, Settings, WatchInput } from '@aperadar/shared/types'
+import type { AppState, QueryOptions, RadarBridge, Settings, WatchInput } from '@aperadar/shared/types'
 import type { UpdateState } from '@aperadar/shared/updates'
 
 const api: RadarBridge = {
@@ -15,8 +15,6 @@ const api: RadarBridge = {
     return () => { ipcRenderer.removeListener('radar:updates-changed', listener) }
   },
   getState: () => ipcRenderer.invoke('radar:state'),
-  importArena: (file: FilePayload) => ipcRenderer.invoke('radar:import', file),
-  openFile: () => ipcRenderer.invoke('radar:open-file'),
   loadDemo: () => ipcRenderer.invoke('radar:demo'),
   loadBattle: (id: string) => ipcRenderer.invoke('radar:history', id),
   query: (options?: QueryOptions) => ipcRenderer.invoke('radar:query', options),

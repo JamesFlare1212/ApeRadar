@@ -1,14 +1,15 @@
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { faArrowLeft, faArrowRight, faGear, faSliders, faWaveSquare } from '@fortawesome/free-solid-svg-icons'
+import { cn } from '@/lib/utils.js'
+import { Activity, ArrowLeft, ArrowRight, Settings } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { AppState } from '@aperadar/shared/types'
 import { Icon } from '../Icon.js'
 import { BrandMark } from './BrandMark.js'
 import { Badge, Button } from '../ui.js'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert.js'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from '../ui/sidebar.js'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar.js'
 import { UpdateButton } from '../updates/UpdateButton.js'
 
-interface NavigationItem { key: string; title: string; icon: IconDefinition }
+interface NavigationItem { key: string; title: string; icon: LucideIcon }
 
 export function AppSidebar({ settingsMode, activeKey, items, state, onSelect, onHome, onSettings, onConnection, notify, installBlocked }: {
   settingsMode: boolean
@@ -22,35 +23,48 @@ export function AppSidebar({ settingsMode, activeKey, items, state, onSelect, on
   notify: (message: string, error?: boolean) => void
   installBlocked: boolean
 }) {
-  const { isMobile, setOpenMobile, open } = useSidebar()
+  const { isMobile, setOpenMobile } = useSidebar()
   function activate(action: () => void) { action(); if (isMobile) setOpenMobile(false) }
   const health = state.health?.checking ? '检查中' : state.health?.status === 'healthy' ? '连接正常' : state.health?.status === 'unavailable' ? '连接异常' : state.health?.status === 'degraded' ? '部分异常' : '等待检查'
-  return <Sidebar id="app-sidebar" collapsible="icon" className="border-sidebar-border">
-    <SidebarHeader className="flex-row items-center gap-2 py-4 group-data-[collapsible=icon]:justify-center">
-      <Button variant="ghost" className="min-w-0 flex-1 justify-start px-2 group-data-[collapsible=icon]:hidden" aria-label={settingsMode ? '返回工作区' : 'ApeRadar 首页'} onClick={() => activate(onHome)}>
-        {settingsMode ? <Icon icon={faSliders} size={24} /> : <BrandMark size={30} />}
-        <span className="min-w-0 text-left"><strong className="block text-base">{settingsMode ? '设置' : 'ApeRadar'}</strong><small className="block text-[0.5625rem] tracking-wider text-muted-foreground">{settingsMode ? 'MAKE IT YOURS' : 'BATTLE INTELLIGENCE'}</small></span>
-      </Button>
-      <SidebarTrigger aria-label={isMobile ? '关闭导航' : open ? '收起侧栏' : '展开侧栏'} aria-expanded={isMobile ? undefined : open} aria-controls="app-sidebar" className="size-8 shrink-0" />
+  const healthTone = state.health?.checking ? 'bg-muted-foreground' : state.health?.status === 'healthy' ? 'bg-success' : state.health?.status === 'unavailable' ? 'bg-danger' : state.health?.status === 'degraded' ? 'bg-enemy' : 'bg-muted-foreground'
+  const secondaryKeys = settingsMode ? ['connection', 'about'] : ['help']
+  const navigationGroups = [
+    { label: settingsMode ? '偏好设置' : '工作空间', items: items.filter(item => !secondaryKeys.includes(item.key)) },
+    { label: settingsMode ? '应用' : '支持', items: items.filter(item => secondaryKeys.includes(item.key)) },
+  ]
+
+  return <Sidebar id="app-sidebar" variant="inset" collapsible="offcanvas" className="app-sidebar">
+    <SidebarHeader className="px-2 pt-3 pb-2">
+      <SidebarMenu><SidebarMenuItem>
+        <SidebarMenuButton type="button" size="lg" tooltip="ApeRadar 首页" aria-label="ApeRadar 首页" className="sidebar-brand" onClick={() => activate(onHome)}>
+          <BrandMark size={32} />
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5"><strong className="truncate text-base font-semibold tracking-tight">ApeRadar <span className="text-muted-foreground">Next</span></strong><span className="truncate text-xs text-muted-foreground">战局情报工作区</span></span>
+        </SidebarMenuButton>
+      </SidebarMenuItem></SidebarMenu>
     </SidebarHeader>
-    <SidebarContent className="sidebar-main-navigation">
-      <SidebarGroup>
-        <SidebarGroupLabel>{settingsMode ? '偏好设置' : '工作空间'}</SidebarGroupLabel>
-        <nav aria-label={settingsMode ? '设置导航' : '主要导航'}><SidebarMenu className="group-data-[collapsible=icon]:items-center">{items.map(item => <SidebarMenuItem key={item.key}>
-          <SidebarMenuButton type="button" isActive={activeKey === item.key} aria-current={activeKey === item.key ? 'page' : undefined} aria-label={item.title} tooltip={item.title} className="h-10" onClick={() => activate(() => onSelect(item.key))}>
-            <Icon icon={item.icon} size={18} /><span>{item.title}</span>
+    <SidebarContent className="sidebar-main-navigation gap-3">
+      {navigationGroups.filter(group => group.items.length > 0).map(group => <SidebarGroup key={group.label} className="py-1">
+        <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+        <SidebarGroupContent><nav aria-label={`${group.label}导航`}><SidebarMenu>{group.items.map(item => <SidebarMenuItem key={item.key}>
+          <SidebarMenuButton type="button" isActive={activeKey === item.key} aria-current={activeKey === item.key ? 'page' : undefined} aria-label={item.title} tooltip={item.title} className="h-10 max-md:h-11" onClick={() => activate(() => onSelect(item.key))}>
+            <Icon icon={item.icon} /><span>{item.title}</span>
           </SidebarMenuButton>
-        </SidebarMenuItem>)}</SidebarMenu></nav>
-      </SidebarGroup>
+          {item.key === 'watchlist' && state.watchlist.length > 0 && <SidebarMenuBadge>{state.watchlist.length}</SidebarMenuBadge>}
+        </SidebarMenuItem>)}</SidebarMenu></nav></SidebarGroupContent>
+      </SidebarGroup>)}
     </SidebarContent>
-    <SidebarFooter className="gap-2 pb-3 group-data-[collapsible=icon]:items-center">
-      {!settingsMode && <div className="space-y-3 group-data-[collapsible=icon]:hidden">
-        <Button variant="ghost" className="w-full justify-start px-2 text-xs" onClick={() => activate(onConnection)}><Icon icon={faWaveSquare} size={15} /><span>API {health}</span><Badge className={`ml-auto size-2 p-0 ${state.health?.status === 'healthy' ? 'bg-success' : state.health?.status === 'unavailable' ? 'bg-danger' : 'bg-muted-foreground'}`} aria-hidden="true" /></Button>
-        {state.monitor.error && <Alert className="game-connection" variant="destructive"><AlertTitle>自动监测异常</AlertTitle><AlertDescription><p>{state.monitor.error}</p><Button variant="link" className="h-auto p-0 text-xs" onClick={() => activate(onConnection)}>检查游戏目录<Icon icon={faArrowRight} size={12} /></Button></AlertDescription></Alert>}
-      </div>}
-      <div className="flex w-full items-center gap-2 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:flex-col">
-        <SidebarMenu className="min-w-0 flex-1 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:flex-none"><SidebarMenuItem><SidebarMenuButton type="button" tooltip={settingsMode ? '返回工作区' : '偏好设置'} aria-label={settingsMode ? '返回工作区' : '偏好设置'} onClick={() => activate(settingsMode ? onHome : onSettings)}><Icon icon={settingsMode ? faArrowLeft : faGear} size={18} /><span>{settingsMode ? '返回工作区' : '设置'}</span></SidebarMenuButton></SidebarMenuItem></SidebarMenu>
-        <UpdateButton compact={!isMobile && !open} notify={notify} installBlocked={installBlocked} />
+    <SidebarFooter className="gap-2 px-2 pt-3 pb-3">
+      <SidebarMenu><SidebarMenuItem>
+        <SidebarMenuButton type="button" size="lg" variant="outline" tooltip={state.monitor.error ? `自动监测异常：${state.monitor.error}` : `API ${health}`} aria-label={`API ${health}${state.monitor.error ? '，自动监测异常' : ''}`} className="sidebar-connection" onClick={() => activate(onConnection)}>
+          <Icon icon={Activity} />
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5"><span className="text-xs font-medium">数据连接</span><span className="truncate text-xs text-muted-foreground">API {health}</span></span>
+          <Badge className={cn('sidebar-health-dot ml-auto size-2 shrink-0 p-0', healthTone)} aria-hidden="true" />
+        </SidebarMenuButton>
+      </SidebarMenuItem></SidebarMenu>
+      {state.monitor.error && <Alert className="game-connection" variant="destructive"><AlertTitle>自动监测异常</AlertTitle><AlertDescription><p>{state.monitor.error}</p><Button variant="link" className="h-auto p-0 text-xs" onClick={() => activate(onConnection)}>检查游戏目录<Icon data-icon="inline-end" icon={ArrowRight} /></Button></AlertDescription></Alert>}
+      <div className="flex w-full items-center gap-2">
+        <SidebarMenu className="min-w-0 flex-1"><SidebarMenuItem><SidebarMenuButton type="button" tooltip={settingsMode ? '返回工作区' : '偏好设置'} aria-label={settingsMode ? '返回工作区' : '偏好设置'} className="h-10" onClick={() => activate(settingsMode ? onHome : onSettings)}><Icon icon={settingsMode ? ArrowLeft : Settings} /><span>{settingsMode ? '返回工作区' : '设置'}</span></SidebarMenuButton></SidebarMenuItem></SidebarMenu>
+        <UpdateButton notify={notify} installBlocked={installBlocked} />
       </div>
     </SidebarFooter>
   </Sidebar>

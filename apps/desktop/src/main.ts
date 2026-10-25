@@ -8,7 +8,7 @@ import { z } from 'zod'
 import electronUpdater from 'electron-updater'
 import { RadarDatabase } from '@aperadar/server/database'
 import { RadarService } from '@aperadar/server/service'
-import { readArenaFile, readCatalog } from '@aperadar/server/arena'
+import { readCatalog } from '@aperadar/server/arena'
 import { discoverGameClients } from '@aperadar/server/game-discovery'
 import { inspectGameClient } from '@aperadar/server/game-client'
 import { DOMAINS, WargamingApi } from '@aperadar/server/api'
@@ -95,7 +95,6 @@ async function createWindow() {
   handle('radar:updates-download', () => updates!.download())
   handle('radar:updates-install', () => updates!.install())
   handle('radar:updates-open-download', () => shell.openExternal(UPDATE_RELEASES_URL))
-  handle('radar:import', input => service!.importArena(input as never))
   handle('radar:demo', () => service!.loadDemo())
   handle('radar:history', id => service!.loadBattle(z.string().max(100).parse(id)))
   handle('radar:query', input => service!.query((input ?? {}) as QueryOptions))
@@ -105,11 +104,6 @@ async function createWindow() {
   handle('radar:game-client', input => inspectGameClient(z.string().max(1024).parse(input)))
   handle('radar:settings', input => service!.saveSettings(input))
   handle('radar:watch', input => service!.setWatch(input as WatchInput))
-  handle('radar:open-file', async () => {
-    const result = await dialog.showOpenDialog(mainWindow, { title: '导入对局阵容', filters: [{ name: '阵容 / 回放', extensions: ['json', 'wowsreplay'] }], properties: ['openFile'] })
-    if (result.canceled || !result.filePaths[0]) return null
-    return service!.importBytes(await readArenaFile(result.filePaths[0]), result.filePaths[0])
-  })
   handle('radar:choose-path', async () => {
     const result = await dialog.showOpenDialog(mainWindow, { title: '选择 World of Warships 游戏目录', properties: ['openDirectory'] })
     return result.canceled ? null : result.filePaths[0] ?? null
@@ -148,7 +142,7 @@ async function createWindow() {
       const updateResult = await mainWindow.webContents.executeJavaScript("(async()=>{const state=await window.aperadar.getUpdates();const button=document.querySelector('.sidebar-update button');return {mode:state.mode,version:state.currentVersion,downloadBridge:typeof window.aperadar.openUpdateDownload,control:!!button&&button.disabled};})()") as { mode: string; version: string; downloadBridge: string; control: boolean }
       if (updateResult.mode !== 'disabled' || updateResult.version !== app.getVersion() || updateResult.downloadBridge !== 'function' || !updateResult.control) throw new Error('Desktop update bridge assertion failed')
       await new Promise(resolve => setTimeout(resolve, 400))
-      const darkStyle = await mainWindow.webContents.executeJavaScript("({theme:document.documentElement.className,accent:getComputedStyle(document.documentElement).getPropertyValue('--accent'),row:getComputedStyle(document.querySelector('.self-row')).backgroundColor,button:getComputedStyle(document.querySelector('[data-slot=button][data-variant=default]')).backgroundColor})")
+      const darkStyle = await mainWindow.webContents.executeJavaScript("({theme:document.documentElement.className,accent:getComputedStyle(document.documentElement).getPropertyValue('--accent'),row:getComputedStyle(document.querySelector('.self-row')).backgroundColor,button:getComputedStyle(document.querySelector('.roster-refresh')).backgroundColor})")
       await writeFile(path.join(dataPath, 'desktop-dark.png'), (await mainWindow.webContents.capturePage()).toPNG())
       const apiConfigResult = await mainWindow.webContents.executeJavaScript(`(async()=>{
         const api=window.aperadar, original=(await api.getState()).settings;
@@ -194,7 +188,7 @@ async function createWindow() {
       await mainWindow.webContents.executeJavaScript("location.hash='/overview'")
       // Let the restored workspace finish its mount-time IPC requests before exiting.
       await new Promise(resolve => setTimeout(resolve, 400))
-      const ui = await validateUi(mainWindow)
+      const ui = await validateUi(mainWindow, service!.database)
       const updatePresentation = await validateUpdatePresentation(mainWindow, updates!.status())
       const typography = await validateTypography(mainWindow)
       const appearance = await validateAppearance(mainWindow)

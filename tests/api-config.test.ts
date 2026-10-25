@@ -157,7 +157,7 @@ describe('runtime configuration and persisted settings', () => {
     const first = new RadarService(new RadarDatabase(filename), catalog, provider, {}, runtime())
     try {
       first.saveSettings(settings())
-      await first.importArena({ name: 'fixture.json', base64: Buffer.from(JSON.stringify(arena())).toString('base64') }, false)
+      await first.importBytes(Buffer.from(JSON.stringify(arena())), 'tempArenaInfo.json', false)
       await first.query()
       await first.query()
       expect(first.state().battle?.players[0].cached).toBe(true)

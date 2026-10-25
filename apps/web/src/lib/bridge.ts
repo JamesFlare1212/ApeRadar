@@ -17,7 +17,6 @@ const web: RadarBridge = {
   openUpdateDownload: async () => { window.open(UPDATE_RELEASES_URL, '_blank', 'noopener,noreferrer') },
   onUpdatesChanged: () => () => {},
   async getState() { const result = await fetch('/api/state'); if (!result.ok) throw new Error('无法连接本地服务，请通过 pnpm dev:web 启动'); return result.json() as Promise<AppState> },
-  importArena: file => request('import', file), openFile: async () => null,
   loadDemo: () => request('demo'), loadBattle: id => request('history', { id }),
   query: options => request('query', options), cancelQuery: () => request('cancel'),
   checkApiHealth: () => request('health'),
@@ -35,9 +34,3 @@ const web: RadarBridge = {
   onStateChanged(callback) { const events = new EventSource('/api/events'); events.onmessage = event => { try { callback(JSON.parse(event.data) as AppState) } catch { /* incomplete SSE delivery is retried by the browser */ } }; return () => events.close() },
 }
 export const bridge: RadarBridge = window.aperadar ?? web
-export async function filePayload(file: File) {
-  const bytes = new Uint8Array(await file.slice(0, 4 * 1024 * 1024 + 12).arrayBuffer())
-  let binary = ''
-  for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192))
-  return { name: file.name, base64: btoa(binary) }
-}

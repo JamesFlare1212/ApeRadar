@@ -1,0 +1,5 @@
+[mcp_servers.shadcn]
+command = "cmd"
+args = ["/d", "/c", "pnpm", "dlx", "shadcn@latest", "mcp"]
+cwd = "C:/Users/james/.t3/projects/aperadar/apps/web"
+startup_timeout_sec = 60
