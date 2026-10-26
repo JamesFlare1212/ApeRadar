@@ -1,5 +1,29 @@
 # 验证记录
 
+## v2.0.0 release validation (2026-10-26)
+
+- Root, desktop, server, web, and shared packages use `2.0.0`.
+  `node scripts/verify-release-version.mjs v2.0.0` passed.
+- `pnpm check` passed type checking, 220 regression tests in 19 files, and
+  design-token validation. The first sandboxed attempt failed with `spawn EPERM`;
+  the complete rerun with child-process access passed.
+- `pnpm dist:win` passed, including `pnpm build`, and generated the Windows x64
+  installer, portable executable, `latest.yml`, and installer blockmap.
+- `pnpm smoke:desktop` passed with isolated application data. Coverage includes
+  240 page combinations, 144 dialog states, and 16 typography combinations
+  across both themes at widths of 1440 and 390 CSS pixels, plus navigation,
+  keyboard controls, roster and watch workflows, and settings error recovery.
+- `pnpm verify:updates` validated the installer filename, version, SHA-512,
+  size, blockmap, and portable companion file.
+- `pnpm verify:package` passed against `ApeRadar-Next-2.0.0-x64.exe` with
+  isolated application data. The executable digest and full smoke report are
+  retained in `artifacts/packaged-validation.json`.
+- Live API checks were not run because `WG_APPLICATION_ID` was not set.
+  Metadata checks and simulated updater tests do not establish an actual
+  v1.1.0-to-v2.0.0 installation; that installation was not performed.
+- The tag-triggered release uses the English
+  [v2.0.0 release notes](releases/v2.0.0.md).
+
 ## v1.1.0 release validation (2026-10-22)
 
 - Root, desktop, server, web, and shared packages use `1.1.0`.

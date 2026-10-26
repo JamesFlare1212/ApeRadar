@@ -1,8 +1,8 @@
 {
   "status": "passed",
-  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-1.1.0-x64.exe",
-  "bytes": 114038267,
-  "sha256": "dd5156a03b617ee7d8678ecf8387db385731b1788b76177e291aaa9c47e33d0a",
+  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-2.0.0-x64.exe",
+  "bytes": 113718785,
+  "sha256": "edbc012f2ccc74ad49687f41d344c0defef0b4ebb38a76c3fb37a6c224596957",
   "report": {
     "status": "passed",
     "result": {
@@ -15,12 +15,12 @@
     },
     "updates": {
       "mode": "disabled",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "downloadBridge": "function",
       "control": true
     },
     "apiConfiguration": {
-      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792704893185\\api-config.json",
+      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792993940944\\api-config.json",
       "managed": true,
       "defaultSource": "WG_PUBLIC",
       "selectedSource": "WG_PUBLIC",
@@ -39,10 +39,16 @@
       "quietMonitoring": true
     },
     "ui": {
+      "manualFileImportRemoved": true,
       "sidebarPreference": true,
+      "sidebarOffcanvasWithoutVerticalShift": true,
+      "removedSidebarImportAndRosterExport": true,
+      "sidebarHeaderAndKeyboardToggle": true,
       "rosterOrder": true,
+      "hiddenIdentityUsesEmptyStatistics": true,
       "chartRankingAndKeyboardTooltip": true,
       "playerWatchToggleAndPersistence": true,
+      "independentNoteSaveAndUnsavedClose": true,
       "playerDialogAndTabs": true,
       "watchMenuKeyboardAndScrolling": true,
       "watchMenuToggleAndPersistence": true,
@@ -55,10 +61,11 @@
       "regionSelectStickyHeaderPreserved": true,
       "typographyPreviewAutosaveAndReset": true,
       "selectAutosave": true,
+      "errorSummarySectionAndFocus": true,
       "fieldErrorRecovery": true,
       "emptyNumericField": true,
       "fullRosterWithoutFilters": true,
-      "historyImportSearchAndLoad": true,
+      "historySnapshotSearchAndLoad": true,
       "listItemsAndEmptyState": true,
       "watchTypeSelect": true,
       "watchRemovalConfirmation": true,
@@ -75,8 +82,8 @@
     "appearance": {
       "views": 240,
       "dialogViews": 144,
-      "textChecks": 14724,
-      "minimumTextContrast": 4.53100417231784,
+      "textChecks": 11664,
+      "minimumTextContrast": 4.70046540062233,
       "minimumControlContrast": 3.470932120091245,
       "widths": [
         1440,
@@ -124,7 +131,7 @@
       "theme": "dark",
       "accent": "#c4ccd5",
       "row": "rgb(40, 49, 58)",
-      "button": "rgb(196, 204, 213)"
+      "button": "oklab(0.698561 -0.00606236 -0.0229068 / 0.3)"
     },
     "versions": {
       "node": "24.22.0",
@@ -160,6 +167,6 @@
       "chrome": "152.0.7977.167"
     },
     "sqliteHeader": "SQLite format 3\u0000",
-    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792704893185"
+    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792993940944"
   }
 }
