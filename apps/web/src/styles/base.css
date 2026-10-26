@@ -1,10 +1,10 @@
 @layer base {
   * { box-sizing: border-box; @apply border-border; }
-  html, body, #root { min-height: 100%; }
+  html, body, #root { height: 100%; }
   /* An automatic body width lets modal scrollbar compensation preserve the content width. */
   html, #root { width: 100%; }
   html { font-size: var(--font-size-root); }
-  body { margin: 0; background: var(--background); color: var(--text); font: 400 var(--text-base)/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
+  body { margin: 0; overflow: hidden; background: var(--background); color: var(--text); font: 400 var(--text-base)/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
   button, input, select, textarea { font-family: inherit; }
   button { cursor: pointer; }
   button:disabled { cursor: not-allowed; }
@@ -17,9 +17,6 @@
   ::selection { background: var(--accent-soft); color: var(--accent); }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-thumb { background: var(--control-border); border-radius: 6px; }
-
-  /* Preserve the viewport scroll container for scrollbars and sticky headers; Select intercepts background wheel/touch events. */
-  body[data-scroll-locked]:has([data-slot='select-content']):not(:has([role='dialog'], [role='alertdialog'])) { overflow: visible !important; margin-right: 0 !important; }
 }
 
 .muted { color: var(--text-muted); }

@@ -35,6 +35,7 @@ const pages = { overview: { title: '海猴雷达', icon: Binoculars }, history: 
 const currentPage = (): Page => { const key = location.hash.replace('#/', '').split('/')[0] ?? ''; return Object.hasOwn(pages, key) ? key as Page : 'overview' }
 const currentSettingsSection = (): SettingsSection => { const key = location.hash.split('/')[2] ?? 'appearance'; return Object.hasOwn(SETTINGS_SECTIONS, key) ? key as SettingsSection : 'appearance' }
 const settingsIcons = { general: SlidersHorizontal, appearance: Palette, connection: Plug, ratings: ShieldCheck, text: Type, about: Info }
+function resetWorkspaceScroll() { document.getElementById('main-content')?.scrollTo({ top: 0, behavior: 'instant' }) }
 
 export function App() {
   const [state, setState] = useState<AppState | null>(null)
@@ -54,18 +55,18 @@ export function App() {
     return () => { active = false; stop() }
   }, [])
   useEffect(() => { const onHash = () => { setPage(currentPage()); setSettingsSection(currentSettingsSection()) }; window.addEventListener('hashchange', onHash); return () => window.removeEventListener('hashchange', onHash) }, [])
-  useEffect(() => { if (state) heading.current?.focus({ preventScroll: true }) }, [page, settingsSection])
+  useEffect(() => { resetWorkspaceScroll(); if (state) heading.current?.focus({ preventScroll: true }) }, [page, settingsSection])
   useEffect(() => { if (state?.monitor.error) notify(state.monitor.error, true) }, [state?.monitor.error])
   useEffect(() => { if (state) cacheAppearance(state.settings) }, [state?.settings.theme, state?.settings.lightPalette, state?.settings.darkPalette, state?.settings.fontFamily, state?.settings.fontSize])
   useEffect(() => { setSelectedKey(null) }, [state?.battle?.id])
-  function navigate(next: Page) { setPage(next); location.hash = next === 'settings' ? '/settings/appearance' : `/${next}`; if (next === 'settings') setSettingsSection('appearance'); window.scrollTo({ top: 0, behavior: 'auto' }) }
-  function openSettings(section: SettingsSection) { setPage('settings'); setSettingsSection(section); location.hash = `/settings/${section}`; window.scrollTo({ top: 0, behavior: 'auto' }) }
+  function navigate(next: Page) { setPage(next); location.hash = next === 'settings' ? '/settings/appearance' : `/${next}`; if (next === 'settings') setSettingsSection('appearance'); resetWorkspaceScroll() }
+  function openSettings(section: SettingsSection) { setPage('settings'); setSettingsSection(section); location.hash = `/settings/${section}`; resetWorkspaceScroll() }
   async function run(work: () => Promise<AppState | null>, success?: string) {
     try { const next = await work(); if (next) setState(next); if (next && success) notify(success); return next }
     catch (error) { notify(error instanceof Error ? error.message.replace(/^Error invoking remote method '[^']+': Error: /, '') : String(error), true); return null }
   }
   async function copyText(text: string) { try { await bridge.copyText(text); notify('已复制到剪贴板') } catch { notify('复制未完成，请手动选择文本后复制', true) } }
-  if (!state) return <div className="startup-screen"><BrandMark size={48} /><strong>ApeRadar <span>Next</span></strong>{connectionError ? <><Notice role="alert" variant="destructive" title="工作区连接失败">{connectionError}</Notice><Button onClick={() => location.reload()}>重新连接</Button></> : <><Spinner className="size-6" /><p>正在打开你的工作区…</p></>}</div>
+  if (!state) return <div className={cn('app-shell startup-screen', bridge.desktop && 'desktop-shell')}><BrandMark size={48} /><strong>ApeRadar <span>Next</span></strong>{connectionError ? <><Notice role="alert" variant="destructive" title="工作区连接失败">{connectionError}</Notice><Button onClick={() => location.reload()}>重新连接</Button></> : <><Spinner className="size-6" /><p>正在打开你的工作区…</p></>}</div>
   const battle = state.battle
   const settings = state.settings
   const loading = state.query.status === 'loading'
@@ -74,7 +75,7 @@ export function App() {
 
   const onWatch = async (input: WatchInput) => !!await run(() => bridge.setWatch(input), input.status ? '关注已保存' : '关注已移除')
   return <SidebarProvider open={!sidebar.collapsed} onOpenChange={sidebar.setOpen} style={{ '--sidebar-width': '15rem' } as CSSProperties} className={cn('app-shell', page === 'settings' && 'settings-shell', bridge.desktop && 'desktop-shell')} data-sidebar={sidebar.collapsed ? 'collapsed' : 'expanded'} data-app-ready>
-    <a href="#main-content" className="skip-link" onClick={event => { event.preventDefault(); const content = document.getElementById('main-content'); content?.focus(); content?.scrollIntoView({ block: 'start' }) }}>跳至主要内容</a>
+    <a href="#main-content" className="skip-link" onClick={event => { event.preventDefault(); document.getElementById('main-content')?.focus({ preventScroll: true }) }}>跳至主要内容</a>
     <AppSidebar settingsMode={page === 'settings'} activeKey={page === 'settings' ? settingsSection : page} state={state} notify={notify} installBlocked={loading}
       items={page === 'settings' ? (Object.keys(SETTINGS_SECTIONS) as SettingsSection[]).map(key => ({ key, title: SETTINGS_SECTIONS[key].title, icon: settingsIcons[key] })) : (['overview', 'history', 'watchlist', 'help'] as const).map(key => ({ key, title: pages[key].title, icon: pages[key].icon }))}
       onSelect={key => { if (page === 'settings') openSettings(key as SettingsSection); else navigate(key as Page) }} onHome={() => navigate('overview')} onSettings={() => navigate('settings')} onConnection={() => openSettings('connection')} />

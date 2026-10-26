@@ -37,6 +37,17 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       assert(!document.querySelector('input[type=file], .drop-overlay') && ![...document.querySelectorAll('button')].some(button => button.textContent.includes('打开阵容')), 'The removed manual file import UI is still present');
       result.manualFileImportRemoved = true;
 
+      const shell = document.querySelector('.app-shell');
+      const shellBounds = shell.getBoundingClientRect();
+      const workspace = document.getElementById('main-content');
+      const inset = document.querySelector('[data-slot=sidebar-inset]');
+      const insetBounds = inset.getBoundingClientRect();
+      assert(shellBounds.left === 0 && shellBounds.top === 0 && shellBounds.right === innerWidth && shellBounds.bottom === innerHeight, 'The application surface does not fill the window');
+      assert(getComputedStyle(shell).overflow === 'hidden', 'Content must stay inside the native application perimeter');
+      assert(Math.abs(insetBounds.top - 1) < .5 && Math.abs(insetBounds.right - (innerWidth - 1)) < .5 && Math.abs(insetBounds.bottom - (innerHeight - 1)) < .5 && getComputedStyle(inset).margin === '0px', 'The workspace still has an inset outer shell');
+      assert(document.documentElement.scrollHeight <= innerHeight && getComputedStyle(workspace).overflowY === 'auto', 'Workspace scrolling must stay inside the application surface');
+      result.applicationSurfaceFillsWindow = true;
+
       const sidebar = document.querySelector('[data-slot=sidebar][data-state]');
       const sidebarState = sidebar.getAttribute('data-state');
       const sidebarTrigger = document.querySelector('.app-titlebar [data-sidebar=trigger]');
@@ -68,11 +79,12 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       slide.pause();
       slide.currentTime = 100;
       const movingSidebar = measureSidebar();
-      const targetLeft = sidebar.getAttribute('data-state') === 'collapsed' ? -beforeSidebar.width : 0;
+      const sidebarOrigin = shellBounds.left + shell.clientLeft;
+      const targetLeft = sidebarOrigin - (sidebar.getAttribute('data-state') === 'collapsed' ? beforeSidebar.width : 0);
       assert(Math.abs(movingSidebar.left - beforeSidebar.left) > .5 && Math.abs(movingSidebar.left - targetLeft) > .5, 'The sidebar did not animate horizontally');
       for (const animation of [...container.getAnimations(), ...document.querySelector('[data-slot=sidebar-gap]').getAnimations()]) animation.finish();
       await waitFor(() => Math.abs(container.getBoundingClientRect().left - targetLeft) < .5, 'The sidebar slide did not finish');
-      await waitFor(() => Math.abs(document.querySelector('[data-slot=sidebar-gap]').getBoundingClientRect().width - (targetLeft === 0 ? beforeSidebar.width : 0)) < .5, 'The sidebar layout gap did not finish sliding');
+      await waitFor(() => Math.abs(document.querySelector('[data-slot=sidebar-gap]').getBoundingClientRect().width - (sidebar.getAttribute('data-state') === 'expanded' ? beforeSidebar.width : 0)) < .5, 'The sidebar layout gap did not finish sliding');
       sidebarMotion.remove();
       assert(localStorage.getItem('aperadar.sidebar') === sidebar.getAttribute('data-state'), 'The sidebar preference was not persisted');
       assert(sidebarTrigger.getAttribute('aria-expanded') === String(sidebar.getAttribute('data-state') === 'expanded'), 'The header toggle did not announce the sidebar state');
@@ -82,7 +94,7 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       }
       const collapsedSidebar = sidebar.getAttribute('data-state') === 'collapsed' ? afterSidebar : beforeSidebar;
       const expandedSidebar = sidebar.getAttribute('data-state') === 'expanded' ? afterSidebar : beforeSidebar;
-      assert(collapsedSidebar.right <= .5 && collapsedSidebar.gapWidth < .5 && collapsedSidebar.contentLeft <= 8.5, 'The collapsed sidebar leaves a mini rail or reserved space');
+      assert(collapsedSidebar.right <= sidebarOrigin + .5 && collapsedSidebar.gapWidth < .5 && collapsedSidebar.contentLeft <= sidebarOrigin + .5, 'The collapsed sidebar leaves a mini rail or reserved space');
       assert(expandedSidebar.left >= 0 && expandedSidebar.gapWidth > 100, 'The expanded sidebar did not restore its width');
       if (sidebar.getAttribute('data-state') === 'collapsed') {
         sidebarTrigger.focus();
@@ -307,17 +319,17 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
         await document.fonts.ready;
         const trigger = document.getElementById(id);
         trigger.scrollIntoView({ block: 'center' });
-        assert(scrollY > 0, 'The sticky header regression requires a scrolled page');
-        assert(Math.abs(document.querySelector('.app-titlebar').getBoundingClientRect().top) < .5, 'The header was not pinned before opening the select');
-        assert(document.documentElement.scrollHeight > innerHeight, 'The scrollbar regression requires a scrollable page');
-        const scrollbar = { width: innerWidth - document.documentElement.clientWidth, height: document.documentElement.scrollHeight, top: scrollY };
+        assert(workspace.scrollTop > 0, 'The header regression requires a scrolled workspace');
+        assert(Math.abs(document.querySelector('.app-titlebar').getBoundingClientRect().top - 1) < .5, 'The header was not pinned before opening the select');
+        assert(workspace.scrollHeight > workspace.clientHeight && document.documentElement.scrollHeight <= innerHeight, 'The scrollbar regression requires scrolling inside the workspace');
+        const scrollbar = { width: workspace.offsetWidth - workspace.clientWidth, height: workspace.scrollHeight, top: workspace.scrollTop };
         const before = measureSelectLayout(trigger);
         openMenu(trigger);
         await waitFor(() => document.querySelector('[role=listbox]') && document.body.hasAttribute('data-scroll-locked'), 'The typography menu did not lock background scrolling');
         const opened = measureSelectLayout(trigger);
         assert(opened.every((value, index) => Math.abs(value - before[index]) < .5), 'Opening the typography select shifted the layout: ' + JSON.stringify({ id, before, opened }));
-        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight > innerHeight, 'Opening the select changed scrollbar visibility: ' + JSON.stringify({ id, before: scrollbar, width: innerWidth - document.documentElement.clientWidth, height: document.documentElement.scrollHeight }));
-        assert(Math.abs(scrollY - scrollbar.top) < .5, 'Opening the typography select changed the page scroll position');
+        assert(workspace.offsetWidth - workspace.clientWidth === scrollbar.width && workspace.scrollHeight > workspace.clientHeight, 'Opening the select changed scrollbar visibility: ' + JSON.stringify({ id, before: scrollbar, width: workspace.offsetWidth - workspace.clientWidth, height: workspace.scrollHeight }));
+        assert(Math.abs(workspace.scrollTop - scrollbar.top) < .5, 'Opening the typography select changed the workspace scroll position');
         const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 100 });
         document.body.dispatchEvent(wheel);
         assert(wheel.defaultPrevented, 'Background wheel scrolling was not blocked while the select was open');
@@ -329,7 +341,7 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
         await waitFor(() => !document.querySelector('[role=listbox]') && !document.body.hasAttribute('data-scroll-locked'), 'The typography menu did not release background scrolling');
         const closed = measureSelectLayout(trigger);
         assert(closed.every((value, index) => Math.abs(value - before[index]) < .5), 'Closing the typography select shifted the layout');
-        assert(innerWidth - document.documentElement.clientWidth === scrollbar.width && document.documentElement.scrollHeight > innerHeight, 'Closing the select changed scrollbar visibility: ' + JSON.stringify({ id, before: scrollbar, width: innerWidth - document.documentElement.clientWidth, height: document.documentElement.scrollHeight }));
+        assert(workspace.offsetWidth - workspace.clientWidth === scrollbar.width && workspace.scrollHeight > workspace.clientHeight, 'Closing the select changed scrollbar visibility: ' + JSON.stringify({ id, before: scrollbar, width: workspace.offsetWidth - workspace.clientWidth, height: workspace.scrollHeight }));
         await waitFor(() => document.activeElement === trigger, 'The typography select did not restore focus');
       }
       result.typographySelectLayoutStable = true;
@@ -482,6 +494,17 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       document.querySelector('.skip-link').click();
       assert(location.hash === '#/help' && document.activeElement?.id === 'main-content', 'The skip link changed the current route or failed to move focus');
       result.skipLinkPreservesRoute = true;
+
+      location.hash = '/overview';
+      await waitFor(() => document.querySelector('.player-table'), 'The workspace did not render for navigation scrolling');
+      workspace.scrollTop = workspace.scrollHeight;
+      assert(workspace.scrollTop > 0, 'Navigation scrolling requires a scrollable workspace');
+      document.querySelector('.sidebar-brand').click();
+      await waitFor(() => workspace.scrollTop === 0, 'Selecting the current page did not reset workspace scrolling');
+      workspace.scrollTop = workspace.scrollHeight;
+      location.hash = '/help';
+      await waitFor(() => document.querySelector('[data-slot=accordion-trigger]') && workspace.scrollTop === 0, 'Changing the route did not reset workspace scrolling');
+      result.workspaceNavigationResetsScroll = true;
     } catch (error) {
       throw new Error('UI checks failed after ' + Object.keys(result).join(', ') + ': ' + (error?.stack || String(error)));
     } finally {

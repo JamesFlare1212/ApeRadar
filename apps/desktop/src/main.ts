@@ -194,7 +194,7 @@ async function createWindow() {
       const appearance = await validateAppearance(mainWindow)
       await mainWindow.webContents.executeJavaScript("(async()=>{for(let i=0;i<60&&!document.querySelector('[data-slot=chart] .winrate-point');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('[data-slot=chart]').scrollIntoView({block:'center'});await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));})()")
       await writeFile(path.join(dataPath, 'desktop-chart.png'), (await mainWindow.webContents.capturePage()).toPNG())
-      await mainWindow.webContents.executeJavaScript('scrollTo(0,0)')
+      await mainWindow.webContents.executeJavaScript("document.getElementById('main-content').scrollTo(0,0)")
       await mainWindow.webContents.executeJavaScript("(async()=>{location.hash='/settings/appearance';for(let i=0;i<40&&!document.getElementById('theme-heading');i++) await new Promise(resolve=>setTimeout(resolve,50));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));})()")
       await writeFile(path.join(dataPath, 'desktop-settings.png'), (await mainWindow.webContents.capturePage()).toPNG())
       mainWindow.setMinimumSize(320, 560)

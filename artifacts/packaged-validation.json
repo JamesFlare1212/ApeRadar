@@ -1,8 +1,8 @@
 {
   "status": "passed",
-  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-2.0.0-x64.exe",
-  "bytes": 113718785,
-  "sha256": "edbc012f2ccc74ad49687f41d344c0defef0b4ebb38a76c3fb37a6c224596957",
+  "executable": "C:\\Users\\james\\.t3\\projects\\aperadar\\release\\ApeRadar-Next-2.0.1-x64.exe",
+  "bytes": 113719645,
+  "sha256": "427296e6fc7427d824e374729e57ae133253908d75917fc546815046cdcab8e9",
   "report": {
     "status": "passed",
     "result": {
@@ -15,12 +15,12 @@
     },
     "updates": {
       "mode": "disabled",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "downloadBridge": "function",
       "control": true
     },
     "apiConfiguration": {
-      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792993940944\\api-config.json",
+      "filePath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792998894966\\api-config.json",
       "managed": true,
       "defaultSource": "WG_PUBLIC",
       "selectedSource": "WG_PUBLIC",
@@ -40,6 +40,7 @@
     },
     "ui": {
       "manualFileImportRemoved": true,
+      "applicationSurfaceFillsWindow": true,
       "sidebarPreference": true,
       "sidebarOffcanvasWithoutVerticalShift": true,
       "removedSidebarImportAndRosterExport": true,
@@ -70,7 +71,8 @@
       "watchTypeSelect": true,
       "watchRemovalConfirmation": true,
       "helpAccordion": true,
-      "skipLinkPreservesRoute": true
+      "skipLinkPreservesRoute": true,
+      "workspaceNavigationResetsScroll": true
     },
     "updatePresentation": {
       "simulated": true,
@@ -109,7 +111,7 @@
     },
     "narrowLayout": {
       "width": 390,
-      "scrollWidth": 384
+      "scrollWidth": 390
     },
     "narrowNavigation": {
       "escapeAndFocus": true,
@@ -167,6 +169,6 @@
       "chrome": "152.0.7977.167"
     },
     "sqliteHeader": "SQLite format 3\u0000",
-    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792993940944"
+    "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\packaged-1792998894966"
   }
 }

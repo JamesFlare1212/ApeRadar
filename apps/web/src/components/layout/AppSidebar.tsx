@@ -33,7 +33,7 @@ export function AppSidebar({ settingsMode, activeKey, items, state, onSelect, on
     { label: settingsMode ? '应用' : '支持', items: items.filter(item => secondaryKeys.includes(item.key)) },
   ]
 
-  return <Sidebar id="app-sidebar" variant="inset" collapsible="offcanvas" className="app-sidebar">
+  return <Sidebar id="app-sidebar" variant="sidebar" collapsible="offcanvas" className="app-sidebar p-2">
     <SidebarHeader className="px-2 pt-3 pb-2">
       <SidebarMenu><SidebarMenuItem>
         <SidebarMenuButton type="button" size="lg" tooltip="ApeRadar 首页" aria-label="ApeRadar 首页" className="sidebar-brand" onClick={() => activate(onHome)}>

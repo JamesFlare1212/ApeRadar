@@ -11,7 +11,8 @@ await server.listen()
 server.printUrls()
 const environment = { ...process.env, ELECTRON_RENDERER_URL: 'http://127.0.0.1:5173' }
 delete environment.ELECTRON_RUN_AS_NODE
-const desktop = spawn(electron, [desktopRoot], { cwd: desktopRoot, env: environment, stdio: 'inherit', windowsHide: true })
+// Hiding the Windows process also suppresses Electron's first application window.
+const desktop = spawn(electron, [desktopRoot], { cwd: desktopRoot, env: environment, stdio: 'inherit', windowsHide: false })
 const close = async () => { if (!desktop.killed) desktop.kill(); await server.close() }
 desktop.on('exit', async code => { await server.close(); process.exit(code ?? 0) })
 process.on('SIGINT', () => { void close() })

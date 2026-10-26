@@ -75,7 +75,8 @@ function inspectAppearance() {
       throw new Error('Hidden-player rows must keep the standard two-line height without overlapping ship and status text: ' + JSON.stringify({ width: innerWidth, fontSize: getComputedStyle(document.body).fontSize, rowHeight, referenceRowHeight, buttonHeight: button.height, referenceButtonHeight: referenceButton.height, sharedLine, shipRight: ship.right, statusLeft: status.left, statusRight: status.right, buttonRight: button.right }))
     }
   }
-  const overflow = document.documentElement.scrollWidth > innerWidth
+  const workspace = document.getElementById('main-content')!
+  const overflow = document.documentElement.scrollWidth > innerWidth || workspace.scrollWidth > workspace.clientWidth
   const overflowingElements = overflow ? [...document.querySelectorAll('#main-content *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).slice(0, 10).map(element => ({ tag: element.tagName, className: element.getAttribute('class'), right: element.getBoundingClientRect().right, width: element.getBoundingClientRect().width })) : []
   return { textCount, minimumTextContrast, minimumControlContrast, failures, overflow, scrollWidth: document.documentElement.scrollWidth, overflowingElements }
 }

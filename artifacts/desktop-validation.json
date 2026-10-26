@@ -10,7 +10,7 @@
   },
   "updates": {
     "mode": "disabled",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "downloadBridge": "function",
     "control": true
   },
@@ -35,6 +35,7 @@
   },
   "ui": {
     "manualFileImportRemoved": true,
+    "applicationSurfaceFillsWindow": true,
     "sidebarPreference": true,
     "sidebarOffcanvasWithoutVerticalShift": true,
     "removedSidebarImportAndRosterExport": true,
@@ -65,7 +66,8 @@
     "watchTypeSelect": true,
     "watchRemovalConfirmation": true,
     "helpAccordion": true,
-    "skipLinkPreservesRoute": true
+    "skipLinkPreservesRoute": true,
+    "workspaceNavigationResetsScroll": true
   },
   "updatePresentation": {
     "simulated": true,
@@ -104,7 +106,7 @@
   },
   "narrowLayout": {
     "width": 390,
-    "scrollWidth": 384
+    "scrollWidth": 390
   },
   "narrowNavigation": {
     "escapeAndFocus": true,
@@ -162,5 +164,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792993903605"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1792998767043"
 }

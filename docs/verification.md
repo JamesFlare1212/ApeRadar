@@ -1,5 +1,34 @@
 # 验证记录
 
+## v2.0.1 release validation (2026-10-26)
+
+- Root, desktop, server, web, and shared packages use `2.0.1`.
+  `node scripts/verify-release-version.mjs v2.0.1` passed.
+- `pnpm check` passed type checking, 220 regression tests in 19 files, and
+  design-token validation.
+- `pnpm dist:win` passed, including `pnpm build`, and generated the Windows x64
+  installer, portable executable, `latest.yml`, and installer blockmap.
+- `pnpm verify:updates` validated the installer filename, version, SHA-512,
+  size, blockmap, and portable companion file.
+- `pnpm verify:package` passed against `ApeRadar-Next-2.0.1-x64.exe` with
+  isolated application data. Its executable digest and complete smoke report
+  are retained in `artifacts/packaged-validation.json`.
+- `pnpm smoke:desktop` passed with isolated application data. Checks cover the
+  application perimeter, internal scrolling, navigation scroll resets, keyboard
+  controls, settings, roster and watch workflows, and simulated update behavior.
+  Appearance coverage includes 240 page combinations, 144 dialog states, and
+  16 typography combinations across both themes at widths of 1440 and 390 CSS pixels.
+- An isolated Windows startup comparison confirmed that `windowsHide: true`
+  kept Electron's first window hidden after `show()`, while `false` made it visible.
+  After the launcher fix, `pnpm dev` created a visible, responsive application window.
+- Electron hover and keyboard-focus checks confirmed rounded window-control
+  backgrounds and room for the focus ring in both themes at 1480 and 390 CSS pixels.
+- Live API checks were not run because `WG_APPLICATION_ID` was not set.
+  Metadata checks and simulated updater tests do not establish an actual
+  v2.0.0-to-v2.0.1 installation; that installation was not performed.
+- Release changes and validation are recorded in the English
+  [v2.0.1 release notes](releases/v2.0.1.md).
+
 ## v2.0.0 release validation (2026-10-26)
 
 - Root, desktop, server, web, and shared packages use `2.0.0`.
