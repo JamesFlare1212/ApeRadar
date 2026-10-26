@@ -19,7 +19,7 @@ import { UPDATE_RELEASES_URL } from '@aperadar/shared/updates'
 import { UpdateController } from './updates/controller'
 import { updateConfiguration } from './updates/config'
 import { readInstallRecord, writeInstallRecord } from './updates/install-record'
-import { validateUi } from './smoke/ui'
+import { validateApiConnectionAlerts, validateUi } from './smoke/ui'
 import { validateNarrowNavigation } from './smoke/navigation'
 import { validateUpdatePresentation } from './smoke/updates'
 import { validateAppearance, validateTypography } from './smoke/appearance'
@@ -189,6 +189,7 @@ async function createWindow() {
       // Let the restored workspace finish its mount-time IPC requests before exiting.
       await new Promise(resolve => setTimeout(resolve, 400))
       const ui = await validateUi(mainWindow, service!.database)
+      const apiAlerts = await validateApiConnectionAlerts(mainWindow)
       const updatePresentation = await validateUpdatePresentation(mainWindow, updates!.status())
       const typography = await validateTypography(mainWindow)
       const appearance = await validateAppearance(mainWindow)
@@ -206,7 +207,7 @@ async function createWindow() {
       const narrowNavigation = await validateNarrowNavigation(mainWindow)
       const narrowDialog = await mainWindow.webContents.executeJavaScript("(async()=>{location.hash='/overview';for(let i=0;i<40&&!document.querySelector('.player-name-button');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('.player-name-button').click();for(let i=0;i<40&&!document.querySelector('[role=dialog]');i++) await new Promise(resolve=>setTimeout(resolve,50));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));const rect=document.querySelector('[role=dialog]').getBoundingClientRect();return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:innerWidth,height:innerHeight};})()") as { left: number; right: number; top: number; bottom: number; width: number; height: number }
       if (narrowDialog.left < 0 || narrowDialog.right > narrowDialog.width || narrowDialog.top < 0 || narrowDialog.bottom > narrowDialog.height) throw new Error('The narrow player dialog is outside the viewport')
-      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, updatePresentation, appearance, typography, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
+      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, apiAlerts, updatePresentation, appearance, typography, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null
       app.exit(0)

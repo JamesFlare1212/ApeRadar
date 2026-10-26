@@ -1,7 +1,49 @@
 import type { BrowserWindow } from 'electron'
-import type { Battle } from '@aperadar/shared/types'
+import type { AppState, Battle } from '@aperadar/shared/types'
 import type { RadarDatabase } from '@aperadar/server/database'
 import { sortRosterPlayers } from '@aperadar/shared/roster'
+
+export async function validateApiConnectionAlerts(window: BrowserWindow) {
+  const original = await window.webContents.executeJavaScript('window.aperadar.getState()') as AppState
+  const originalHash = await window.webContents.executeJavaScript('location.hash') as string
+  const scenarios: Array<{ status: AppState['health']['status']; checking: boolean; visible: boolean }> = [
+    { status: 'unknown', checking: false, visible: false },
+    { status: 'unknown', checking: true, visible: false },
+    { status: 'healthy', checking: false, visible: false },
+    { status: 'healthy', checking: true, visible: false },
+    { status: 'degraded', checking: false, visible: true },
+    { status: 'unavailable', checking: false, visible: true },
+    { status: 'degraded', checking: true, visible: true },
+    { status: 'healthy', checking: false, visible: false },
+  ]
+  try {
+    for (const scenario of scenarios) {
+      window.webContents.send('radar:changed', { ...original, health: { ...original.health, status: scenario.status, checking: scenario.checking, message: 'Smoke API connection issue' } })
+      await window.webContents.executeJavaScript(`(async () => {
+        for (let attempt = 0; attempt < 80; attempt++) {
+          const alert = document.querySelector('.api-connection');
+          if (${scenario.visible} ? alert?.getAttribute('role') === 'alert' && alert.textContent.includes('Smoke API connection issue') : !alert) return;
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        throw new Error('API alert visibility did not match ${scenario.status}, checking=${scenario.checking}');
+      })()`)
+    }
+    window.webContents.send('radar:changed', { ...original, health: { ...original.health, status: 'unavailable', checking: false, message: 'Smoke API connection issue' } })
+    await window.webContents.executeJavaScript(`(async () => {
+      for (let attempt = 0; attempt < 80 && !document.querySelector('.api-connection button'); attempt++) await new Promise(resolve => setTimeout(resolve, 50));
+      document.querySelector('.api-connection button').click();
+      for (let attempt = 0; attempt < 80; attempt++) {
+        if (location.hash === '#/settings/connection') return;
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      throw new Error('The API alert did not open connection settings');
+    })()`)
+    return { scenarios: scenarios.length, abnormalOnly: true, recoveryClearsAlert: true, opensConnectionSettings: true }
+  } finally {
+    window.webContents.send('radar:changed', original)
+    await window.webContents.executeJavaScript(`location.hash = ${JSON.stringify(originalHash)}`)
+  }
+}
 
 export async function validateUi(window: BrowserWindow, database: RadarDatabase) {
   const initialBattle = await window.webContents.executeJavaScript('window.aperadar.getState().then(state => state.battle)') as Battle
@@ -48,6 +90,17 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       assert(document.documentElement.scrollHeight <= innerHeight && getComputedStyle(workspace).overflowY === 'auto', 'Workspace scrolling must stay inside the application surface');
       result.applicationSurfaceFillsWindow = true;
 
+      const assertSurfaceCorners = () => {
+        const style = getComputedStyle(inset);
+        const expanded = shell.getAttribute('data-sidebar') === 'expanded';
+        assert((parseFloat(style.borderTopLeftRadius) > 0) === expanded && (parseFloat(style.borderBottomLeftRadius) > 0) === expanded, 'The workspace must have rounded left corners beside the expanded sidebar');
+        assert(parseFloat(style.borderTopRightRadius) === 0 && parseFloat(style.borderBottomRightRadius) === 0, 'The workspace must meet the native window edge on the right');
+      };
+      assertSurfaceCorners();
+      assert(getComputedStyle(shell).backgroundColor === getComputedStyle(document.querySelector('[data-slot=sidebar-inner]')).backgroundColor, 'Workspace corner cutouts must use the sidebar background');
+      assert(!document.querySelector('.sidebar-connection, .sidebar-health-dot'), 'The persistent API status card must be removed');
+      result.workspaceSurfaceCorners = true;
+
       const sidebar = document.querySelector('[data-slot=sidebar][data-state]');
       const sidebarState = sidebar.getAttribute('data-state');
       const sidebarTrigger = document.querySelector('.app-titlebar [data-sidebar=trigger]');
@@ -89,6 +142,7 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       assert(localStorage.getItem('aperadar.sidebar') === sidebar.getAttribute('data-state'), 'The sidebar preference was not persisted');
       assert(sidebarTrigger.getAttribute('aria-expanded') === String(sidebar.getAttribute('data-state') === 'expanded'), 'The header toggle did not announce the sidebar state');
       const afterSidebar = measureSidebar();
+      assertSurfaceCorners();
       for (const key of ['width', 'top', 'brandTop', 'navigationTop', 'footerTop', 'headerTop']) {
         assert(Math.abs(beforeSidebar[key] - afterSidebar[key]) < .5 && Math.abs(beforeSidebar[key] - movingSidebar[key]) < .5, 'Toggling the sidebar changed its vertical layout or width: ' + key);
       }
@@ -104,7 +158,7 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       const assertSidebarControlsVisible = () => {
         if (sidebar.getAttribute('data-state') === 'collapsed') return;
         const rail = container.getBoundingClientRect();
-        const controls = document.querySelectorAll('#app-sidebar .sidebar-brand, #app-sidebar .sidebar-main-navigation button, #app-sidebar .sidebar-connection, #app-sidebar [aria-label=偏好设置], #app-sidebar .sidebar-update button');
+        const controls = document.querySelectorAll('#app-sidebar .sidebar-brand, #app-sidebar .sidebar-main-navigation button, #app-sidebar .api-connection button, #app-sidebar [aria-label=偏好设置], #app-sidebar .sidebar-update button');
         assert([...controls].every(control => {
           const rect = control.getBoundingClientRect();
           return rect.width >= 24 && rect.height >= 24 && rect.left >= rail.left && rect.right <= rail.right && rect.top >= 0 && rect.bottom <= innerHeight;
@@ -114,6 +168,7 @@ export async function validateUi(window: BrowserWindow, database: RadarDatabase)
       sidebarTrigger.click();
       await waitFor(() => sidebar.getAttribute('data-state') === sidebarState, 'The sidebar did not restore');
       assertSidebarControlsVisible();
+      assertSurfaceCorners();
       result.sidebarPreference = true;
       result.sidebarOffcanvasWithoutVerticalShift = true;
       result.removedSidebarImportAndRosterExport = true;

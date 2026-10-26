@@ -6,15 +6,15 @@
 
 ## 界面预览
 
-以下截图来自当前版本的 Electron 桌面应用，使用内置合成示例阵容，不包含真实玩家战绩。
+Screenshots of the current Electron desktop interface using the built-in synthetic roster. No real player statistics are shown.
 
-浅色主题：双方阵容、胜率、单船场均伤害与胜率分布。
+Light theme: both fleets, win rates, ship average damage, and win-rate distribution.
 
-![海猴雷达浅色主题：示例阵容与双方胜率分布](artifacts/desktop-light.png)
+![Light theme with sample fleets and win-rate distribution](docs/images/overview-light.png)
 
-深色主题：相同示例阵容在深色外观下的显示效果。
+Dark theme: the same sample roster and charts with the dark appearance.
 
-![海猴雷达深色主题：示例阵容与双方胜率分布](artifacts/desktop-dark.png)
+![Dark theme with sample fleets and win-rate distribution](docs/images/overview-dark.png)
 
 ## 启动
 

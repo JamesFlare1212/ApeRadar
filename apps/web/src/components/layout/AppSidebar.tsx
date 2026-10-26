@@ -1,10 +1,9 @@
-import { cn } from '@/lib/utils.js'
-import { Activity, ArrowLeft, ArrowRight, Settings } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AppState } from '@aperadar/shared/types'
 import { Icon } from '../Icon.js'
 import { BrandMark } from './BrandMark.js'
-import { Badge, Button } from '../ui.js'
+import { Button } from '../ui.js'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert.js'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar.js'
 import { UpdateButton } from '../updates/UpdateButton.js'
@@ -25,8 +24,8 @@ export function AppSidebar({ settingsMode, activeKey, items, state, onSelect, on
 }) {
   const { isMobile, setOpenMobile } = useSidebar()
   function activate(action: () => void) { action(); if (isMobile) setOpenMobile(false) }
-  const health = state.health?.checking ? '检查中' : state.health?.status === 'healthy' ? '连接正常' : state.health?.status === 'unavailable' ? '连接异常' : state.health?.status === 'degraded' ? '部分异常' : '等待检查'
-  const healthTone = state.health?.checking ? 'bg-muted-foreground' : state.health?.status === 'healthy' ? 'bg-success' : state.health?.status === 'unavailable' ? 'bg-danger' : state.health?.status === 'degraded' ? 'bg-enemy' : 'bg-muted-foreground'
+  const health = state.health
+  const hasApiIssue = health?.status === 'degraded' || health?.status === 'unavailable'
   const secondaryKeys = settingsMode ? ['connection', 'about'] : ['help']
   const navigationGroups = [
     { label: settingsMode ? '偏好设置' : '工作空间', items: items.filter(item => !secondaryKeys.includes(item.key)) },
@@ -54,13 +53,7 @@ export function AppSidebar({ settingsMode, activeKey, items, state, onSelect, on
       </SidebarGroup>)}
     </SidebarContent>
     <SidebarFooter className="gap-2 px-2 pt-3 pb-3">
-      <SidebarMenu><SidebarMenuItem>
-        <SidebarMenuButton type="button" size="lg" variant="outline" tooltip={state.monitor.error ? `自动监测异常：${state.monitor.error}` : `API ${health}`} aria-label={`API ${health}${state.monitor.error ? '，自动监测异常' : ''}`} className="sidebar-connection" onClick={() => activate(onConnection)}>
-          <Icon icon={Activity} />
-          <span className="flex min-w-0 flex-1 flex-col gap-0.5"><span className="text-xs font-medium">数据连接</span><span className="truncate text-xs text-muted-foreground">API {health}</span></span>
-          <Badge className={cn('sidebar-health-dot ml-auto size-2 shrink-0 p-0', healthTone)} aria-hidden="true" />
-        </SidebarMenuButton>
-      </SidebarMenuItem></SidebarMenu>
+      {hasApiIssue && <Alert className="api-connection" variant="destructive" role="alert"><AlertTitle>{health.status === 'degraded' ? 'API 部分连接异常' : 'API 连接不可用'}</AlertTitle><AlertDescription><p>{health.message || (health.status === 'degraded' ? '部分 API 服务暂时不可用，请检查连接设置。' : 'API 服务暂时无法连接，请检查连接设置。')}</p><Button variant="link" className="h-auto p-0 text-xs" onClick={() => activate(onConnection)}>检查连接设置<Icon data-icon="inline-end" icon={ArrowRight} /></Button></AlertDescription></Alert>}
       {state.monitor.error && <Alert className="game-connection" variant="destructive"><AlertTitle>自动监测异常</AlertTitle><AlertDescription><p>{state.monitor.error}</p><Button variant="link" className="h-auto p-0 text-xs" onClick={() => activate(onConnection)}>检查游戏目录<Icon data-icon="inline-end" icon={ArrowRight} /></Button></AlertDescription></Alert>}
       <div className="flex w-full items-center gap-2">
         <SidebarMenu className="min-w-0 flex-1"><SidebarMenuItem><SidebarMenuButton type="button" tooltip={settingsMode ? '返回工作区' : '偏好设置'} aria-label={settingsMode ? '返回工作区' : '偏好设置'} className="h-10" onClick={() => activate(settingsMode ? onHome : onSettings)}><Icon icon={settingsMode ? ArrowLeft : Settings} /><span>{settingsMode ? '返回工作区' : '设置'}</span></SidebarMenuButton></SidebarMenuItem></SidebarMenu>

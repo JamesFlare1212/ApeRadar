@@ -1,6 +1,6 @@
-.app-shell { --titlebar-height: 56px; position: relative; height: 100dvh; min-height: 0; overflow: hidden; border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); background: var(--background); }
+.app-shell { --titlebar-height: 56px; position: relative; height: 100dvh; min-height: 0; overflow: hidden; border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); background: var(--sidebar); }
 .app-shell > [data-slot='sidebar-inset'] { min-height: 0; overflow: hidden; }
-.app-shell .app-sidebar { position: absolute; height: 100%; background: var(--sidebar); }
+.app-shell .app-sidebar { position: absolute; height: 100%; border-right: 0; background: var(--sidebar); }
 /* Native window clipping follows restored and maximized desktop states. */
 .desktop-shell { border-radius: 0; }
 .app-titlebar { position: relative; z-index: 40; display: flex; height: var(--titlebar-height); flex-shrink: 0; align-items: center; justify-content: space-between; gap: 16px; padding-left: 16px; border-bottom: 1px solid var(--border-subtle); background: var(--background); user-select: none; }
@@ -22,6 +22,10 @@
 .app-footer i { margin: 0 5px; font-style: normal; }
 .app-footer .button { margin-left: auto; color: var(--text-secondary); font-size: 0.75rem; }
 .settings-shell .app-footer { display: none; }
+
+@media (min-width: 768px) {
+  .app-shell[data-sidebar='expanded'] > [data-slot='sidebar-inset'] { border-radius: var(--radius-xl) 0 0 var(--radius-xl); }
+}
 
 @media (max-width: 767px) {
   .app-shell { border: 0; border-radius: 0; }
