@@ -79,4 +79,12 @@ production lookup pipeline with public samples. It does not read local game logs
 history, or player caches. Results are written to `artifacts/live-api-probe.json`; the report records
 only the application ID suffix and omits player identifiers from request diagnostics.
 
+Official ASIA, NA, and EU checks cover account search, account details, clans, and ship statistics.
+A separate NA encyclopedia probe checks bilingual ship details and original Chinese names.
+Vortex health checks cover ASIA, NA, EU, and RU; functional checks run for routes whose health
+probe succeeds. A failed required official check produces a nonzero exit status. Vortex can
+report `partial` when some details are unavailable even if the overall command succeeds;
+report those outcomes separately from complete passes. Live results apply to the tested service
+and network conditions at that time.
+
 WG application identifiers are described in the [official developer guide](https://developers.wargaming.net/documentation/guide/getting-started/).

@@ -76,9 +76,9 @@ the English placeholders in the old catalog. Other additions are curated
 display names based on the original catalog and ship identity.
 
 Lookup ignores case, combining accents, and differences in whitespace, including
-nonbreaking spaces. After ID lookup, exact English entries take precedence;
-missing bracketed or ` B`
-variants can reuse a known base name. Unknown names retain the API translation
+nonbreaking spaces. After ID lookup, exact English entries take precedence.
+Missing bracketed variants or variants ending in a space followed by `B` can
+reuse a known base name. Unknown names retain the API translation
 until a mapping is added. Matching uses the complete English name and the
 eligible nation/type, so it does not replace fragments in unrelated names. An
 unknown ID on another nation's ship keeps its API name.
@@ -94,9 +94,9 @@ translation is linguistically correct.
 The same rules apply to full catalog updates, targeted API lookups, local
 supplementary cache entries, and restored battle snapshots. Existing masked
 names in history are corrected when the battle is restored or opened, while
-player statistics and other snapshot fields are preserved. CSV exports and
-copied summaries use the corrected active battle names. Runtime lookups persist
-new entries with restored names, so later updates do not reintroduce the API's
+player statistics and other snapshot fields are preserved. Copied text summaries
+use the corrected active battle names. Runtime lookups persist new entries with
+restored names, so later updates do not reintroduce the API's
 masked translations. Edit the dictionaries and rebuild the desktop app to ship
 new mappings; run `pnpm ships:update --names-only` to also refresh the source
 catalog offline.

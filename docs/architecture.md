@@ -1,4 +1,45 @@
-# 架构与行为
+# Architecture and behavior
+
+## Workspace boundaries
+
+The pnpm workspace follows [T3 Code's apps directory](https://github.com/pingdotgg/t3code/tree/main/apps).
+The root owns shared commands, the lockfile, TypeScript base options, and cross-package tests.
+Each package declares its own dependencies and type-checking configuration.
+
+- `@aperadar/shared`: browser-compatible domain types, Zod validation, statistics, and text summaries.
+- `@aperadar/server`: Node services, SQLite, game-file parsing and monitoring, and API scheduling.
+  Its `resources/` directory contains the bundled ship catalog.
+- `@aperadar/web`: React rendering and design tokens. Browser code depends on `shared`;
+  only the Vite development configuration loads `server`.
+- `@aperadar/desktop`: Electron main process, preload, native assets, and build and smoke scripts.
+  It depends on `server` and `shared`.
+
+Cross-package imports use the `@aperadar/server/*` and `@aperadar/shared/*` exports and `workspace:*`
+dependencies. Shared packages export TypeScript source, which Vite and esbuild bundle.
+`pnpm build` verifies package versions, checks application and test types, and builds the web renderer
+and Electron entry points. The renderer goes to `apps/web/dist/`; main and preload go to
+`apps/desktop/dist-electron/`. Server and shared code are bundled into the main process.
+
+`apps/desktop/electron-builder.json` packages the renderer, ship catalog, icons, and license notices.
+Windows outputs go to the root `release/` directory. Development resource paths are resolved relative
+to the owning scripts or configuration files. Packaged resources are read from the application path;
+the database uses Electron's user-data directory. See [Verification](verification.md) for isolated
+test data and report locations.
+
+## Runtime boundaries
+
+The renderer owns serializable state and UI logic. It calls individual `RadarBridge` methods through
+the isolated preload bridge, without arbitrary IPC, filesystem, SQL, or shell access. Production pages
+are served from `aperadar://app/` using bundled local resources.
+
+The main process owns `RadarService`, which manages the active battle, cancellation, player progress,
+monitoring, and state events. `RadarDatabase` owns persistence. `WargamingApi` handles configured
+endpoints, request scheduling, HTTP and API errors, retries, and response parsing. Zod validates
+game files, settings, watch entries, and IPC arguments at runtime.
+
+Browser development mode mounts the same Node service in Vite. The HTTP interface binds to loopback,
+checks Host and Origin, requires a local-client header for writes, and publishes state through SSE.
+Production desktop builds run the service inside Electron without an HTTP server.
 
 ## Game client discovery and region selection
 
@@ -33,86 +74,74 @@ shows directory validation, evidence timestamps, conflicts, and waiting-for-aren
 states separately. Browser development previews can use `APERADAR_DATA_DIR` for an
 isolated database, matching the desktop test workflow.
 
-## 工作区边界
+## Battle lifecycle
 
-项目使用 pnpm workspace，参考 T3 Code 将应用拆分为 `apps/desktop`、`apps/server`、`apps/web`，跨应用逻辑放在 `packages/shared`。根目录维护统一命令、锁文件、TypeScript 基础选项及跨包测试，各包独立声明依赖与类型检查配置。
+1. Read bounded JSON or the first replay block and validate the roster schema.
+2. Resolve the primary and secondary regions and enrich ships from the local catalog.
+   Vehicle IDs are not account IDs.
+3. Cancel the previous controller when importing a battle and save an unqueried local snapshot.
+4. Reuse unexpired player caches. Missing entries use the configured HTTP concurrency limit
+   (default six) and request spacing from [API configuration](api-configuration.md#fields).
+5. Apply each player result only when the controller, battle ID, and player key still match.
+   Late requests cannot replace a newer battle even if the transport ignores cancellation.
+6. Save the completed snapshot and history. Failed statistics remain unavailable instead of becoming
+   hidden profiles or zero win rates, and failures are excluded from valid cache entries.
 
-- `@aperadar/shared`：可在浏览器和 Node 中使用的类型、Zod 校验、统计算法与摘要。
-- `@aperadar/server`：Node 服务、SQLite、文件解析与监测、API 调度；船表位于其 `resources/`。
-- `@aperadar/web`：React 界面与设计令牌；仅 Vite 开发配置依赖服务端，浏览器代码通过类型桥访问服务。
-- `@aperadar/desktop`：Electron 主进程、preload、图标、构建和烟雾验证脚本，依赖 server 与 shared。
+Partial ship-mode responses retain public account data and report missing details. Cancellation keeps
+completed results. Changing the win-rate display or theme does not cancel a query; changing routing
+clears statistics from the previous route.
 
-共享包通过 exports 导出 TypeScript 源码，Vite/esbuild 解析 workspace 链接并完成打包。`pnpm build` 先检查全部包与测试的类型，再构建 web 和 desktop；server 与 shared 随主进程打包。桌面打包配置在 `apps/desktop/electron-builder.json`，将 web 的 dist、server 的船表及根目录版权声明映射到成品，Windows 输出保留在根目录 `release/`。
+Imported and stored snapshots retain their player-array order. The UI sorts a separate display copy
+according to [Team roster display order](roster-order.md); statistics updates and win-rate selection
+do not change that ordering. Chart ranking is independent. Name privacy also applies to copied text
+summaries.
 
-开发资源路径根据各配置或脚本文件的位置确定。浏览器数据库仍在根目录 `.data/web/`，集成测试与桌面验证仍使用根目录 `.test-data/`，报告统一写入 `artifacts/`。生产应用从 app 路径读取打包资源，数据库使用 Electron userData。
-
-Renderer 只持有可序列化状态与界面逻辑。它通过 `RadarBridge` 的逐项方法访问主进程；没有任意 IPC、路径读取、SQL 或 shell 入口。生产页面由 `aperadar://app/` 提供，只能加载打包的本地资源。
-
-主进程拥有 `RadarService`。服务管理当前对局、取消令牌、逐玩家进度、自动监测和事件发布；`RadarDatabase` 负责 SQLite；`WargamingApi` 负责受限域名、HTTP 状态、超时、退避与协议解析。共享的 TypeScript 类型并不能替代边界检查，因此文件、设置、关注项与 IPC 参数还使用 Zod 校验。
-
-浏览器开发模式在 Vite 中挂载同一个 Node 服务，接口只绑定 loopback、检查 Host/Origin，并要求写操作的本地客户端标头。SSE 用于状态变更。生产桌面不启动 HTTP 服务。
-
-## 对局生命周期
-
-1. 有界读取 JSON 或 replay 第一块，校验阵容 schema；不加载整个大型 replay。
-2. 解析主/次区服，按本地船表补充展示信息；车辆 ID 不当作账号 ID。
-3. 导入新对局时取消旧 controller，并保存未查询的本地快照。
-4. 查询优先读取未过期缓存；缺失项进入最多六个并发 HTTP 槽位，按时间错开发送。
-5. 每位玩家分别回写，回调必须同时匹配 controller、battle ID 与玩家 key。旧请求即使忽略 abort，也不能覆盖新对局。
-6. 完成后保存快照与历史；失败项维持 unavailable，不写成 hidden/零胜率，也不进入有效缓存。
-
-单船分模式请求不齐全时，保留账号公开统计并显示部分错误；本舰指标不伪装成零场。取消保留已取得数据。切换显示胜率或主题不会取消查询；更改区服/数据源会清理旧路由的统计。
+Missing ships are resolved in the background and cached locally. The lookup lifecycle, regional
+boundaries, and naming rules are documented in [Ship catalog maintenance](ship-catalog.md).
 
 ## SQLite
 
-- `settings`：单行经过校验的设置。
-- `battles`：以确定性 battle ID 保存 JSON 快照；历史按开始时间排序，界面最多读取最近100条。
-- `metadata`：当前快照指针。
-- `watchlist`：主键为 region/account_id，保存手动标记和备注。
-- `statistics_cache`：按 API/区服/昵称/船号缓存，有 expires_at 索引；仅完整公开数据或明确隐藏状态进入缓存。
+| Table | Purpose |
+| --- | --- |
+| `settings` | A single validated settings record. |
+| `battles` | JSON snapshots keyed by deterministic battle ID; history returns the latest 100 by start time. |
+| `metadata` | The current-battle pointer. |
+| `watchlist` | Watch status and notes keyed by region and account ID. |
+| `statistics_cache` | Expiring player statistics separated by source, region, identity, and API configuration. |
+| `ship_catalog_cache` | Supplementary bilingual ship entries for reuse after restart and offline. |
 
-使用 WAL、busy timeout、参数化语句与对局保存事务。数据库 schema 为 user_version 1；未来更改需要显式迁移，不应覆盖用户数据。
+The database uses WAL, a busy timeout, parameterized SQL, and transactions for snapshot and ship-cache
+writes. Player results enter the statistics cache only when their status is `ready` or `hidden` and
+no error is attached. Initialization currently sets `user_version=1`; future schema changes must
+preserve user data through explicit migration.
 
-## 设计系统
+## Renderer composition
 
-原始 HSL、尺寸、字体与动效仅定义在 primitive 层；背景/前景/主色/双方阵营等是 semantic 别名；按钮、卡片、输入和表格有 component 令牌。暗色主题覆盖 semantic 层。Tailwind v4 在 `@theme inline` 映射语义 token，界面使用本地 Inter 字体、系统中文字体与 Font Awesome Free SVG 图标。图标通过统一的 Icon 组件设置尺寸和装饰性语义，按需导入并本地打包，Font Awesome CSS 显式加载且关闭运行时样式注入。
-
-Radix 提供对话框与下拉菜单。受控对话框显式恢复触发元素焦点；阵容保留游戏文件中的原始顺序，战绩查询只更新原位置，搜索与舰种筛选保持剩余行的相对顺序。图表提供文本说明，姓名遮蔽也应用到摘要与 CSV。
-
-## UI composition and source layout
-
-The application boundaries follow [T3 Code's apps directory](https://github.com/pingdotgg/t3code/tree/main/apps):
-`web` owns the React renderer, `desktop` owns Electron and IPC, and `server` owns local services.
-Portable types and algorithms remain in `packages/shared`.
-
-Within `apps/web/src`, independently loaded pages live in `routes/`. The settings route renders
-six sections. Application components are grouped into `components/layout`, `components/battle`,
-`components/settings`, and `components/updates`. React state hooks live in `hooks/`; bridge access,
-appearance state, settings persistence, and chart data transformations live in `lib/`.
+Within `apps/web/src`, independently loaded pages live in `routes/`. The settings route renders six
+sections. Application components are grouped into `components/layout`, `components/battle`,
+`components/settings`, and `components/updates`. React hooks live in `hooks/`; bridge access,
+appearance state, settings persistence, and chart transformations live in `lib/`.
 
 `components/ui/` contains the local shadcn/ui primitives and is the only layer importing Radix.
-`components/ui.tsx` composes those primitives into shared buttons, notices, search inputs, dialogs,
-confirmation dialogs, selects, and empty states. Add missing primitives with the configuration in
-`apps/web/components.json`. Destructive confirmations use Alert Dialog, focus the cancel action,
-retain failed operations, and restore focus to the invoking control or page heading.
+`components/ui.tsx` composes them into shared controls. `styles.css` is the Tailwind and token entry
+point; `styles/` groups application layout, battle tables, settings, help, and appearance artwork.
 
-`styles.css` is the Tailwind and token entry point. Its `styles/` imports group application layout,
-battle tables, settings, help content, and appearance artwork. Shared controls retain their shadcn/ui
-styles; application CSS handles layout and domain-specific presentation. Foreground, danger-button
-foreground, and control-boundary tokens are defined for both themes. The ship icon PNG references
-remain beside their SVG redrawings for the provenance recorded in `sources.json`.
+The [design system](../design-system/aperadar-next/MASTER.md) owns token, Lucide icon, typography,
+component-state, and interaction rules. Desktop smoke checks live in `apps/desktop/src/smoke/`;
+their scope and evidence handling are described in [Verification](verification.md).
 
-Desktop validation lives in `apps/desktop/src/smoke/`. The appearance checks render every route at
-1440 and 390 CSS pixels in both themes and all six palettes. Chromium resolves inherited colors,
-alpha blending, `color-mix`, and SVG text fills before contrast is measured. The checks also cover
-dialog states, control boundaries, appearance artwork, horizontal overflow, and roster-toolbar
-overlap. They use isolated data and synthetic arena files; they do not establish live API or actual
-version-to-version update behavior.
+## API and packaging dependencies
 
-## Runtime dependencies and tradeoffs
+The supported player-statistics sources are WG Public API and Vortex. WG batches account search,
+account details, and clan lookups by region, then requests ship statistics per public player.
+Vortex stops requesting details for explicitly hidden profiles. RU uses Vortex even when WG Public
+API is selected. Endpoint overrides and effective application-ID precedence are defined in
+[API configuration](api-configuration.md).
 
-网络适配器按已恢复的客户端协议实现，不推定第三方服务内部机制。WG 采用三次共享请求与每玩家一次本舰请求；Vortex 可在明确隐藏时提前结束后续详情。代理只影响指定 WG 请求，界面明确它会收到查询信息。没有整场上传模块。
+SQLite uses `node:sqlite` from Electron's bundled Node.js runtime without a native addon rebuild.
+Esbuild emits main and preload as CommonJS; Vite builds the renderer. Packaged resources live in asar,
+while the database remains in the user-data directory.
 
-应用使用 Electron 内置 Node 24 的 `node:sqlite`，无需 native addon 重编译。主进程与 preload 由 esbuild 输出 CJS，React 由 Vite 构建；设置和资料页面懒加载。资源在 asar 内，数据库始终放用户数据目录。
-
-Windows打包使用已安装的 Electron distribution。Vite 忽略缓存、打包输出、研究和数据目录，避免 Windows 在开发文件监听期间锁住正在重命名的打包临时目录。正式包不需要 Vite 或本地开发服务器。
+Windows packaging uses the installed Electron distribution. Vite excludes caches, package outputs,
+research, and data directories from watching to avoid Windows file locks during packaging.
+Production builds do not require Vite or a development server.

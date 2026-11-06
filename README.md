@@ -81,7 +81,7 @@ w = 20% × min(本舰场次 / 60, 1)
 ## 开发命令
 
 | 命令 | 作用 |
-|---|---|
+| --- | --- |
 | `pnpm dev` | Vite + Electron 桌面开发 |
 | `pnpm dev:web` | 浏览器预览，附真实本地服务 |
 | `pnpm typecheck` | 完整 TypeScript 检查 |
@@ -99,11 +99,12 @@ w = 20% × min(本舰场次 / 60, 1)
 | `pnpm verify:updates` | 校验更新清单、安装包哈希、大小及配套发布文件 |
 | `pnpm verify:package` | 对实际便携版执行隐藏集成验证 |
 
-Portable executable: `release/ApeRadar-Next-1.0.3-x64.exe`; Windows installer: `release/ApeRadar-Next-Setup-1.0.3-x64.exe`; unpacked application: `release/win-unpacked/`. The Windows executables are unsigned. Cache and packaging directories are excluded from Vite file watching to avoid Windows file locks and unrelated page reloads during packaging.
+Windows builds write `release/ApeRadar-Next-<version>-x64.exe` (portable) and
+`release/ApeRadar-Next-Setup-<version>-x64.exe` (installer), using the version in the workspace
+package manifests. The unpacked application is in `release/win-unpacked/`. The executables are unsigned.
 
-打包、安装和更新流程沿用 [brokenarrow-log-maggot](https://github.com/JamesFlare1212/brokenarrow-log-maggot)，发布源为本项目的 GitHub Releases。桌面版启动 15 秒后检查更新，此后每 4 分钟检查一次；左下角按钮依次提供检查、下载、圆环进度和重启安装，便携版发现更新后打开下载页。查询期间暂缓安装，浏览器预览和开发版会显示不可用原因。
-
-所有工作区包使用一致的正式版本号，推送匹配的 `v<版本>` 标签后，GitHub Actions 自动检查、打包、验证并发布 EXE、`latest.yml` 和 `.blockmap`；手动运行工作流仅生成可下载产物。本地打包不会上传。发布步骤与验证范围见 [Application updates](docs/application-updates.md)。
+See [Application updates](docs/application-updates.md) for installed and portable update behavior,
+release artifacts, and the tag-triggered publishing procedure.
 
 Windows 目录打包使用 `pnpm run pack`；`pnpm pack` 是 pnpm 自带的 npm tarball 打包命令。
 
@@ -134,9 +135,8 @@ release/                Windows 打包输出（忽略提交）
 analysis/               既有 REA 调查，不参与应用运行或打包
 ```
 
-目录边界参考 [T3 Code 的 apps 结构](https://github.com/pingdotgg/t3code/tree/main/apps)，采用 pnpm workspace。每个应用与共享包有自己的 `package.json` 和 `tsconfig.json`，公共 TypeScript 选项放在根目录 `tsconfig.base.json`。跨包引用统一通过 `@aperadar/server/*`、`@aperadar/shared/*` 与 `workspace:*` 声明；共享包直接导出 TypeScript 源码，由 Vite/esbuild 打包。
-
-`web` 的浏览器代码只依赖 `shared`；Vite 开发配置挂载 `server`。`desktop` 使用 `server` 与 `shared`，生产时把服务和校验依赖打入主进程。界面输出到 `apps/web/dist/`，主进程输出到 `apps/desktop/dist-electron/`；打包时将界面、船表、图标和版权声明汇入应用，无需复制源码或依赖研究目录。
+The repository uses pnpm workspaces. See [Architecture](docs/architecture.md#workspace-boundaries)
+for package responsibilities, cross-package imports, build outputs, and runtime boundaries.
 
 生产数据位于 Electron `userData/aperadar.sqlite`，设置页显示完整位置。开发浏览器服务的数据位于 `.data/web/aperadar.sqlite`。测试使用独立 `.test-data/` 目录；不读用户真实游戏数据，不更改原发布包。
 
@@ -144,17 +144,16 @@ analysis/               既有 REA 调查，不参与应用运行或打包
 
 ## 边界与验证
 
-核心测试使用模拟 HTTP 响应，桌面与便携版验证使用合成阵容。线上 API 可按需单独验证：
+Offline regression tests use mocked HTTP responses; desktop and packaged checks use synthetic rosters.
+Live API checks run separately with the configured WG Application ID:
 
 ```powershell
 pnpm test:api:live
 ```
 
-线上验证调用现有健康检查与查询实现，检查四个海外区服的路由，以及美/欧/亚官方接口的搜索、账号、军团、单船和四类统计字段；对可连接的 Vortex 额外检查完整查询。官方链路失败时退出码为 1；Vortex 的部分详情失败单独记为 `partial`，不代表完整通过。报告保留请求状态与诊断，省略完整应用 ID、玩家昵称及账号 ID。不会修改应用设置、玩家缓存或历史，不随 `pnpm test` 自动联网。
-
-2026-10-16 已使用用户提供的应用 ID 完成线上验证，并修复 Vortex 搜索路径缺少末尾斜杠导致的 308 失败。未用原日志中的私人玩家身份进行在线查询；服务可用性会随时间、区域和网络环境变化。没有实现旧版 HTTP 自动覆盖更新、第三方整场上传或模拟聊天发送。
-
-验证详情见 [docs/verification.md](docs/verification.md)；架构见 [docs/architecture.md](docs/architecture.md)；界面规范见 [设计系统 Master](design-system/aperadar-next/MASTER.md)。
+See [API configuration](docs/api-configuration.md#live-validation) for probe behavior and
+[Verification](docs/verification.md) for check selection, report interpretation, and historical release
+evidence. The [design system](design-system/aperadar-next/MASTER.md) defines UI conventions.
 
 技术实现参考 [Electron 上下文隔离](https://www.electronjs.org/docs/latest/tutorial/context-isolation)、[安全建议](https://www.electronjs.org/docs/latest/tutorial/security)、[Node SQLite API](https://nodejs.org/api/sqlite.html) 与 [Tailwind Vite 集成](https://tailwindcss.com/docs/installation/using-vite)。
 

@@ -1,6 +1,8 @@
 # ApeRadar Next design system
 
-The UI/UX skill's compact dashboard and Swiss typography guidance fits the app. Its two generated hero/enterprise marketing layouts did not match a desktop battle tool, so those unverified layouts were discarded. React stack searches returned no verified results; React implementation follows normal typed state and effect ownership practices. No unverified generated master was persisted.
+This document defines the current visual and interaction rules. Product voice and terminology are
+covered by [brand guidance](../../docs/brand-guidelines.md); package ownership and runtime boundaries
+are covered by [Architecture](../../docs/architecture.md).
 
 ## Tokens
 
@@ -19,7 +21,7 @@ Settings and data surfaces use quiet borders and restrained elevation. The API p
 ## Component states
 
 | Component | Default | Hover | Active/focus | Disabled |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Primary button | accent / on-accent | accent-hover | visible 3px focus ring | opacity .5, native disabled |
 | Secondary button | surface / text / border | surface-muted | accent focus ring | native disabled |
 | Input | input-bg / input-border | same | input-focus ring | native disabled |
@@ -27,14 +29,41 @@ Settings and data surfaces use quiet borders and restrained elevation. The API p
 | Tabs | muted text | surface-hover | accent text / aria-selected | native disabled when necessary |
 | Detail dialog | surface, scrim | n/a | Radix focus trap, Esc close | n/a |
 
-Interface icons use Lucide React, matching components.json, through the shared Icon component with currentColor and a consistent stroke. Buttons, menus and other shadcn components own icon dimensions; prefix and suffix icons expose data-icon. Loading indicators use the shadcn Spinner. Watch stars use the same Lucide glyph with a filled selected state. The five known ship classes retain their specialized SVG redrawings through ShipGlyph. Keep their silhouettes and use white vectors in dark mode, inverted in light mode. SVG filenames, official Wiki PNG references, URLs and reference SHA-256 digests are recorded in apps/web/src/assets/ship-types/sources.json. The application mark uses Lucide SatelliteDish, with matching generated favicon and native Windows icons. Icons and CSS are bundled locally. All icon buttons have accessible names, and decorative icons are aria-hidden. Status has text. Roster headers are static; each team sorts a display copy by ship class, tier, internal nation order, numeric ship ID, and captain name. Statistics updates and winrate metric changes do not affect this order. Numbers use tabular digits, rates use two decimals. Empty means em dash; an actual zero remains zero. Charts have labelled series, units and a text alternative. The winrate chart uses two smooth ascending lines with one circular marker per public player and a percentage Y axis. Each team spans its own relative rank range; graph sorting never changes roster order. The default 30–70% scale expands for actual outliers. Hover and keyboard focus reveal the selected player and value, respecting name privacy.
+## Icons and assets
+
+Interface icons use Lucide React, matching `apps/web/components.json`, through the shared `Icon`
+component with `currentColor` and a consistent stroke. Shadcn components own icon dimensions;
+prefix and suffix icons expose `data-icon`. Loading indicators use the local shadcn Spinner.
+Watch stars use the same Lucide glyph with a filled selected state. The application mark uses
+Lucide SatelliteDish, with matching generated favicon and native Windows icons.
+
+The five known ship classes use specialized SVG redrawings through `ShipGlyph`. Preserve their
+game silhouettes and internal markings as solid paths and transparent cutouts, without embedded
+bitmaps, bevels, or blur. These are project redrawings. Use white vectors in dark mode and invert
+them in light mode. The
+[asset manifest](../../apps/web/src/assets/ship-types/sources.json) records SVG filenames, official
+Wiki PNG references, URLs, and reference SHA-256 digests. Licenses are recorded in
+[THIRD_PARTY_NOTICES.txt](../../THIRD_PARTY_NOTICES.txt).
+
+Icons, CSS, and the default Inter font are bundled locally; Chinese uses system font fallbacks.
+Icon buttons have accessible names, decorative icons are `aria-hidden`, and status includes text.
+
+## Roster and chart presentation
+
+Roster headers are static. Display ordering and its stability during statistics updates follow
+[Team roster display order](../../docs/roster-order.md); imported snapshot arrays retain their
+original order. Numbers use tabular digits and rates use two decimals. Empty values use an em dash;
+an actual zero remains zero.
+
+Charts have labelled series, units, and a text alternative. The win-rate chart uses two smooth
+ascending lines with one circular marker per public player and a percentage Y axis. Each team spans
+its own relative rank range; graph sorting never changes roster order. The default 30–70% scale
+expands for actual outliers. Hover and keyboard focus reveal the selected player and value,
+respecting name privacy.
 
 ## Motion and accessibility
 
-Loading, querying and saving indicators use the local shadcn Spinner, based on Lucide. The application-wide reduced-motion override remains active.
-
 140ms state feedback, 200ms overlay transitions; `prefers-reduced-motion` disables nonessential motion. Buttons/inputs retain visible focus and 36px default desktop controls; compact controls retain at least 24 CSS pixels per pointer target. Forms retain errors. Settings errors link to their controls across sections; only an explicit locate or failed retry moves focus. Minimum text contrast targets 4.5:1 in both themes. Mobile checks at 375px and landscape complement the desktop layout.
-
 
 ## Watch records and search
 

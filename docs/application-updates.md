@@ -18,9 +18,32 @@ The bottom-left control stays beside Settings or Back to workspace, including wh
 
 ## Publishing a version
 
-1. Set the same stable `major.minor.patch` version in the root package and every `apps/*/package.json` and `packages/*/package.json`. `scripts/verify-release-version.mjs` checks consistency during builds and verifies release tags.
-2. Run `pnpm check`, `pnpm dist:win`, `pnpm verify:updates` and `pnpm verify:package`. Update verification checks the NSIS filename, version, SHA-512 and size, and requires the installer blockmap and portable executable. It rejects a manifest pointing at the portable executable.
-3. Commit the version and changes, create its matching `v<version>` tag, and push that tag. `.github/workflows/build.yml` checks the version, runs validation, builds both executables, verifies artifacts and runs the packaged smoke test before publishing the executables, `latest.yml` and `.blockmap` to GitHub Releases. Manual workflow runs provide downloadable artifacts without creating a release.
-4. Validate a real version-to-version update in an installed Windows copy, including network failure, interrupted download, installer cancellation, and restart. Unit tests and a smoke test do not validate a live release feed or installer replacement.
+1. Set the same stable `major.minor.patch` version in the root package and every
+   `apps/*/package.json` and `packages/*/package.json`. Run
+   `node scripts/verify-release-version.mjs vX.Y.Z`, replacing `vX.Y.Z` with the intended tag.
+2. Create `docs/releases/vX.Y.Z.md` using the English `Changes`, `Downloads`, and `Validation`
+   sections in the [release notes template](../AGENTS.md#releases). The filename must match the tag:
+   the release workflow selects this file using `github.ref_name`. Fill in the actual version and
+   changes, then complete the download names and validation results after running the checks.
+3. Run `pnpm check`, `pnpm dist:win`, `pnpm verify:updates`, and `pnpm verify:package`.
+   `dist:win` includes the production build. Update verification checks the NSIS filename, version,
+   SHA-512, and size, and requires the installer blockmap and portable executable. It rejects a
+   manifest pointing at the portable executable. Packaged validation must use the generated portable
+   executable. Run `pnpm smoke:desktop` for desktop behavior changes and the separate live API probe
+   when required by the [validation rules](../AGENTS.md#validation).
+4. Complete the release note with the generated filenames, actual test counts, failures, skipped
+   checks, and the scope of update validation. Review the matching reports using
+   [Verification](verification.md#reports-and-evidence); historical results need a matching commit
+   or CI-run reference because local report files are overwritten on subsequent runs.
+5. When committing and publishing are authorized, commit the version, release note, and changes,
+   create the matching `vX.Y.Z` tag, and push that tag.
+   [.github/workflows/build.yml](../.github/workflows/build.yml) checks the version, runs validation,
+   builds both executables, verifies artifacts, and runs the packaged smoke test before publishing
+   the executables, `latest.yml`, and `.blockmap` to `JamesFlare1212/ApeRadar` on GitHub Releases.
+   Manual workflow runs provide downloadable artifacts without creating a release.
+6. Validate a real version-to-version update in an installed Windows copy, including network failure,
+   interrupted download, installer cancellation, and restart. Record the observed result separately
+   from metadata and simulated updater checks. Unit and smoke tests do not establish live installer
+   replacement.
 
 The existing configuration disables executable signing. Local packaging does not publish a release or install or replace an application. The tag-triggered workflow publishes verified release artifacts to GitHub Releases.

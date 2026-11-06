@@ -1,359 +1,107 @@
-# 验证记录
+# Verification
 
-## v2.0.2 release validation (2026-10-26)
+This document describes how to select checks and interpret their evidence. Version-specific outcomes
+belong in the [release records](#historical-release-results). Historical results do not establish that
+a newer checkout or a different executable has passed.
 
-- Root, desktop, server, web, and shared packages use `2.0.2`.
-  `node scripts/verify-release-version.mjs v2.0.2` passed.
-- `pnpm check` passed type checking, 220 regression tests in 19 files, and
-  design-token validation. The first sandboxed attempt could not spawn the
-  TypeScript process (`EPERM`); the run outside the sandbox passed.
-- `pnpm dist:win` passed, including `pnpm build`, and generated the Windows x64
-  installer, portable executable, `latest.yml`, and installer blockmap.
-- `pnpm verify:updates` validated the installer filename, version, SHA-512,
-  size, blockmap, and portable companion file.
-- `pnpm smoke:desktop` passed with isolated application data. The eight API
-  alert scenarios cover healthy, pending, degraded, unavailable, and recovered
-  states, plus navigation to connection settings. Workspace surface corners,
-  keyboard controls, settings, roster and watch workflows, and simulated
-  update behavior also passed.
-- Appearance coverage includes 240 page combinations, 144 dialog states, and
-  16 typography combinations across both themes at widths of 1440 and 390 CSS pixels.
-- `pnpm verify:package` passed against `ApeRadar-Next-2.0.2-x64.exe` with
-  isolated application data. Its SHA-256 is
-  `99b40b222f78c0eb79194e310a56a25899ddd1baabd029283a70fadfcabb061f`.
-  The executable digest and complete smoke report are retained in
-  `artifacts/packaged-validation.json`.
-- Live API checks were not run because `WG_APPLICATION_ID` was not set.
-  Metadata checks and simulated updater tests do not establish an actual
-  v2.0.1-to-v2.0.2 installation; that installation was not performed.
-- Release changes and validation are recorded in the English
-  [v2.0.2 release notes](releases/v2.0.2.md).
+## Selecting checks
 
-## v2.0.1 release validation (2026-10-26)
+Run commands from the repository root after installing dependencies as described in the
+[README](../README.md).
 
-- Root, desktop, server, web, and shared packages use `2.0.1`.
-  `node scripts/verify-release-version.mjs v2.0.1` passed.
-- `pnpm check` passed type checking, 220 regression tests in 19 files, and
-  design-token validation.
-- `pnpm dist:win` passed, including `pnpm build`, and generated the Windows x64
-  installer, portable executable, `latest.yml`, and installer blockmap.
-- `pnpm verify:updates` validated the installer filename, version, SHA-512,
-  size, blockmap, and portable companion file.
-- `pnpm verify:package` passed against `ApeRadar-Next-2.0.1-x64.exe` with
-  isolated application data. Its executable digest and complete smoke report
-  are retained in `artifacts/packaged-validation.json`.
-- `pnpm smoke:desktop` passed with isolated application data. Checks cover the
-  application perimeter, internal scrolling, navigation scroll resets, keyboard
-  controls, settings, roster and watch workflows, and simulated update behavior.
-  Appearance coverage includes 240 page combinations, 144 dialog states, and
-  16 typography combinations across both themes at widths of 1440 and 390 CSS pixels.
-- An isolated Windows startup comparison confirmed that `windowsHide: true`
-  kept Electron's first window hidden after `show()`, while `false` made it visible.
-  After the launcher fix, `pnpm dev` created a visible, responsive application window.
-- Electron hover and keyboard-focus checks confirmed rounded window-control
-  backgrounds and room for the focus ring in both themes at 1480 and 390 CSS pixels.
-- Live API checks were not run because `WG_APPLICATION_ID` was not set.
-  Metadata checks and simulated updater tests do not establish an actual
-  v2.0.0-to-v2.0.1 installation; that installation was not performed.
-- Release changes and validation are recorded in the English
-  [v2.0.1 release notes](releases/v2.0.1.md).
+| Change or task | Checks |
+| --- | --- |
+| Documentation only | Check Markdown formatting and local links, then run `git diff --check`. |
+| Application code | `pnpm check` and `pnpm build`. |
+| Desktop behavior | After building, also run `pnpm smoke:desktop`. |
+| Live API behavior | Run `pnpm test:api:live` with an effective configured WG Application ID; record a skip if none is available. |
+| Windows release | Follow [Publishing a version](application-updates.md#publishing-a-version), including artifact and packaged-executable validation. |
 
-## v2.0.0 release validation (2026-10-26)
+`pnpm check` runs workspace and test type checks, offline regression tests, and design-token
+validation. Report the actual test count from that run. `pnpm build` verifies version consistency,
+type-checks the project, and builds the renderer and Electron entry points; it does not run
+regression tests.
 
-- Root, desktop, server, web, and shared packages use `2.0.0`.
-  `node scripts/verify-release-version.mjs v2.0.0` passed.
-- `pnpm check` passed type checking, 220 regression tests in 19 files, and
-  design-token validation. The first sandboxed attempt failed with `spawn EPERM`;
-  the complete rerun with child-process access passed.
-- `pnpm dist:win` passed, including `pnpm build`, and generated the Windows x64
-  installer, portable executable, `latest.yml`, and installer blockmap.
-- `pnpm smoke:desktop` passed with isolated application data. Coverage includes
-  240 page combinations, 144 dialog states, and 16 typography combinations
-  across both themes at widths of 1440 and 390 CSS pixels, plus navigation,
-  keyboard controls, roster and watch workflows, and settings error recovery.
-- `pnpm verify:updates` validated the installer filename, version, SHA-512,
-  size, blockmap, and portable companion file.
-- `pnpm verify:package` passed against `ApeRadar-Next-2.0.0-x64.exe` with
-  isolated application data. The executable digest and full smoke report are
-  retained in `artifacts/packaged-validation.json`.
-- Live API checks were not run because `WG_APPLICATION_ID` was not set.
-  Metadata checks and simulated updater tests do not establish an actual
-  v1.1.0-to-v2.0.0 installation; that installation was not performed.
-- The tag-triggered release uses the English
-  [v2.0.0 release notes](releases/v2.0.0.md).
+## Validation scope
 
-## v1.1.0 release validation (2026-10-22)
+Offline tests use controlled HTTP responses and isolated databases. They cover parsing, statistics,
+persistence, API scheduling and errors, settings migration, ship catalogs, and lifecycle behavior.
 
-- Root, desktop, server, web, and shared packages use `1.1.0`.
-  `node scripts/verify-release-version.mjs v1.1.0` passed.
-- `pnpm check` passed type checking, 214 regression tests in 18 files, and
-  design-token validation. `pnpm dist:win` passed the production builds and
-  generated the Windows x64 installer, portable executable, `latest.yml`, and
-  installer blockmap.
-- `pnpm smoke:desktop` and `pnpm verify:package` passed with isolated data.
-  The packaged check ran `ApeRadar-Next-1.1.0-x64.exe`; its executable digest
-  and full report are retained in `artifacts/packaged-validation.json`.
-- Desktop coverage includes 240 page combinations, 144 dialog states, and
-  16 typography combinations across both themes and widths of 1440 and 390
-  CSS pixels. Regression checks verify font persistence, reset behavior,
-  scrollbar visibility, sticky headers, and select keyboard navigation.
-- The first packaged check timed out at 120 seconds. Its application later
-  completed a passing smoke report after about 140 seconds; the verification
-  limit was increased to 180 seconds and the complete rerun passed.
-- Initial GitHub CI rejected undersized appearance previews. Compact padding
-  on narrow palette cards leaves more room for the swatches at large font sizes;
-  the size guard also reports measured dimensions when a preview is too small.
-- A CI retry exposed a scrollbar-check timing issue while client discovery
-  updated the page height. The check now waits for discovery and verifies
-  scrollbar visibility rather than requiring a fixed document height.
-- `pnpm verify:updates` validated the installer filename, version, SHA-512,
-  size, blockmap, and portable companion file.
-- Live API checks were not run because `WG_APPLICATION_ID` was not set.
-  Metadata checks and simulated updater tests do not establish an actual
-  v1.0.6-to-v1.1.0 installation; that installation was not performed.
-- The tag-triggered release uses the English
-  [v1.1.0 release notes](releases/v1.1.0.md).
+Desktop smoke checks load production resources in a hidden Electron window with isolated preload
+and application data under a unique `.test-data/` directory. Packaged checks run the generated
+portable executable with similarly isolated data. Coverage includes navigation, keyboard controls,
+settings, roster and watch workflows, and simulated update states.
 
-## shadcn/ui branch validation (2026-10-22)
+Appearance checks exercise routes and dialogs across both themes and all six palettes at desktop
+and narrow widths, plus typography settings. Chromium resolves rendered text colors, alpha blending,
+and SVG fills for the measured contrast checks. This measures the covered states and token pairs;
+it is not a full accessibility certification.
 
-- `pnpm check` passed all workspace type checks, 200 regression tests in 17 files, and
-  design-token validation. `pnpm build` passed the production web and Electron builds.
-- `pnpm smoke:desktop` passed with an isolated database. It rendered 240 page combinations
-  (10 routes, six palettes, two themes, and widths of 1440 and 390 CSS pixels), plus 144 dialog
-  states. The 14,796 measured text samples had a minimum contrast of 4.53:1; control-boundary
-  tokens had a minimum of 3.47:1 across the tested surfaces. These measurements cover rendered
-  text and the specified token pairs, rather than a complete accessibility certification.
-- The smoke run also checked roster and history filtering, offline arena import and history
-  loading, original roster order, hidden-name behavior, chart keyboard tooltips, player tabs,
-  invalid and empty numeric inputs, autosave, cancellation and completion of watch removal,
-  safe initial focus, focus restoration, mobile navigation, appearance artwork, dialog bounds,
-  toolbar overlap, and horizontal overflow. Reports and screenshots are in `artifacts/`.
-- An earlier expanded smoke run timed out while waiting for animation frames in a hidden
-  Electron window. Frame waits now have a bounded timer fallback; the complete rerun passed.
-  The lockfile check also caught the registry's unused `cn` dependency left in the manifest
-  after a sandbox-blocked install hook; it was removed. A subsequent
-  `pnpm install --frozen-lockfile --ignore-scripts --offline` passed.
-- The update progress, spinner, and ready-state presentation checks use simulated updater
-  events. Live API checks, Windows release packaging, and actual version-to-version installation
-  were not run for this UI and directory-organization change.
+For manual development checks, use `APERADAR_DATA_DIR` to select an isolated database and use
+synthetic rosters. Live API checks run separately with public samples and the configured application
+ID. See [API configuration](api-configuration.md#live-validation) for routing and privacy details.
+The probe can report partial Vortex results even when official WG checks pass; preserve that
+distinction in the reported outcome.
 
-## v1.0.3 release validation (2026-10-17)
+Metadata verification checks generated update artifacts, installer checksums and size, and companion
+files. Simulated updater tests and successful executable startup do not establish a live download
+or a version-to-version Windows installation. Record actual installation checks separately.
 
-- Root, desktop, server, web, and shared packages use `1.0.3`.
-  `node scripts/verify-release-version.mjs v1.0.3` passed.
-- `pnpm check` passed type checking, 188 regression tests in 16 files, and
-  design-token validation. New coverage exercises catalog pagination and
-  validation, atomic writes, background lookup persistence and lifecycle,
-  original Chinese names, and ID precedence after upstream renaming.
-- `pnpm dist:win` passed, including the production web and desktop builds,
-  and generated `ApeRadar-Next-Setup-1.0.3-x64.exe`,
-  `ApeRadar-Next-1.0.3-x64.exe`, `latest.yml`, and the installer `.blockmap`.
-  Vite emitted a non-fatal JavaScript chunk-size warning.
-- `pnpm verify:updates` confirmed the installer version, filename, SHA-512,
-  size, blockmap, and portable companion file. `pnpm smoke:desktop` and
-  `pnpm verify:package` passed with isolated data, the latter using the generated
-  v1.0.3 portable executable. Reports are retained in `artifacts/`.
-- `pnpm test:api:live` passed the official ASIA, NA, and EU player API checks
-  and the bilingual encyclopedia lookups for Yamato, Xuan Wu, and ARP Yamato.
-  EU and ASIA Vortex checks passed; NA and RU Vortex checks remained partial
-  because some details were unavailable.
-- The separate full catalog audit found all 1,017 public ship IDs in each WG
-  region in the 1,026-entry bundled catalog. All 201 Japanese and Pan-Asian
-  ships have ID mappings, with no untranslated names beyond the two valid
-  submarine identifier names. Coverage does not prove every translation.
-- Update-controller regression tests use simulated engines. Neither those tests
-  nor metadata and packaged smoke checks establish an actual
-  v1.0.2-to-v1.0.3 installation; that installation was not performed.
-- The tag-triggered workflow uses the English
-  [v1.0.3 release notes](releases/v1.0.3.md).
+## Reports and evidence
 
-## v1.0.2 release validation (2026-10-17)
+| Output | Contents |
+| --- | --- |
+| `artifacts/unit-tests.json` | The latest offline regression results. |
+| `artifacts/desktop-validation.json` | The latest development-build Electron smoke report. |
+| `artifacts/packaged-validation.json` | The tested portable executable path, size, SHA-256, and nested smoke report. |
+| `artifacts/live-api-probe.json` | The latest separately run live API diagnostics and per-route outcomes. |
 
-- Root, desktop, server, web, and shared packages use `1.0.2`.
-  `node scripts/verify-release-version.mjs v1.0.2` passed.
-- `pnpm check` passed type checking, 125 regression tests in 14 files, and design-token
-  validation. The added coverage exercises current WGC and Steam discovery, executable/build
-  validation, bounded region evidence, conflicting sources, routing changes, and monitor cancellation.
-- `pnpm dist:win` passed and generated `ApeRadar-Next-Setup-1.0.2-x64.exe`,
-  `ApeRadar-Next-1.0.2-x64.exe`, `latest.yml`, and the installer `.blockmap`.
-  Vite emitted a non-fatal JavaScript chunk-size warning.
-- `pnpm verify:updates` confirmed the installer version, filename, SHA-512, size, blockmap,
-  and portable companion file. `pnpm smoke:desktop` and `pnpm verify:package` passed against
-  isolated data and the generated v1.0.2 portable executable, including the new discovery IPC
-  and region-display assertions. Reports are retained in `artifacts/`.
-- Read-only checks against the local WGC installation and modern Steam library metadata passed.
-  A real 24-player replay changed its query routing from manual ASIA to detected NA; the provider
-  was mocked and the database was in memory, so that check made no real player API requests.
-- `pnpm test:api:live` was skipped because `WG_APPLICATION_ID` was not set. Update-controller
-  regression tests use simulated engines; neither those tests nor metadata verification establish
-  a real v1.0.1-to-v1.0.2 installation.
-- The tag-triggered workflow uses the English [v1.0.2 release notes](releases/v1.0.2.md).
+Successful desktop smoke runs also refresh the `artifacts/desktop-*.png` screenshots.
+These files are rolling outputs: later runs overwrite earlier results, and reports from different
+commands may describe different revisions. A failed run may also leave a previous successful report
+in place. Use the command's exit status and newly produced report together.
 
-## v1.0.1 release validation (2026-10-16)
+When recording validation, include the application version or commit, run date, actual test count,
+failures and skipped checks, and the identity of any tested executable. Preserve historical evidence
+with a link to the corresponding committed report or retained CI artifact. Check the executable
+version and digest inside a packaged report before associating it with a release.
 
-- Root, desktop, server, web, and shared packages use `1.0.1`.
-  `node scripts/verify-release-version.mjs v1.0.1` passed.
-- `pnpm check` passed all workspace and test type checks, 109 tests in 13 files, and design-token
-  validation. `pnpm dist:win` passed, including the web and Electron production builds.
-- Generated `ApeRadar-Next-Setup-1.0.1-x64.exe`, `ApeRadar-Next-1.0.1-x64.exe`, `latest.yml`, and
-  the installer `.blockmap`. `pnpm verify:updates` confirmed the installer SHA-512, size, version,
-  and companion files.
-- `pnpm smoke:desktop` and `pnpm verify:package` passed with isolated data. The actual v1.0.1
-  portable executable verified the Electron bridge, 24-player roster, settings, persisted watch
-  entry, renamed page heading, and renderer isolation. Reports and desktop screenshots were refreshed.
-- `pnpm test:api:live` made 65 requests and exited with code 0. Official WG pipelines passed in
-  NA, EU, and ASIA; Vortex passed in EU and ASIA. NA and RU Vortex clan-detail endpoints returned
-  HTTP 404, so those results remain `partial` despite available account and ship statistics.
-- The tagged release workflow reads the English [v1.0.1 release notes](releases/v1.0.1.md).
-  Local verification covers update metadata and executable startup; no actual version-to-version
-  installation was performed.
+A report saved in a release tag can be read without changing the working tree:
 
-## API configuration and WG Application ID validation (2026-10-16)
+```powershell
+# Replace vX.Y.Z with the release tag being inspected.
+git show vX.Y.Z:artifacts/packaged-validation.json
+```
 
-- Added `config/api.json` for the application ID, regional WG/Vortex base URLs, request timeout,
-  concurrency, spacing, and health-check timing. Desktop, development HTTP service, player queries,
-  health checks, and the live probe use the same configuration. Desktop builds initialize an editable
-  user-data configuration file on first launch and preserve subsequent edits.
-- The supplied ID ending in `56a0b8` was accepted by the ASIA, NA, and EU official WG endpoints: HTTP
-  200 and API status `ok`. `pnpm test:api:live` also passed the complete WG lookup, profile, clan, and
-  ship-statistics pipelines in all three regions. The run made 65 HTTP requests and exited with code 0.
-- Vortex health probes succeeded in all four supported regions. Its NA and RU clan-detail requests
-  returned HTTP 404, so those functional results are reported as `partial`; EU and ASIA Vortex
-  functional checks passed. RU's official WG source remains unsupported and routes through Vortex.
-- `pnpm check` passed 109 tests in 13 files, all workspace type checks, and design-token validation.
-  The 18 new configuration tests cover parsing and partial overrides, environment precedence,
-  invalid URLs and limits, startup initialization, custom routing, timing, saved-ID preservation,
-  and cache separation between endpoints.
-- `pnpm build`, `pnpm smoke:desktop`, and the desktop directory package completed successfully.
-  The native smoke test verified the effective application ID, read-only Settings field, linked
-  help text, and configuration path. Two launches of the packaged EXE verified first-run creation
-  from bundled defaults and preservation of an edited application ID and endpoint.
-- The running Vite development service returned the configured ID and file-managed metadata.
-  Reports: `artifacts/wg-application-id-validation.json`, `artifacts/live-api-probe.json`,
-  `artifacts/desktop-validation.json`, and `artifacts/api-configuration-validation.json`.
+## Historical release results
 
-## v1.0.0 发布检查（2026-10-16）
+Release notes contain the recorded changes, downloads, validation counts, and limitations for each
+version. The packaged reports below are pinned to the corresponding release commits, so rerunning
+local checks does not change these references. They describe previously recorded checks; publishing
+a new build requires new validation.
 
-- 根包、desktop、server、web 与 shared 统一为 `1.0.0`；首页、关于和帮助页均从包元数据读取版本。`node scripts/verify-release-version.mjs v1.0.0` 通过。
-- 干净 CI 环境确认 Electron 44 不再通过依赖的安装脚本自动下载运行时；根包 `postinstall` 显式调用 desktop 工作区的 `install-electron`，按参考仓库的方式在打包前准备 Electron。
-- `pnpm check`：12 个文件、91 项测试、全工作区类型检查与设计令牌检查全部通过。更新按钮的 26 项隐藏 Electron 界面检查通过，模拟版本为 `1.0.0 → 1.1.0`。
-- `pnpm dist:win`、`pnpm verify:updates`、`pnpm smoke:desktop`、`pnpm verify:package` 均通过。实际 v1.0.0 桌面与便携版验证了更新桥、版本、禁用状态、隔离 preload、本地 SQLite 与关注保存。
-- 发布产物为 `ApeRadar-Next-Setup-1.0.0-x64.exe`、`ApeRadar-Next-1.0.0-x64.exe`、安装包 `.blockmap` 和 `latest.yml`；元数据版本、安装包 SHA-512 与大小一致，发布源指向本项目 GitHub Releases。
-- 发布流程由 `v1.0.0` 标签触发，在 Windows runner 重跑检查、构建、产物校验与便携版烟雾验证后上传 Release；本地验证不执行系统安装或跨版本替换。
+| Version | Recorded results | Evidence at the release commit |
+| --- | --- | --- |
+| v2.0.2 | [Release notes](releases/v2.0.2.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/06e9c777718c4209435e338c331d9eb35d85ee50/artifacts/packaged-validation.json) |
+| v2.0.1 | [Release notes](releases/v2.0.1.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/1902a7bdb8f5c742488bb355a64f7fcdaff2fa77/artifacts/packaged-validation.json) |
+| v2.0.0 | [Release notes](releases/v2.0.0.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/f0ca33279776577fd42c70938b9112c7b33820ae/artifacts/packaged-validation.json) |
+| v1.1.0 | [Release notes](releases/v1.1.0.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/ee982028f34f72d89c2167369a89ee8c8101195b/artifacts/packaged-validation.json) |
+| v1.0.6 | [Release notes](releases/v1.0.6.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/979f6ec65336026e36d4b5ee89cf6e2fb4e60f05/artifacts/packaged-validation.json) |
+| v1.0.5 | [Release notes](releases/v1.0.5.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/f0bc19ea95b5356f074d876542b7a6ac451c6a06/artifacts/packaged-validation.json) |
+| v1.0.4 | [Release notes](releases/v1.0.4.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/429f6b21b6fa545fae7435f9280709f7a2d6aa54/artifacts/packaged-validation.json) |
+| v1.0.3 | [Release notes](releases/v1.0.3.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/a0416355b978ad89c2cc51443b44d85d0d7bdc3a/artifacts/packaged-validation.json) |
+| v1.0.2 | [Release notes](releases/v1.0.2.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/da2d254a92038bd0985083b4d29b3e2138c53886/artifacts/packaged-validation.json) |
+| v1.0.1 | [Release notes](releases/v1.0.1.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/919a47130160f11b823c6732bbea6372eda5fe86/artifacts/packaged-validation.json) |
+| v1.0.0 | [Historical log](https://github.com/JamesFlare1212/ApeRadar/blob/06e9c777718c4209435e338c331d9eb35d85ee50/docs/verification.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/5f4960d82765fab6129afe4abf1e7b0f00ac7051/artifacts/packaged-validation.json) |
 
-## 沿用打包、安装与左下角更新入口（2026-10-16）
+## Earlier development records
 
-- 对照 `brokenarrow-log-maggot` 的 `b3b51a4`，接入本项目 GitHub Releases 发布源、NSIS 与便携版双产物、版本标签发布工作流，以及安装包 SHA-512、大小和配套文件校验。推送标签前检查所有工作区包版本一致。
-- `pnpm check`：12 个测试文件、91 项测试、全工作区类型检查与设计令牌检查通过。新增覆盖错误的便携版更新链接、安装包损坏、旧版本清单、文件大小错误及缺失发布文件。
-- `pnpm dist:win` 与 `pnpm verify:updates`：实际生成安装版、便携版、`latest.yml` 及 NSIS blockmap；清单只指向 NSIS 安装版，哈希与大小匹配，应用资源中的 `app-update.yml` 指向 `JamesFlare1212/ApeRadar`。
-- 隐藏 Electron 以模拟更新服务完成 26 项实际界面检查：检查、下载、43% 圆环、失败重试、便携版打开发布页、查询期间暂缓安装、关于页共享动作、折叠侧栏、浅深色对比度、键盘焦点和减少动态效果。工作区和设置页在 375×812、812×375、1280×900 均保留完整更新按钮；短窗口的导航可滚动。报告见 `artifacts/update-button-validation.json`。
-- 协作浏览器连续两次快照超时后，改用项目既有的隐藏 Electron 验证方式。更新状态交互使用模拟服务，没有联网下载或执行安装；实际桌面与便携版烟雾测试另行验证真实隔离桥、更新入口、版本、SQLite 和资源加载。
-- 本次没有推送版本标签、创建线上 Release 或执行系统安装；真实跨版本替换仍需在正式发布后验证。
+The [verification log through v2.0.2](https://github.com/JamesFlare1212/ApeRadar/blob/06e9c777718c4209435e338c331d9eb35d85ee50/docs/verification.md)
+preserves the earlier API investigations, UI checks, release summaries, and original baseline
+test results. Its feature descriptions and counts apply to those historical runs. It includes
+superseded behavior such as Font Awesome icons, manual roster import, CSV export, and the original
+roster ordering.
 
-## 移除第三方代理与国服在线查询（2026-10-16）
-
-- 删除第三方 WG 代理 URL、请求分支、来源选项与健康检查；删除国服 API 域名、主/次区服选项和在线探测。运行时仅保留亚、美、欧、俄服，俄服继续走 Vortex。
-- 读取旧设置时仅迁移已删除的路由：`WG_PROXY → WG_PUBLIC`、国服主区服改为 `AUTO`、国服次区服恢复为 EU 并关闭混服，保留游戏目录、应用 ID、评分阈值、配色及其他偏好。新设置拒绝代理及国服值。SQLite 迁移测试验证了保存及重新读取。
-- 国服历史对局和关注记录保留本地显示与备注管理；旧快照请求在线刷新时直接显示不再支持，不发网络请求。自动识别到国服日志时明确提示停止支持，隐藏历史国服详情的在线战绩按钮。
-- `pnpm check` 通过：11 个测试文件、85 项测试、完整类型检查与设计令牌检查；`pnpm build` 的 Web 与 Electron 构建通过。测试覆盖旧 SQLite 配置迁移、两种来源均拦截国服查询、健康检查剔除国服和空检查集不误报健康。
-- T3 浏览器确认主区服仅 AUTO/ASIA/NA/EU/RU，来源仅 VORTEX/WG_PUBLIC，健康面板仅显示两种来源，无代理或国服文案，无横向溢出；检查期间没有修改保存的设置。
-- 使用已提供的 Application ID 重跑 `pnpm test:api:live`，三服官方完整链路通过，退出码 0；共 8 项路由结果（含俄服 WG 不支持）与 65 次真实请求，断言没有请求第三方代理或国服地址。当前报告见 [live-api-probe.json](../artifacts/live-api-probe.json)。
-
-## 线上 API 与自有 Application ID：移除前实测（2026-10-16）
-
-- 使用用户提供的 Application ID（后六位 `56a0b8`）执行真实 HTTP 请求。美/欧/亚官方 WG 的 `account/list`、`account/info`、`clans/accountinfo`、`ships/stats` 完整通过；每位玩家实际经过生产查询类的 4 次请求，账号及单船的随机战、单排、双排、三排统计与原始响应逐项一致。欧服样本有军团，验证了实际军团标签。另验证缺少 `account_id` 时返回 API 错误 `402 / ACCOUNT_ID_NOT_SPECIFIED`，即使 HTTP 为 200 也不视为成功。
-- 发现 Vortex 无末尾斜杠的搜索请求返回 `308`，而现有传输层使用 `redirect: 'error'`，导致误报网络连接失败。账号查询与健康检查均改用带末尾 `/` 的规范路径；模拟测试补充回归断言，继续保留禁止自动重定向的请求策略。
-- 修复后美/欧/亚/俄 Vortex 搜索均成功。欧服与亚服样本完整查询通过；美服与俄服样本的账号、单船数据可用，军团详情返回 `404`，应用保持 `ready` 并显示部分详情未取得。俄服所选船无场次，报告明确为 0，未声称验证了非零本舰统计。国服搜索返回 HTTP 400 / Bad Request。
-- 第三方 WG 代理在美/欧/亚均返回 HTTP 200，但业务码为 `5000`，消息为 `No endpoint GET /dev/wows/search/{region}/.`，现有代理路由不可用。欧服官方接口在前两轮部分请求出现 `SOURCE_NOT_AVAILABLE`，最后一轮完整查询成功；单次成功不代表持续可用。
-- `pnpm check` 全部通过：类型检查、11 个测试文件共 79 项、设计令牌检查；`pnpm build` 的 Web 与 Electron 构建通过。新增按需 `pnpm test:api:live`，最终退出码为 0（表示三服官方完整链路通过，Vortex 的部分失败另列）。
-- 最终报告为 [live-api-probe.json](../artifacts/live-api-probe.json)，修复前诊断为 [live-api-probe-before-fix.json](../artifacts/live-api-probe-before-fix.json)。线上检查不读取原游戏日志，不修改保存的设置、缓存或历史，不保存完整玩家身份及应用 ID。
-
-## 胜率升序双折线图（2026-10-16）
-
-- 将原密度面积图替换为双方平滑折线与圆点，纵轴为百分比，默认 30%–70%，遇到实际极端值扩展到覆盖数据的 10 个百分点刻度。每个点对应一位有公开战绩的玩家，隐藏、等待和失败数据不补零。
-- 双方分别从低到高排列，横轴明确标注“队内相对顺序”；人数不同时各自铺满相对排名范围。仅排序绘图数据副本，阵容原始顺序不变。支持账号/加权胜率口径、悬停与键盘聚焦查看数值，提示内容遵循名称隐私设置。
-- 11 个测试文件共 79 项通过，其中新增 15 项覆盖空数据、单点、人数不同、重复胜率、有效 0%、0%/100% 极值、评分切换、排序不改原阵容及平滑曲线不越界。完整类型检查、Web/Electron 构建、设计令牌与桌面烟雾检查通过。
-- T3 浏览器在 1440、375、320px 检查两条曲线与 22 个真实样本点，百分比刻度正确、横轴标签不重叠、无横向溢出。已验证键盘提示及深色显示，并比对 24 行阵容仍与 API 顺序一致。检查后恢复浅色桌面，未修改保存的设置。
-
-## 场均伤害显示优先级（2026-10-16）
-
-- 阵容列调整为舰长/舰船、胜率、场均伤害、总场次；场均伤害以本舰累计伤害除以本舰场次计算，数字加深加粗，总场次使用较弱文字颜色。
-- 使用阵容卡片容器查询：卡片不超过 470px 时隐藏总场次，始终保留场均伤害。移除先隐藏伤害的旧断点；等待查询、机器人、失败及隐藏战绩行同步调整单元格，避免隐藏列后占位错位。
-- 类型检查、Web/Electron 构建、设计令牌和真实桌面烟雾检查通过。T3 浏览器检查 1440、1250、1024、760、480、375、320px：场均伤害均可见；1024、480、375、320px 的窄卡片隐藏场次，760px 堆叠后因卡片变宽恢复场次；无横向溢出，关注按钮均在表内。375px 截图已核对。
-
-## 固定游戏阵容顺序（2026-10-16）
-
-- 移除胜率表头按钮、排序箭头和排序状态，以及默认舰种/等级/胜率重排。双方阵容保留游戏文件 `vehicles` 中各阵营的相对顺序，搜索与舰种筛选只减少显示项。
-- 数据链路核对：导入解析和历史快照保留数组顺序，战绩查询按 key 更新原索引。切换胜率口径不参与行序计算。
-- 全工作区与测试代码类型检查、Web/Electron 构建、设计令牌及桌面烟雾检查通过。T3 浏览器逐项比对双方 24 行姓名与 API 原始阵容，全部一致；可排序表头为 0，1440×1000 无横向溢出。
-
-## 舰种图标 SVG 重制（2026-10-16）
-
-- 五类舰种按游戏图标的轮廓与刻线重绘为 SVG，使用原生闭合路径、纯色填充与透明镂空；不含位图、渐变、阴影或模糊滤镜。统一使用 27×27 viewBox，详情放大时按矢量渲染。
-- 阵容表和玩家详情已切换为 `.svg` 导入；原 PNG 仅保留为来源参考，`sources.json` 明确记录重绘文件和参考图 SHA-256。来源声明和设计规范同步更新。
-- 全工作区与测试代码类型检查、Web/Electron 生产构建、设计令牌检查、真实隐藏 Electron 烟雾检查通过。浅深色桌面截图已更新为 SVG 版本。
-- 浏览器确认 24 个阵容图标均加载成功，实际资源为五种仅含路径的 SVG，列表显示 27×27，浅色反相生效；Electron 浅深色截图确认内部标记保留、边缘清晰。
-
-## 游戏原版舰种图标来源核对（2026-10-16，PNG 阶段）
-
-- 航母、战列舰、巡洋舰、驱逐舰、潜艇均使用官方 World of Warships Wiki 的原版 27×27 PNG，五张素材的 SHA-256 与 `apps/web/src/assets/ship-types/sources.json` 一致。在线已找齐，本次无需提取本地游戏资源。
-- 阵容表和玩家详情共用 `ShipGlyph`；保留原图内部刻线，浅色主题反相显示、深色主题保留原色。未知舰船保留问号回退；原图在本地打包，无运行时外部图片请求。
-- 全工作区与测试代码类型检查、Web/Electron 生产构建、设计令牌检查通过。最终 Web 构建后，真实隐藏 Electron 烟雾检查通过，浅深色截图已更新至 `artifacts/desktop-light.png` 与 `artifacts/desktop-dark.png`。
-- T3 浏览器验证 24 个阵容图标均加载成功、原图和显示尺寸均为 27×27，五种舰种映射正确。1440×1000 的详情图标为 46×46，390×844 为 35×35；浅深主题的内部刻线清晰，页面与详情窗口均无横向溢出。检查后恢复浅色桌面总览，未修改保存的设置。
-
-## 外观、API 健康检查与软件更新（2026-10-16）
-
-- `pnpm run check`：全部工作区和测试类型检查、10 个文件共 64 项测试、设计令牌检查通过。新增覆盖旧 SQLite 设置迁移、连续编辑与外部修改的保存竞态、预览卸载恢复、系统主题联动、API 探测和更新状态机。
-- `pnpm run build`：Web 与 Electron 生产构建通过；`pnpm run smoke:desktop`：真实隐藏 Electron 窗口的隔离 preload、主题更新、24 人示例、SQLite 与关注保存验证通过。
-- T3 协作浏览器连接原有 `http://127.0.0.1:3000/`，验证整组配色、浅深配色独立保存、刷新恢复，以及系统模式随浏览器偏好实时切换。375×812、812×375、1440×900 均无横向溢出；设置导航可返回工作区。
-- API 面板使用真实公开搜索探测，无玩家昵称。此次 ASIA 检测中官方 WG 返回有效成功响应，Vortex 网络失败，代理虽返回 HTTP 200 但 API 未成功；面板分别呈现，不将 HTTP 200 等同于健康。
-- 浏览器更新面板准确显示不支持桌面更新的原因。更新控制器已验证启动/定时检查、进度、下载及安装重试、安装保护和便携版边界；未配置发布源，也未实际下载、安装或发布新版本。配置条件见 `docs/application-updates.md`。
-- 检查后已恢复原浅色偏好和石墨配色，原开发服务继续运行。测试和桌面报告分别位于 `artifacts/unit-tests.json` 与 `artifacts/desktop-validation.json`。
-
-## 工作区重组验证（2026-10-16）
-
-迁移为 `apps/{desktop,server,web}` 与 `packages/shared` 后，完成以下验证：
-
-- `pnpm install --offline --frozen-lockfile --ignore-scripts`：5 个工作区锁文件一致，未升级依赖版本。
-- 全部工作区及根目录测试代码的类型检查通过；5 个测试文件、29 项测试通过；设计令牌检查通过。
-- `pnpm build`：界面输出到 `apps/web/dist/`，主进程与 preload 输出到 `apps/desktop/dist-electron/`。
-- `pnpm dev:web`：首页、`/src/main.tsx` 与 `/api/state` 均返回 HTTP 200，API 正常读取设置；检查后已停止服务。
-- `pnpm smoke:desktop`：真实 Electron 加载迁移后的资源、preload 和 SQLite，验证通过。
-- `pnpm --filter @aperadar/desktop run pack`：Windows 目录打包成功；检查 ASAR 包含界面、船表、图标、LICENSE 和第三方声明；对打包后的 EXE 执行同一烟雾验证通过。
-- `pnpm --filter @aperadar/desktop dist:win` 与 `pnpm verify:package`：便携版生成及真实运行验证通过，报告在 `artifacts/packaged-validation.json`。
-
-Windows 应用目录打包使用 `pnpm run pack`，避免与 pnpm 自带的 `pnpm pack`（生成 npm tarball）混淆。
-
-## 核心自动测试
-
-`pnpm test`：5 个测试文件、29 项全部通过。覆盖：
-
-- 默认加权公式、本舰0场回退、60场封顶、零模式分母、阈值严格/包含边界、空队伍、文字隐私与非有限设置拒绝。
-- Unicode replay 字节长度、BOM/空白、超长/未完成数据拒绝、车辆/账号ID分离、双服分组、机器人状态、LF/CRLF识服与递归最新文件选择。
-- 真实 SQLite 重新打开后的设置/快照/备注，参数化字符串、缓存时效与错误不缓存。
-- HTTP状态与429重试、非JSON及非法场次拒绝、全局并发上限、精确昵称搜索、false隐藏标志与WG批量请求计数（无多余Vortex请求）。
-- 示例不联网、缓存复用、迟到结果不能覆盖新对局、显示口径切换不中断查询，以及实际文件被自动监测导入。
-
-`pnpm typecheck` 与 `pnpm build` 通过。切换为 Font Awesome Free 后，前端主入口约474 kB、gzip约147 kB；设置和资料页面分块载入。
-
-## 桌面与产物
-
-`pnpm smoke:desktop` 启动隐藏的真实 Electron 窗口，加载生产资源及隔离 preload，核验24人示例、设置更新、关注保存和SQLite文件头。Renderer 的 `window.require` 为 undefined。结果保存在 `artifacts/desktop-validation.json`，截图保存在 `artifacts/desktop-light.png` 和 `artifacts/desktop-dark.png`。
-
-`pnpm verify:package` 对便携 EXE 执行同一隐藏验证，输出体积、SHA-256和运行结果到 `artifacts/packaged-validation.json`。当前包未签名；签名需另外配置发行证书。
-
-## T3 协作浏览器检查
-
-使用本机真实 Vite/Node/SQLite 开发服务完成：
-
-- 搜索 Northbound 只保留1人，清空恢复24人；筛选战列舰得到6人。
-- 切换加权胜率实际更新设置及界面。
-- 在详情添加正面关注与中文备注，关注名单显示持久记录。
-- 设置缓存改为20分钟并保存，关闭导入后自动查询。
-- 通过真实 file input 导入合成双人JSON，展示pending状态、无自动网络查询，并在历史中生成与重新打开快照。
-- 摘要窗口展示可编辑文本；Escape关闭并恢复触发按钮焦点。
-- 375×812手机、812×375横屏、1280×800与1440×1000桌面无横向溢出。浅/深色主题均检查过。
-
-浏览器环境的第三方 DevTools hook 会禁用React Fast Refresh，因此修改界面文件后通过完整页面重载核实最终内容。正式 Electron窗口独立验证，不依赖这个浏览器环境。
-
-没有使用真实私人玩家数据访问线上API；HTTP测试的响应是可控制的fixture。真实区服服务可用性、用户网络代理以及实际游戏版本的阵容变化仍需在用户环境验证。没有声称已做全量WCAG认证、签名发行或实战完整覆盖。
+Reports referenced by that old log were rolling outputs too; a report present in its final snapshot
+does not necessarily belong to every earlier entry. Use the matching release evidence above or
+inspect the relevant historical commit when tracing a particular run.
