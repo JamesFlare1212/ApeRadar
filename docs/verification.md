@@ -9,6 +9,12 @@ a newer checkout or a different executable has passed.
 Run commands from the repository root after installing dependencies as described in the
 [README](../README.md).
 
+After switching branches or changing package manifests or the lockfile, run
+`pnpm install --frozen-lockfile` before validation. Use Node.js 24 LTS and the repository's pinned
+pnpm version, matching CI. A successful check with previously installed dependency versions does
+not validate the current lockfile; inspect `node --version` and `pnpm exec vitest --version` when
+investigating differences between local results and CI.
+
 | Change or task | Checks |
 | --- | --- |
 | Documentation only | Check Markdown formatting and local links, then run `git diff --check`. |
