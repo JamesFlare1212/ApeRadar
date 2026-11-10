@@ -9,6 +9,12 @@ export const catalog = JSON.parse(readFileSync(new URL('../apps/server/resources
 // Offline fixtures select a region explicitly; product defaults use AUTO.
 export const settings = (): Settings => ({ ...structuredClone(DEFAULT_SETTINGS), region: 'ASIA' })
 export const demo = () => createDemo(catalog)
+export function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((accept, fail) => { resolve = accept; reject = fail })
+  return { promise, resolve, reject }
+}
 const combat = (battles: number, wins: number): CombatStats => ({ battles, wins, damage: 12000 * battles, xp: 1000 * battles })
 export function fixturePlayer() {
   const player = demo().players[0]

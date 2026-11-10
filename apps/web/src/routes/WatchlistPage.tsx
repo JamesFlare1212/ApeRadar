@@ -38,7 +38,7 @@ export function WatchlistPage({ state, onWatch }: { state: AppState; onWatch: (i
         </Item>)}</ItemGroup>}
     </section>
     <Modal open={!!editing} onOpenChange={open => { if (!open && !saving) setEditing(null) }} title="编辑关注备注" description={editing ? `${displayName(editing)} · ${REGION_LABELS[editing.region]}` : ''}>
-      <Field><FieldLabel htmlFor="edit-watch-note">备注</FieldLabel><Textarea id="edit-watch-note" rows={4} maxLength={500} value={note} onChange={e => setNote(e.target.value)} /></Field>
+      <Field><FieldLabel htmlFor="edit-watch-note">备注</FieldLabel><Textarea id="edit-watch-note" rows={4} maxLength={500} value={note} disabled={saving} onChange={e => setNote(e.target.value)} /></Field>
       <DialogFooter><Button disabled={saving} onClick={() => setEditing(null)}>取消</Button><Button variant="default" busy={saving} onClick={() => { if (editing) { setSaving(true); void onWatch({ ...editing, note }).then(ok => { if (ok) setEditing(null) }).finally(() => setSaving(false)) } }}><Icon icon={Save} />保存备注</Button></DialogFooter>
     </Modal>
     <ConfirmationDialog open={!!removing} onOpenChange={open => { if (!open) setRemoving(null) }} title="移除关注记录？" description="这将删除此舰长的本地标记和备注，对局历史会保留。" actionLabel="移除关注" cancelLabel="保留记录" onConfirm={() => removing ? onWatch({ ...removing, status: null }) : false} />

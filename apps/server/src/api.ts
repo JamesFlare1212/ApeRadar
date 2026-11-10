@@ -2,6 +2,7 @@ import { setTimeout as sleep } from 'node:timers/promises'
 import type { CombatStats, PlayerStats, RadarPlayer, SupportedRegion, Settings } from '@aperadar/shared/types'
 import { isSupportedRegion } from '@aperadar/shared/types'
 import { DEFAULT_API_CONFIG, vortexApiUrl, wgApiUrl, type ApiConfig } from '@aperadar/shared/api-config'
+import { cancelResponse, readResponseText, ResponseSizeError, withAbort } from './http-response.ts'
 
 export const DOMAINS: Record<SupportedRegion, string> = { ASIA: 'worldofwarships.asia', NA: 'worldofwarships.com', EU: 'worldofwarships.eu', RU: 'korabli.su' }
 type Json = Record<string, unknown>
@@ -38,7 +39,16 @@ export class WargamingApi {
   private readonly config: ApiConfig
   constructor(private settings: Settings, private options: ApiOptions = {}) { this.fetcher = options.fetcher ?? fetch; this.config = options.config ?? DEFAULT_API_CONFIG }
   private async slot<T>(work: () => Promise<T>, signal: AbortSignal): Promise<T> {
-    if (this.running >= (this.options.concurrency ?? this.config.requests.concurrency)) await new Promise<void>(resolve => this.queue.push(resolve))
+    signal.throwIfAborted()
+    if (this.running >= (this.options.concurrency ?? this.config.requests.concurrency)) await new Promise<void>((resolve, reject) => {
+      const next = () => { signal.removeEventListener('abort', abort); resolve() }
+      const abort = () => {
+        const index = this.queue.indexOf(next)
+        if (index >= 0) { this.queue.splice(index, 1); reject(signal.reason) }
+      }
+      this.queue.push(next)
+      signal.addEventListener('abort', abort, { once: true })
+    })
     else this.running++
     try {
       signal.throwIfAborted()
@@ -53,29 +63,18 @@ export class WargamingApi {
       try {
         return await this.slot(async () => {
           const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(this.options.timeout ?? this.config.requests.timeoutMs)])
-          const response = await this.fetcher(url, { signal: requestSignal, headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }, redirect: 'error' })
+          const response = await withAbort(() => this.fetcher(url, { signal: requestSignal, headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }, redirect: 'error' }), requestSignal, cancelResponse)
+          if (requestSignal.aborted) { cancelResponse(response); requestSignal.throwIfAborted() }
           if (!response.ok) {
             const retryAfter = response.headers.get('retry-after')
             const wait = retryAfter ? Math.min(10000, Math.max(0, /^\d+$/.test(retryAfter) ? Number(retryAfter) * 1000 : Date.parse(retryAfter) - Date.now())) : 0
+            cancelResponse(response)
             throw new HttpError(`战绩服务返回 HTTP ${response.status}`, response.status === 429 || response.status >= 500, wait)
           }
-          if (Number(response.headers.get('content-length')) > 4 * 1024 * 1024) throw new HttpError('战绩响应过大', false)
-          const reader = response.body?.getReader()
-          let text = ''
-          if (reader) {
-            const decoder = new TextDecoder()
-            let size = 0
-            try {
-              while (true) {
-                const { value, done } = await reader.read()
-                if (done) break
-                size += value.byteLength
-                if (size > 4 * 1024 * 1024) { await reader.cancel(); throw new HttpError('战绩响应过大', false) }
-                text += decoder.decode(value, { stream: true })
-              }
-              text += decoder.decode()
-            } finally { reader.releaseLock() }
-          }
+          let text: string
+          try { text = await readResponseText(response, requestSignal, 4 * 1024 * 1024, '战绩响应过大') }
+          catch (error) { if (error instanceof ResponseSizeError) throw new HttpError(error.message, false); throw error }
+          requestSignal.throwIfAborted()
           let result: Json
           try { result = object(JSON.parse(text)) } catch { throw new HttpError('战绩服务返回了非 JSON 内容，请稍后重试', false) }
           if (result.status !== 'ok') throw new HttpError(`战绩服务暂不可用：${String(object(result.error).message ?? '未知响应')}`, false)
@@ -89,12 +88,15 @@ export class WargamingApi {
     }
   }
   private finish(player: RadarPlayer, data: Partial<RadarPlayer>): RadarPlayer { return { ...player, ...data, fetchedAt: new Date().toISOString(), cached: false } }
+  private notFound(player: RadarPlayer): RadarPlayer {
+    return this.finish(player, { status: 'not-found', accountId: null, clanTag: '', clanId: null, stats: null, error: '该区服未找到匹配账号' })
+  }
   private async vortex(player: RadarPlayer, signal: AbortSignal): Promise<RadarPlayer> {
     if (!isSupportedRegion(player.region)) throw new Error('此区服已停止支持在线查询')
     const root = vortexApiUrl(this.config, player.region, '').replace(/\/$/, '')
     const search = await this.json(`${root}/search/${encodeURIComponent(player.name)}/`, signal)
     const match = array(search.data).map(object).find(item => String(item.name).toLowerCase() === player.name.toLowerCase())
-    if (!match || !/^\d+$/.test(String(match.spa_id))) return this.finish(player, { status: 'not-found', error: '该区服未找到匹配账号' })
+    if (!match || !/^\d+$/.test(String(match.spa_id))) return this.notFound(player)
     const id = String(match.spa_id)
     const account = object(object((await this.json(`${root}/${id}/`, signal)).data)[id])
     if (hiddenProfile(account.hidden_profile)) return this.finish(player, { accountId: id, status: 'hidden', error: null, stats: null })
@@ -111,9 +113,10 @@ export class WargamingApi {
       if (result.status !== 'fulfilled') return null
       const data = object(object(result.value.data)[id])
       if (hiddenProfile(data.hidden_profile)) return null
-      return parseCombat(object(object(data.statistics)[player.ship.id])[modes[i]])
+      try { return parseCombat(object(object(data.statistics)[player.ship.id])[modes[i]]) }
+      catch { return null }
     })
-    return this.finish(player, { accountId: id, status: 'ready', clanTag: String(clanData.tag ?? ''), clanId: clan.clan_id == null ? null : String(clan.clan_id), error: results.some(result => result.status === 'rejected') ? '部分详情未取得，可重试失败数据' : null, stats: { ...profile, ship: ship[0] ?? parseCombat(null), shipSolo: ship[1] ?? parseCombat(null), shipDiv2: ship[2] ?? parseCombat(null), shipDiv3: ship[3] ?? parseCombat(null), shipAvailable: ship.every(mode => mode !== null) } })
+    return this.finish(player, { accountId: id, status: 'ready', clanTag: String(clanData.tag ?? ''), clanId: clan.clan_id == null ? null : String(clan.clan_id), error: results.some(result => result.status === 'rejected') || ship.some(mode => mode === null) ? '部分详情未取得，可重试失败数据' : null, stats: { ...profile, ship: ship[0] ?? parseCombat(null), shipSolo: ship[1] ?? parseCombat(null), shipDiv2: ship[2] ?? parseCombat(null), shipDiv3: ship[3] ?? parseCombat(null), shipAvailable: ship.every(mode => mode !== null) } })
   }
   private wgUrl(region: SupportedRegion, endpoint: 'search' | 'account/info' | 'clans/accountinfo' | 'ships/stats', parameters: Record<string, string>) {
     const pathname = endpoint === 'search' ? 'account/list' : endpoint
@@ -125,7 +128,7 @@ export class WargamingApi {
     const search = await this.json(this.wgUrl(region, 'search', { type: 'exact', search: players.map(p => p.name).join(',') }), signal)
     const lookup = array(search.data).map(object)
     const identified = players.map(player => ({ player, id: String(lookup.find(p => String(p.nickname).toLowerCase() === player.name.toLowerCase())?.account_id ?? '') }))
-    for (const item of identified.filter(p => !/^\d+$/.test(p.id))) onPlayer(this.finish(item.player, { status: 'not-found', error: '该区服未找到匹配账号' }))
+    for (const item of identified.filter(p => !/^\d+$/.test(p.id))) onPlayer(this.notFound(item.player))
     const found = identified.filter(p => /^\d+$/.test(p.id))
     if (!found.length) return
     const ids = found.map(p => p.id).join(',')

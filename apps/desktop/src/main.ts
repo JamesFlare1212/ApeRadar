@@ -23,6 +23,8 @@ import { validateApiConnectionAlerts, validateUi } from './smoke/ui'
 import { validateNarrowNavigation } from './smoke/navigation'
 import { validateUpdatePresentation } from './smoke/updates'
 import { validateAppearance, validateTypography } from './smoke/appearance'
+import { validatePendingWatchSave, validateSnapshotOrdering } from './smoke/state-machines'
+import { validateSingleInstance } from './smoke/single-instance'
 
 const smoke = process.argv.includes('--smoke-test')
 if (smoke || process.env.APERADAR_DATA_DIR) {
@@ -46,6 +48,7 @@ function handle(channel: string, callback: (input: unknown) => unknown) {
   ipcMain.handle(channel, (event, input: unknown) => { trusted(event); return callback(input) })
 }
 async function createWindow() {
+  if (smoke && process.argv.includes('--smoke-secondary')) { app.exit(2); return }
   const root = app.getAppPath()
   const dataPath = app.getPath('userData')
   const runtimeConfig = await loadApiConfig(app.isPackaged ? path.join(dataPath, 'api-config.json') : path.resolve(root, '../../config/api.json'), { createIfMissing: app.isPackaged })
@@ -128,6 +131,7 @@ async function createWindow() {
         await new Promise(resolve => setTimeout(resolve, 200))
       }
       if (!ready) throw new Error('Renderer did not finish loading')
+      const singleInstance = await validateSingleInstance()
       await mainWindow.webContents.executeJavaScript('document.fonts.ready.then(() => true)')
       await mainWindow.webContents.executeJavaScript("(()=>{const style=document.createElement('style');style.textContent='*,*::before,*::after{transition:none!important;animation:none!important}';document.head.append(style);return true})()")
       const defaultAppearance = await mainWindow.webContents.executeJavaScript("(async()=>{const api=window.aperadar;const state=await api.getState();const followsSystem=state.settings.theme==='system'&&document.documentElement.classList.contains('dark')===matchMedia('(prefers-color-scheme: dark)').matches;await api.saveSettings({...state.settings,theme:'light'});return followsSystem})()") as boolean
@@ -189,6 +193,8 @@ async function createWindow() {
       // Let the restored workspace finish its mount-time IPC requests before exiting.
       await new Promise(resolve => setTimeout(resolve, 400))
       const ui = await validateUi(mainWindow, service!.database)
+      const snapshotOrdering = await validateSnapshotOrdering(mainWindow, service!, handle)
+      const pendingWatchSave = await validatePendingWatchSave(mainWindow, service!, handle)
       const apiAlerts = await validateApiConnectionAlerts(mainWindow)
       const updatePresentation = await validateUpdatePresentation(mainWindow, updates!.status())
       const typography = await validateTypography(mainWindow)
@@ -207,13 +213,22 @@ async function createWindow() {
       const narrowNavigation = await validateNarrowNavigation(mainWindow)
       const narrowDialog = await mainWindow.webContents.executeJavaScript("(async()=>{location.hash='/overview';for(let i=0;i<40&&!document.querySelector('.player-name-button');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('.player-name-button').click();for(let i=0;i<40&&!document.querySelector('[role=dialog]');i++) await new Promise(resolve=>setTimeout(resolve,50));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));const rect=document.querySelector('[role=dialog]').getBoundingClientRect();return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:innerWidth,height:innerHeight};})()") as { left: number; right: number; top: number; bottom: number; width: number; height: number }
       if (narrowDialog.left < 0 || narrowDialog.right > narrowDialog.width || narrowDialog.top < 0 || narrowDialog.bottom > narrowDialog.height) throw new Error('The narrow player dialog is outside the viewport')
-      const report = { status: 'passed', result, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, apiAlerts, updatePresentation, appearance, typography, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
+      const report = { status: 'passed', result, singleInstance, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, snapshotOrdering, pendingWatchSave, apiAlerts, updatePresentation, appearance, typography, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null
       app.exit(0)
     } catch (error) { await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify({ status: 'failed', error: String(error) }, null, 2)); app.exit(1) }
   }
 }
-app.whenReady().then(createWindow).catch(error => { console.error(error); if (!smoke) dialog.showErrorBox('应用启动失败', error instanceof Error ? error.message : String(error)); app.exit(1) })
-app.on('window-all-closed', () => app.quit())
-app.on('before-quit', () => { updates?.dispose(); updates = null; service?.dispose(); service = null })
+if (!app.requestSingleInstanceLock()) app.quit()
+else {
+  app.on('second-instance', () => {
+    if (smoke || !window || window.isDestroyed()) return
+    if (window.isMinimized()) window.restore()
+    window.show()
+    window.focus()
+  })
+  app.whenReady().then(createWindow).catch(error => { console.error(error); if (!smoke) dialog.showErrorBox('应用启动失败', error instanceof Error ? error.message : String(error)); app.exit(1) })
+  app.on('window-all-closed', () => app.quit())
+  app.on('before-quit', () => { updates?.dispose(); updates = null; service?.dispose(); service = null })
+}

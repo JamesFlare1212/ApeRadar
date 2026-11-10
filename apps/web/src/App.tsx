@@ -19,7 +19,9 @@ import type { AppState, WatchInput } from '@aperadar/shared/types'
 import { generateOutput } from '@aperadar/shared/statistics'
 import { bridge } from './lib/bridge.js'
 import { cacheAppearance, useAppearance } from './lib/appearance.js'
+import { receiveSettingsSnapshot, saveSettingsPatch } from './lib/settingsQueue.js'
 import { useSidebarPreference } from './hooks/useSidebarPreference.js'
+import { useBridgeSnapshot } from './hooks/useBridgeSnapshot.js'
 import { SETTINGS_SECTIONS, type SettingsSection } from './lib/settingsNavigation.js'
 import { Button, Modal, Notice } from './components/ui.js'
 import { PlayerDetail } from './components/battle/PlayerDetail.js'
@@ -38,31 +40,25 @@ const settingsIcons = { general: SlidersHorizontal, appearance: Palette, connect
 function resetWorkspaceScroll() { document.getElementById('main-content')?.scrollTo({ top: 0, behavior: 'instant' }) }
 
 export function App() {
-  const [state, setState] = useState<AppState | null>(null)
+  const { state, error: connectionError, run: receiveState } = useBridgeSnapshot(bridge.getState, bridge.onStateChanged)
   const [page, setPage] = useState<Page>(currentPage)
   const [settingsSection, setSettingsSection] = useState<SettingsSection>(currentSettingsSection)
-  const [connectionError, setConnectionError] = useState('')
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [outputOpen, setOutputOpen] = useState(false), [output, setOutput] = useState('')
   const sidebar = useSidebarPreference()
   const dark = useAppearance(state?.settings)
   const heading = useRef<HTMLHeadingElement>(null)
   function notify(text: string, error = false) { if (error) toast.error(text); else toast.success(text) }
-  useEffect(() => {
-    let active = true
-    void bridge.getState().then(value => { if (active) setState(value) }).catch(error => { if (active) setConnectionError(String(error)) })
-    const stop = bridge.onStateChanged(value => { if (active) setState(value) })
-    return () => { active = false; stop() }
-  }, [])
   useEffect(() => { const onHash = () => { setPage(currentPage()); setSettingsSection(currentSettingsSection()) }; window.addEventListener('hashchange', onHash); return () => window.removeEventListener('hashchange', onHash) }, [])
   useEffect(() => { resetWorkspaceScroll(); if (state) heading.current?.focus({ preventScroll: true }) }, [page, settingsSection])
   useEffect(() => { if (state?.monitor.error) notify(state.monitor.error, true) }, [state?.monitor.error])
+  useEffect(() => { if (state) receiveSettingsSnapshot(state.settings) }, [state?.settings])
   useEffect(() => { if (state) cacheAppearance(state.settings) }, [state?.settings.theme, state?.settings.lightPalette, state?.settings.darkPalette, state?.settings.fontFamily, state?.settings.fontSize])
   useEffect(() => { setSelectedKey(null) }, [state?.battle?.id])
   function navigate(next: Page) { setPage(next); location.hash = next === 'settings' ? '/settings/appearance' : `/${next}`; if (next === 'settings') setSettingsSection('appearance'); resetWorkspaceScroll() }
   function openSettings(section: SettingsSection) { setPage('settings'); setSettingsSection(section); location.hash = `/settings/${section}`; resetWorkspaceScroll() }
   async function run(work: () => Promise<AppState | null>, success?: string) {
-    try { const next = await work(); if (next) setState(next); if (next && success) notify(success); return next }
+    try { const next = await receiveState(work); if (next && success) notify(success); return next }
     catch (error) { notify(error instanceof Error ? error.message.replace(/^Error invoking remote method '[^']+': Error: /, '') : String(error), true); return null }
   }
   async function copyText(text: string) { try { await bridge.copyText(text); notify('已复制到剪贴板') } catch { notify('复制未完成，请手动选择文本后复制', true) } }
@@ -84,7 +80,7 @@ export function App() {
     <div id="main-content" tabIndex={-1} className="main-content"><div className="main-inner">{page === 'settings' ? <div className="page-heading"><div><h1 ref={heading} tabIndex={-1}>{SETTINGS_SECTIONS[settingsSection].title}</h1><p>{SETTINGS_SECTIONS[settingsSection].description}</p></div></div> : <h1 ref={heading} tabIndex={-1} className="sr-only">{pageInfo.title}</h1>}
     {page !== 'settings' && <UpdateNotice onOpen={() => openSettings('about')} />}
     <Suspense fallback={<div className="flex flex-col gap-4" role="status" aria-label="正在载入工作区"><Skeleton className="h-10 w-48" /><Skeleton className="h-64 w-full" /></div>}>
-    {page === 'overview' && <OverviewPage state={state} onPlayer={setSelectedKey} onWatch={onWatch} onRefresh={() => { void run(() => bridge.query({ force: true })) }} onRetry={() => { void run(() => bridge.query({ failedOnly: true, force: true })) }} onCancel={() => { void run(() => bridge.cancelQuery()) }} onConnect={() => openSettings('connection')} onSummary={() => { if (battle) { setOutput(generateOutput(battle, settings)); setOutputOpen(true) } }} onWinrateChange={winrate => { void run(() => bridge.saveSettings({ ...settings, winrate })) }} />}
+    {page === 'overview' && <OverviewPage state={state} onPlayer={setSelectedKey} onWatch={onWatch} onRefresh={() => { void run(() => bridge.query({ force: true })) }} onRetry={() => { void run(() => bridge.query({ failedOnly: true, force: true })) }} onCancel={() => { void run(() => bridge.cancelQuery()) }} onConnect={() => openSettings('connection')} onSummary={() => { if (battle) { setOutput(generateOutput(battle, settings)); setOutputOpen(true) } }} onWinrateChange={winrate => { void saveSettingsPatch(settings, async next => !!await run(() => bridge.saveSettings(next)), { winrate }) }} />}
     {page === 'history' && <HistoryPage state={state} onLoad={id => { void run(() => bridge.loadBattle(id)).then(result => { if (result) navigate('overview') }) }} onDemo={() => { void run(() => bridge.loadDemo()).then(result => { if (result) navigate('overview') }) }} />}
     {page === 'watchlist' && <WatchlistPage state={state} onWatch={onWatch} />}
     {page === 'settings' && <SettingsPage state={state} section={settingsSection} onSectionChange={openSettings} onSave={async next => !!await run(() => bridge.saveSettings(next))} notify={notify} />}

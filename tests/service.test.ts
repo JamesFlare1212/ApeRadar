@@ -1,11 +1,76 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { RadarService } from '@aperadar/server/service'
 import { RadarDatabase } from '@aperadar/server/database'
-import { arena, catalog, createGameClient, fixturePlayer, removeTemp, settings, tempDirectory } from './helpers.js'
+import { arena, catalog, createGameClient, deferred, fixturePlayer, removeTemp, settings, tempDirectory } from './helpers.js'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 
 describe('battle lifecycle', () => {
+  it('saves query progress on shutdown and rejects late replies before accessing the closed database', async () => {
+    const directory = tempDirectory(), filename = path.join(directory, 'shutdown.sqlite')
+    const started = deferred<void>(), finish = deferred<void>()
+    const database = new RadarDatabase(filename)
+    const service = new RadarService(database, catalog, () => ({ query: async (players, _signal, onPlayer) => {
+      onPlayer({ ...players[0], accountId: '42', status: 'ready', stats: fixturePlayer().stats })
+      started.resolve(); await finish.promise
+    } }))
+    let query: Promise<unknown> | undefined
+    try {
+      service.saveSettings({ ...settings(), autoQuery: false })
+      const state = await service.importBytes(Buffer.from(JSON.stringify(arena())), 'arena.json', false)
+      query = service.query()
+      await started.promise
+      const reads = vi.spyOn(database, 'getWatchlist')
+      service.dispose()
+      reads.mockClear()
+      const result = expect(query).rejects.toThrow('应用已关闭')
+      finish.resolve(); await result
+      expect(reads).not.toHaveBeenCalled()
+      const reopened = new RadarDatabase(filename)
+      try { expect(reopened.getBattle(state.battle!.id)?.players[0].status).toBe('ready') }
+      finally { reopened.close() }
+    } finally { finish.resolve(); await query?.catch(() => {}); service.dispose(); removeTemp(directory) }
+  })
+  it('ends a query after a cache read failure and permits a later retry', async () => {
+    const database = new RadarDatabase(':memory:')
+    const query = vi.fn(async () => {})
+    const service = new RadarService(database, catalog, () => ({ query }))
+    try {
+      service.saveSettings({ ...settings(), autoQuery: false })
+      await service.importBytes(Buffer.from(JSON.stringify(arena())), 'arena.json', false)
+      vi.spyOn(database, 'cacheGet').mockImplementationOnce(() => { throw new Error('Cache read failed') })
+      await expect(service.query()).resolves.toMatchObject({ query: { status: 'complete', message: 'Cache read failed' } })
+      expect(service.state().query.status).not.toBe('loading')
+      await service.query({ force: true })
+      expect(query).toHaveBeenCalledTimes(1)
+    } finally { service.dispose() }
+  })
+  it.each(['import', 'demo', 'same-history'] as const)('persists accepted progress before replacing an active query with %s', async replacement => {
+    const started = deferred<void>(), finish = deferred<void>()
+    const database = new RadarDatabase(':memory:')
+    const service = new RadarService(database, catalog, () => ({ query: async (players, _signal, onPlayer) => {
+      onPlayer({ ...players[0], accountId: '42', status: 'ready', stats: fixturePlayer().stats })
+      started.resolve()
+      await finish.promise
+    } }))
+    let query: Promise<unknown> | undefined
+    try {
+      service.saveSettings({ ...settings(), autoQuery: false })
+      const input = arena()
+      input.vehicles.push({ ...input.vehicles[0], id: 43, name: 'UnfinishedCaptain', relation: 2 })
+      const original = await service.importBytes(Buffer.from(JSON.stringify(input)), 'old.json', false)
+      const id = original.battle!.id
+      query = service.query()
+      await started.promise
+      if (replacement === 'import') await service.importBytes(Buffer.from(JSON.stringify(arena('NextCaptain'))), 'new.json', false)
+      else if (replacement === 'demo') service.loadDemo()
+      else service.loadBattle(id)
+      expect(database.getBattle(id)?.players.map(player => player.status)).toEqual(['ready', 'pending'])
+      if (replacement === 'same-history') expect(service.state().battle?.players[0].status).toBe('ready')
+      finish.resolve()
+      await query
+    } finally { finish.resolve(); await query; service.dispose() }
+  })
   it('never sends requests for synthetic demo data', async () => {
     let queries = 0
     const service = new RadarService(new RadarDatabase(':memory:'), catalog, () => ({ query: async () => { queries++ } }))

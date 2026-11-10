@@ -26,7 +26,12 @@ export class RadarDatabase {
     const row = this.db.prepare('SELECT json FROM settings WHERE id=1').get()
     return row ? normalizeSettings(JSON.parse(String(row.json))) : structuredClone(DEFAULT_SETTINGS)
   }
-  saveSettings(settings: Settings) { this.db.prepare('INSERT INTO settings(id,json) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET json=excluded.json').run(JSON.stringify(settings)) }
+  saveSettings(settings: Settings, battle?: Battle) {
+    this.transaction(() => {
+      this.db.prepare('INSERT INTO settings(id,json) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET json=excluded.json').run(JSON.stringify(settings))
+      if (battle) this.writeBattle(battle)
+    })
+  }
   getBattle(id: string): Battle | null {
     const row = this.db.prepare('SELECT json FROM battles WHERE id=?').get(id)
     return row ? JSON.parse(String(row.json)) as Battle : null
@@ -35,13 +40,19 @@ export class RadarDatabase {
     const row = this.db.prepare("SELECT value FROM metadata WHERE key='current-battle'").get()
     return row ? this.getBattle(String(row.value)) : null
   }
-  saveBattle(battle: Battle) {
+  private transaction(work: () => void) {
     this.db.exec('BEGIN IMMEDIATE')
     try {
-      this.db.prepare('INSERT INTO battles(id,started_at,json) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET started_at=excluded.started_at,json=excluded.json').run(battle.id, battle.startedAt, JSON.stringify(battle))
-      this.db.prepare("INSERT INTO metadata(key,value) VALUES('current-battle',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(battle.id)
+      work()
       this.db.exec('COMMIT')
     } catch (error) { this.db.exec('ROLLBACK'); throw error }
+  }
+  private writeBattle(battle: Battle) {
+    this.db.prepare('INSERT INTO battles(id,started_at,json) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET started_at=excluded.started_at,json=excluded.json').run(battle.id, battle.startedAt, JSON.stringify(battle))
+    this.db.prepare("INSERT INTO metadata(key,value) VALUES('current-battle',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(battle.id)
+  }
+  saveBattle(battle: Battle, previous?: Battle) {
+    this.transaction(() => { if (previous) this.writeBattle(previous); this.writeBattle(battle) })
   }
   listBattles(): Battle[] { return this.db.prepare('SELECT json FROM battles ORDER BY started_at DESC LIMIT 100').all().map(row => JSON.parse(String(row.json)) as Battle) }
   getWatchlist(): WatchEntry[] {

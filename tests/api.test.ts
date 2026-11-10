@@ -1,8 +1,65 @@
 import { describe, expect, it, vi } from 'vitest'
 import { hiddenProfile, normalizeProfile, parseCombat, WargamingApi } from '@aperadar/server/api'
-import { fixturePlayer, settings } from './helpers.js'
+import { deferred, fixturePlayer, settings } from './helpers.js'
 
 describe('transport and response boundaries', () => {
+  it.each(['VORTEX', 'WG_PUBLIC'] as const)('clears previous account details when a refreshed %s search no longer finds the player', async source => {
+    const player = { ...fixturePlayer(), clanTag: 'OLD', clanId: '123' }
+    const fetcher = vi.fn<typeof fetch>(async () => Response.json({ status: 'ok', data: [] }))
+    const result: typeof player[] = []
+    await new WargamingApi({ ...settings(), api: source }, { fetcher, spacing: 0 }).query([player], new AbortController().signal, value => result.push(value as typeof player))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({ status: 'not-found', stats: null, accountId: null, clanTag: '', clanId: null, cached: false })
+  })
+  it.each(['hidden', 'malformed'] as const)('retains public account data and marks a %s Vortex ship mode as incomplete', async scenario => {
+    const player = fixturePlayer()
+    const fetcher: typeof fetch = async input => {
+      const url = String(input)
+      let data: unknown
+      if (url.includes('/search/')) data = [{ name: player.name, spa_id: 42 }]
+      else if (url.includes('/clans/')) data = {}
+      else if (url.includes('/ships/')) {
+        const mode = url.split('/').filter(Boolean).at(-1)!
+        data = { '42': mode === 'pvp_solo' && scenario === 'hidden' ? { hidden_profile: true }
+          : { statistics: { [player.ship.id]: { [mode]: { battles_count: 10, wins: mode === 'pvp_solo' ? 20 : 5 } } } } }
+      } else data = { '42': { statistics: { pvp: { battles_count: 100, wins: 60 } } } }
+      return Response.json({ status: 'ok', data })
+    }
+    const result: typeof player[] = []
+    await new WargamingApi({ ...settings(), api: 'VORTEX' }, { fetcher, spacing: 0 }).query([player], new AbortController().signal, value => result.push(value as typeof player))
+    expect(result[0]).toMatchObject({ status: 'ready', stats: { overall: { battles: 100, wins: 60 }, shipAvailable: false } })
+    expect(result[0].error).toBeTruthy()
+  })
+  it.each(['http-error', 'oversized-header'] as const)('cancels an unread response body after %s rejection', async scenario => {
+    const cancel = vi.fn()
+    const fetcher: typeof fetch = async () => new Response(new ReadableStream({ cancel }), scenario === 'http-error'
+      ? { status: 503 } : { headers: { 'Content-Length': String(4 * 1024 * 1024 + 1) } })
+    const api = new WargamingApi({ ...settings(), retryAttempts: 0 }, { fetcher, spacing: 0 })
+    await expect(api.json('https://fixture.invalid/test', new AbortController().signal)).rejects.toThrow()
+    expect(cancel).toHaveBeenCalledTimes(1)
+  })
+  it('rejects an aborted waiter before the active request finishes and preserves the next permit', async () => {
+    const started = deferred<void>(), release = deferred<void>()
+    let calls = 0
+    const fetcher = vi.fn<typeof fetch>(async () => {
+      if (++calls === 1) { started.resolve(); await release.promise }
+      return Response.json({ status: 'ok' })
+    })
+    const api = new WargamingApi(settings(), { fetcher, concurrency: 1, spacing: 0 })
+    const active = api.json('https://fixture.invalid/active', new AbortController().signal)
+    await started.promise
+    const controller = new AbortController()
+    let rejection: unknown
+    const cancelled = api.json('https://fixture.invalid/cancelled', controller.signal).catch(error => { rejection = error })
+    const next = api.json('https://fixture.invalid/next', new AbortController().signal)
+    try {
+      controller.abort()
+      await new Promise(resolve => setImmediate(resolve))
+      expect(rejection).toMatchObject({ name: 'AbortError' })
+      expect(fetcher).toHaveBeenCalledTimes(1)
+    } finally { release.resolve(); await Promise.all([active, cancelled, next]) }
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
   it.each(['VORTEX', 'WG_PUBLIC'] as const)('blocks archived CN players without any network request through %s', async source => {
     const fetcher = vi.fn() as unknown as typeof fetch
     const player = { ...fixturePlayer(), region: 'CN' as const }

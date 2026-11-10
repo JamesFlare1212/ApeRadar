@@ -8,6 +8,10 @@
     "heading": "海猴雷达",
     "nodeAccess": "undefined"
   },
+  "singleInstance": {
+    "secondaryProcessExited": true,
+    "sharedDataStartupBlocked": true
+  },
   "updates": {
     "mode": "disabled",
     "version": "2.0.2",
@@ -69,6 +73,16 @@
     "helpAccordion": true,
     "skipLinkPreservesRoute": true,
     "workspaceNavigationResetsScroll": true
+  },
+  "snapshotOrdering": {
+    "simulated": true,
+    "newerPushRetainedAfterInvoke": true
+  },
+  "pendingWatchSave": {
+    "simulated": true,
+    "pendingDraftLocked": true,
+    "failedDraftRetained": true,
+    "retryPersisted": true
   },
   "apiAlerts": {
     "scenarios": 8,
@@ -171,5 +185,5 @@
     "chrome": "152.0.7977.167"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1793002471822"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1794322023658"
 }
