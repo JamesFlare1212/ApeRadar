@@ -7,7 +7,7 @@ import { WargamingApi } from '@aperadar/server/api'
 import { probeApiHealth } from '@aperadar/server/health'
 import { RadarDatabase } from '@aperadar/server/database'
 import { RadarService } from '@aperadar/server/service'
-import { arena, catalog, fixturePlayer, removeTemp, settings, tempDirectory } from './helpers'
+import { arena, catalog, deferred, fixturePlayer, removeTemp, settings, tempDirectory } from './helpers'
 
 const directories: string[] = []
 afterEach(() => { directories.splice(0).forEach(removeTemp) })
@@ -100,15 +100,63 @@ describe('configured API requests and health checks', () => {
     expect(health.checks.find(check => check.source === 'WG_PUBLIC')?.status).toBe('unsupported')
   })
 
-  it('enforces configured concurrency and request timeouts', async () => {
+  it('enforces configured concurrency with controlled request completion', async () => {
     const config = mergeApiConfig({ requests: { concurrency: 1, spacingMs: 0, timeoutMs: 15 } })
-    let active = 0, highest = 0
-    const fetcher = (async () => { active++; highest = Math.max(highest, active); await new Promise(resolve => setTimeout(resolve, 2)); active--; return Response.json({ status: 'ok' }) }) as typeof fetch
-    const api = new WargamingApi(settings(), { config, fetcher })
-    await Promise.all(Array.from({ length: 4 }, () => api.json('https://fixture.invalid/test', signal())))
-    expect(highest).toBe(1)
-    const stalled = new WargamingApi({ ...settings(), retryAttempts: 0 }, { config, fetcher: (async (_input, init) => new Promise((_resolve, reject) => init?.signal?.addEventListener('abort', () => reject(init.signal?.reason), { once: true }))) as typeof fetch })
-    await expect(stalled.json('https://fixture.invalid/test', signal())).rejects.toMatchObject({ name: 'TimeoutError' })
+    const deadline = vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => new AbortController().signal)
+    const responses = Array.from({ length: 4 }, () => deferred<Response>())
+    const started = responses.map(() => deferred<void>())
+    let active = 0, highest = 0, calls = 0
+    const fetcher = vi.fn<typeof fetch>(async () => {
+      const index = calls++
+      active++; highest = Math.max(highest, active)
+      started[index].resolve()
+      try { return await responses[index].promise }
+      finally { active-- }
+    })
+    const api = new WargamingApi({ ...settings(), retryAttempts: 0 }, { config, fetcher })
+    const requests = responses.map(() => api.json('https://fixture.invalid/test', signal()))
+    try {
+      for (let index = 0; index < responses.length; index++) {
+        await started[index].promise
+        expect(fetcher).toHaveBeenCalledTimes(index + 1)
+        expect(active).toBe(1)
+        responses[index].resolve(Response.json({ status: 'ok' }))
+      }
+      await Promise.all(requests)
+      expect(highest).toBe(1)
+    } finally {
+      responses.forEach(response => response.resolve(Response.json({ status: 'ok' })))
+      await Promise.allSettled(requests)
+      deadline.mockRestore()
+    }
+  })
+
+  it('uses the configured timeout and releases its slot while an aborted transport is still pending', async () => {
+    const config = mergeApiConfig({ requests: { concurrency: 1, spacingMs: 0, timeoutMs: 15 } })
+    const timeout = new AbortController(), response = deferred<Response>(), started = deferred<void>()
+    const deadline = vi.spyOn(AbortSignal, 'timeout').mockReturnValueOnce(timeout.signal).mockImplementation(() => new AbortController().signal)
+    const fetcher = vi.fn<typeof fetch>().mockImplementationOnce(async () => { started.resolve(); return response.promise })
+      .mockImplementation(async () => Response.json({ status: 'ok' }))
+    const api = new WargamingApi({ ...settings(), retryAttempts: 0 }, { config, fetcher })
+    const first = api.json('https://fixture.invalid/stalled', signal())
+    const rejected = expect(first).rejects.toMatchObject({ name: 'TimeoutError' })
+    const next = api.json('https://fixture.invalid/next', signal())
+    try {
+      await started.promise
+      expect(deadline).toHaveBeenCalledTimes(1)
+      expect(deadline).toHaveBeenLastCalledWith(config.requests.timeoutMs)
+      expect(fetcher).toHaveBeenCalledTimes(1)
+      timeout.abort(new DOMException('Configured request deadline', 'TimeoutError'))
+      await rejected
+      await expect(next).resolves.toMatchObject({ status: 'ok' })
+      expect(fetcher).toHaveBeenCalledTimes(2)
+      expect(deadline.mock.calls.map(([milliseconds]) => milliseconds)).toEqual([15, 15])
+    } finally {
+      timeout.abort(new DOMException('Configured request deadline', 'TimeoutError'))
+      response.resolve(Response.json({ status: 'ok' }))
+      await Promise.allSettled([first, next, rejected])
+      deadline.mockRestore()
+    }
   })
 })
 

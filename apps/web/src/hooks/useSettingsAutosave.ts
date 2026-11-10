@@ -1,13 +1,10 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import type { Settings } from '@aperadar/shared/types'
-import { cacheAppearance } from '../lib/appearance.js'
-import { SettingsAutosave, type SaveSettings } from '../lib/settingsAutosave.js'
-
-let queue: SettingsAutosave | null = null
+import type { SaveSettings } from '../lib/settingsAutosave.js'
+import { getSettingsQueue } from '../lib/settingsQueue.js'
 
 export function useSettingsAutosave(settings: Settings, onSave: SaveSettings) {
-  const controller = queue ??= new SettingsAutosave(settings, onSave, cacheAppearance)
-  controller.setSave(onSave)
+  const controller = getSettingsQueue(settings, onSave)
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot)
   const signature = JSON.stringify(settings)
   useEffect(() => { controller.receive(settings) }, [controller, signature])

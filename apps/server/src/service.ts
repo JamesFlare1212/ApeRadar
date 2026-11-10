@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events'
 import { createHash, randomUUID } from 'node:crypto'
 import type { Activity, AppState, Battle, QueryOptions, Settings, SupportedRegion, WatchInput } from '@aperadar/shared/types'
+import { isSupportedRegion } from '@aperadar/shared/types'
 import { querySchema, settingsSchema, watchSchema } from '@aperadar/shared/settings'
 import { teamSummary } from '@aperadar/shared/statistics'
 import { buildBattle, getShip, latestArena, parseArenaBytes, readArenaFile, resolveRegion, type ShipCatalog } from './arena.ts'
@@ -47,6 +48,7 @@ export class RadarService extends EventEmitter {
     this.startMonitor()
   }
   state(): AppState {
+    this.assertActive()
     return structuredClone({ settings: this.settings, battle: this.battle, watchlist: this.database.getWatchlist(),
       history: this.database.listBattles().map(b => ({ id: b.id, map: b.map, mode: b.mode, startedAt: b.startedAt, isDemo: b.isDemo, region: [...new Set(b.players.map(p => p.region))].join(' / '), playerCount: b.players.length, readyCount: b.players.filter(p => p.status === 'ready').length, allyWinrate: teamSummary(b, 'ally', this.settings).accountWinrate, enemyWinrate: teamSummary(b, 'enemy', this.settings).accountWinrate })),
       query: this.queryState, monitor: this.monitorState, health: this.health,
@@ -54,6 +56,7 @@ export class RadarService extends EventEmitter {
       activities: this.activities, shipVersion: `${this.catalog.version} · ${this.catalog.date}`, dataLocation: this.database.filename,
     })
   }
+  private assertActive() { if (this.disposed) throw new Error('应用已关闭') }
   private configuredSettings(settings: Settings): Settings {
     return this.runtimeConfig?.config.wgApplicationId ? { ...settings, wgApplicationId: this.runtimeConfig.config.wgApplicationId } : settings
   }
@@ -63,7 +66,14 @@ export class RadarService extends EventEmitter {
     this.activities = [{ id: randomUUID(), time: new Date().toISOString(), level, message: text }, ...this.activities].slice(0, 60)
     if (publish) this.publish()
   }
-  private stopQuery() { this.controller?.abort(); this.controller = null; this.queryState = { ...this.queryState, status: 'idle', message: '查询已取消' } }
+  private stopQuery(saveProgress = false) {
+    const active = this.controller !== null
+    if (saveProgress && active && this.battle && !this.battle.isDemo) this.database.saveBattle(this.battle)
+    this.controller?.abort()
+    this.controller = null
+    this.queryState = { ...this.queryState, status: 'idle', message: '查询已取消' }
+  }
+  private activeProgress(): Battle | undefined { return this.controller && this.battle && !this.battle.isDemo ? this.battle : undefined }
   startHealthChecks() {
     if (this.disposed || this.healthTimer) return
     this.healthTimer = setInterval(() => this.refreshHealth(), this.health.intervalMs)
@@ -110,6 +120,7 @@ export class RadarService extends EventEmitter {
     return pending
   }
   async importBytes(bytes: Buffer, filename: string, autoQuery = true, monitorGeneration?: number): Promise<AppState> {
+    this.assertActive()
     const settings = structuredClone(this.settings)
     const revision = this.routingRevision
     const region = await resolveRegion(settings)
@@ -117,10 +128,10 @@ export class RadarService extends EventEmitter {
     if (monitorGeneration !== undefined && (monitorGeneration !== this.monitorGeneration || !this.monitorState.enabled)) return this.state()
     if (revision !== this.routingRevision) throw new Error('游戏或区服设置已变更，请等待自动载入阵容')
     const battle = buildBattle(parseArenaBytes(bytes), filename, settings, region, this.catalog)
+    this.database.saveBattle(battle, this.activeProgress())
     this.stopQuery()
     this.battle = battle
     if (this.healthTimer && this.settings.region === 'AUTO') this.refreshHealth(true)
-    this.database.saveBattle(battle)
     this.queryState = { status: 'idle', done: 0, total: battle.players.filter(p => p.status !== 'bot').length, message: '阵容已载入，等待查询' }
     this.log('success', `阵容已载入：${battle.players.length} 位玩家`)
     void this.refreshMissingShips(battle)
@@ -128,26 +139,30 @@ export class RadarService extends EventEmitter {
     return this.state()
   }
   loadDemo(): AppState {
-    this.stopQuery()
+    this.assertActive()
+    this.stopQuery(true)
     this.battle = createDemo(this.catalog)
     this.queryState = { status: 'complete', done: 24, total: 24, message: '示例对局 · 数据为合成演示，不发起网络请求' }
     this.log('info', '已载入示例对局；示例玩家和战绩均为合成数据。')
     return this.state()
   }
   loadBattle(id: string): AppState {
+    this.assertActive()
     if (typeof id !== 'string' || id.length > 100) throw new Error('对局编号无效')
-    const battle = this.database.getBattle(id)
+    let battle = this.database.getBattle(id)
     if (!battle) throw new Error('未找到这场对局')
+    if (this.controller && this.battle?.id === id) battle = structuredClone(this.battle)
+    this.applyShipDetails(battle)
+    this.database.saveBattle(battle, this.activeProgress())
     this.stopQuery()
     this.battle = battle
-    this.applyShipDetails(battle)
-    this.database.saveBattle(battle)
     this.queryState = { status: 'idle', done: 0, total: 0, message: '已打开历史快照' }
     this.log('info', '已打开本地保存的对局快照')
     void this.refreshMissingShips(battle)
     return this.state()
   }
   async query(input: QueryOptions = {}): Promise<AppState> {
+    this.assertActive()
     const options = querySchema.parse(input)
     if (!this.battle) throw new Error('请先连接游戏并等待阵容载入')
     if (this.battle.isDemo) {
@@ -155,7 +170,7 @@ export class RadarService extends EventEmitter {
       this.publish()
       return this.state()
     }
-    this.stopQuery()
+    this.stopQuery(true)
     const controller = new AbortController()
     this.controller = controller
     const battle = this.battle
@@ -192,12 +207,12 @@ export class RadarService extends EventEmitter {
       this.queryState = { status: 'loading', done: done.size, total: players.length, message: `已处理 ${done.size} / ${players.length} 位玩家` }
       this.publish()
     }
-    for (const player of players) {
-      const cached = !options.force && this.database.cacheGet(`${cachePrefix}:${player.key}`)
-      if (cached) onPlayer({ ...cached, key: player.key, ship: player.ship, team: player.team, isSelf: player.isSelf })
-      else pending.push(player)
-    }
     try {
+      for (const player of players) {
+        const cached = !options.force && this.database.cacheGet(`${cachePrefix}:${player.key}`)
+        if (cached) onPlayer({ ...cached, key: player.key, ship: player.ship, team: player.team, isSelf: player.isSelf })
+        else pending.push(player)
+      }
       await this.providerFactory(settings).query(pending, controller.signal, onPlayer)
       if (controller.signal.aborted || this.controller !== controller || this.battle?.id !== id) return this.state()
       this.database.saveBattle(battle)
@@ -212,7 +227,18 @@ export class RadarService extends EventEmitter {
     } finally { if (this.controller === controller) { this.controller = null; this.publish() } }
     return this.state()
   }
-  cancelQuery(): AppState { this.stopQuery(); if (this.battle && !this.battle.isDemo) this.database.saveBattle(this.battle); this.publish(); return this.state() }
+  cancelQuery(): AppState {
+    this.assertActive()
+    this.stopQuery()
+    try { if (this.battle && !this.battle.isDemo) this.database.saveBattle(this.battle) }
+    catch (error) {
+      this.queryState = { ...this.queryState, message: `查询已取消，但进度未能保存：${message(error)}` }
+      this.publish()
+      throw error
+    }
+    this.publish()
+    return this.state()
+  }
   private applyShipDetails(battle: Battle) {
     for (const player of battle.players) {
       if (player.ship.type === 'Unknown' && this.catalog.ships[player.ship.id]) player.ship = getShip(this.catalog, player.ship.id)
@@ -239,34 +265,38 @@ export class RadarService extends EventEmitter {
       this.publish()
     } catch { this.log('warning', '舰船资料已取得，但对局快照暂未保存。') }
   }
-  private routeBattle(battle: Battle, settings: Settings, primary: SupportedRegion, reset = false) {
+  private routeBattle(battle: Battle, settings: Settings, primary: SupportedRegion | null, reset = false) {
     battle.players = battle.players.map(player => {
-      const region = settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : primary
+      const region = settings.secondaryEnabled && player.team === 'enemy' ? settings.secondaryRegion : primary ?? player.region
       if (!reset && player.region === region) return player
       return { ...player, region, key: `${region}:${player.name}:${player.ship.id}`, status: player.status === 'bot' ? 'bot' as const : 'pending' as const, stats: null, accountId: null, error: null, fetchedAt: null, cached: false }
     })
   }
   saveSettings(input: unknown): AppState {
+    this.assertActive()
     const settings = this.configuredSettings(settingsSchema.parse(input))
     const old = this.settings
     const routingChanged = settings.region !== old.region || settings.secondaryEnabled !== old.secondaryEnabled || settings.secondaryRegion !== old.secondaryRegion || settings.api !== old.api || settings.wgApplicationId !== old.wgApplicationId || (settings.region === 'AUTO' && settings.gamePath !== old.gamePath)
-    if (routingChanged) { this.routingRevision++; this.stopQuery() }
-    this.settings = settings
-    // A file-managed ID must not overwrite the user's saved fallback when another preference changes.
-    this.database.saveSettings(this.runtimeConfig?.config.wgApplicationId ? { ...settings, wgApplicationId: this.database.getSettings().wgApplicationId } : settings)
+    let battle: Battle | undefined
     if (routingChanged && this.battle && !this.battle.isDemo) {
+      battle = structuredClone(this.battle)
       const primary = settings.region === 'AUTO' ? this.battle.players.find(player => player.team === 'ally')?.region : settings.region
       // AUTO is resolved again before a query; cleared results cannot be reused
       // while a new path or region is still being inspected asynchronously.
-      if (primary && primary !== 'CN') this.routeBattle(this.battle, settings, primary, true)
-      this.database.saveBattle(this.battle)
+      this.routeBattle(battle, settings, isSupportedRegion(primary) ? primary : null, true)
     }
+    // Commit routing and its cleared snapshot together before changing live ownership.
+    // A managed ID must not overwrite the user's saved fallback.
+    this.database.saveSettings(this.runtimeConfig?.config.wgApplicationId ? { ...settings, wgApplicationId: this.database.getSettings().wgApplicationId } : settings, battle)
+    if (routingChanged) { this.routingRevision++; this.stopQuery() }
+    this.settings = settings
+    if (battle) this.battle = battle
     if (old.gamePath !== settings.gamePath) this.startMonitor()
     if (this.healthTimer && (routingChanged || (settings.region === 'AUTO' && old.gamePath !== settings.gamePath))) this.refreshHealth(true)
     this.log('success', '设置已保存到本机')
     return this.state()
   }
-  setWatch(input: WatchInput): AppState { this.database.setWatch(watchSchema.parse(input)); this.log('success', input.status ? '关注名单已更新' : '已移除关注记录'); return this.state() }
+  setWatch(input: WatchInput): AppState { this.assertActive(); this.database.setWatch(watchSchema.parse(input)); this.log('success', input.status ? '关注名单已更新' : '已移除关注记录'); return this.state() }
   private startMonitor() {
     const generation = ++this.monitorGeneration
     if (this.timer) clearInterval(this.timer)
@@ -290,12 +320,14 @@ export class RadarService extends EventEmitter {
       if (!inspection.valid) throw new Error(inspection.message)
       const latest = await latestArena(this.settings.gamePath)
       if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
-      if (!latest || latest.stamp === this.lastStamp) { this.clearMonitorError(); return }
+      if (!latest) { this.clearMonitorError(); return }
       const bytes = await readArenaFile(latest.path)
       if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
+      const stamp = `${latest.path}:${createHash('sha256').update(bytes).digest('hex')}`
+      if (stamp === this.lastStamp) { this.clearMonitorError(); return }
       await this.importBytes(bytes, latest.path, true, generation)
       if (!this.monitorState.enabled || generation !== this.monitorGeneration) return
-      this.lastStamp = latest.stamp
+      this.lastStamp = stamp
       this.monitorState = { enabled: true, lastFile: latest.path, message: '已连接 · 新对局将自动载入', error: null }
       this.publish()
     } catch (error) {
@@ -303,5 +335,22 @@ export class RadarService extends EventEmitter {
       if (generation === this.monitorGeneration && this.monitorState.enabled && this.monitorState.error !== text) { this.monitorState = { ...this.monitorState, message: text, error: text }; this.log('warning', `自动监测异常：${text}`) }
     } finally { if (this.scanningGeneration === generation) this.scanningGeneration = null }
   }
-  dispose() { if (this.disposed) return; this.disposed = true; this.shipController.abort(); this.monitorState.enabled = false; this.stopQuery(); if (this.timer) clearInterval(this.timer); this.timer = null; this.healthController?.abort(); this.healthController = null; this.healthPending = null; if (this.healthTimer) clearInterval(this.healthTimer); this.healthTimer = null; this.removeAllListeners(); this.database.close() }
+  dispose() {
+    if (this.disposed) return
+    this.disposed = true
+    this.shipController.abort()
+    this.monitorState.enabled = false
+    try { this.stopQuery(true) }
+    catch (error) { console.error('Could not save query progress during shutdown:', message(error)) }
+    finally { this.stopQuery() }
+    if (this.timer) clearInterval(this.timer)
+    this.timer = null
+    this.healthController?.abort()
+    this.healthController = null
+    this.healthPending = null
+    if (this.healthTimer) clearInterval(this.healthTimer)
+    this.healthTimer = null
+    this.removeAllListeners()
+    this.database.close()
+  }
 }

@@ -3,6 +3,7 @@ import type { ApiHealth, ApiHealthCheck, ApiSource, Region, SupportedRegion, Set
 import { isSupportedRegion } from '@aperadar/shared/types'
 import { object, parallel } from './api.ts'
 import { DEFAULT_API_CONFIG, vortexApiUrl, wgApiUrl, type ApiConfig } from '@aperadar/shared/api-config'
+import { cancelResponse, readResponseText, withAbort } from './http-response.ts'
 
 export const HEALTH_INTERVAL_MS = DEFAULT_API_CONFIG.requests.healthIntervalMs
 export interface ApiHealthOptions { fetcher?: typeof fetch; timeout?: number; config?: ApiConfig }
@@ -24,22 +25,9 @@ function searchUrl(settings: Settings, source: ApiSource, region: SupportedRegio
   return region === 'RU' ? null : new URL(wgApiUrl(config, settings, region, 'account/list', { search: probeName, type: 'exact', limit: '1' }))
 }
 
-async function responseJson(response: Response): Promise<unknown> {
-  if (Number(response.headers.get('content-length')) > maximumResponseBytes) throw new Error('健康检查响应过大')
-  const reader = response.body?.getReader()
-  if (!reader) throw new Error('接口没有返回 JSON 内容')
-  const decoder = new TextDecoder()
-  let text = '', size = 0
-  try {
-    while (true) {
-      const { value, done } = await reader.read()
-      if (done) break
-      size += value.byteLength
-      if (size > maximumResponseBytes) { await reader.cancel(); throw new Error('健康检查响应过大') }
-      text += decoder.decode(value, { stream: true })
-    }
-    text += decoder.decode()
-  } finally { reader.releaseLock() }
+async function responseJson(response: Response, signal: AbortSignal): Promise<unknown> {
+  if (!response.body) throw new Error('接口没有返回 JSON 内容')
+  const text = await readResponseText(response, signal, maximumResponseBytes, '健康检查响应过大')
   try { return JSON.parse(text) } catch { throw new Error('接口返回了非 JSON 内容') }
 }
 
@@ -53,15 +41,16 @@ async function check(settings: Settings, source: ApiSource, region: SupportedReg
   const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(options.timeout ?? config.requests.healthTimeoutMs)])
   let httpStatus: number | null = null
   try {
-    const response = await (options.fetcher ?? fetch)(url.href, { signal: requestSignal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, cache: 'no-store', redirect: 'error' })
+    const response = await withAbort(() => (options.fetcher ?? fetch)(url.href, { signal: requestSignal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, cache: 'no-store', redirect: 'error' }), requestSignal, cancelResponse)
+    if (requestSignal.aborted) { cancelResponse(response); requestSignal.throwIfAborted() }
     httpStatus = response.status
     if (!response.ok) {
-      await response.body?.cancel()
+      cancelResponse(response)
       const messages: Record<number, string> = { 401: '需要授权', 403: '访问被拒绝', 404: '接口不存在', 429: '请求过于频繁' }
       return { ...base, httpStatus, latencyMs: Math.round(performance.now() - start), message: messages[response.status] ?? `请求失败（HTTP ${response.status}）`, failure: 'http' }
     }
     let payload: unknown
-    try { payload = await responseJson(response) }
+    try { payload = await responseJson(response, requestSignal) }
     catch (error) {
       if (requestSignal.aborted) throw error
       return { ...base, httpStatus, latencyMs: Math.round(performance.now() - start), message: error instanceof Error ? error.message : '接口响应无效', failure: 'invalid-response' }

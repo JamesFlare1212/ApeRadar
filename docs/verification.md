@@ -9,6 +9,12 @@ a newer checkout or a different executable has passed.
 Run commands from the repository root after installing dependencies as described in the
 [README](../README.md).
 
+After switching branches or changing package manifests or the lockfile, run
+`pnpm install --frozen-lockfile` before validation. Use Node.js 24 LTS and the repository's pinned
+pnpm version, matching CI. A successful check with previously installed dependency versions does
+not validate the current lockfile; inspect `node --version` and `pnpm exec vitest --version` when
+investigating differences between local results and CI.
+
 | Change or task | Checks |
 | --- | --- |
 | Documentation only | Check Markdown formatting and local links, then run `git diff --check`. |
@@ -26,6 +32,16 @@ regression tests.
 
 Offline tests use controlled HTTP responses and isolated databases. They cover parsing, statistics,
 persistence, API scheduling and errors, settings migration, ship catalogs, and lifecycle behavior.
+
+See [State-machine contracts and regression coverage](state-machines.md) for the transition coverage
+map, previously missing interleavings, required invariants, and remaining fault-injection work.
+Snapshot-ordering and settings-writer regressions control deferred promises without a browser.
+Desktop state-machine smoke also delays an IPC response behind a newer pushed battle and holds,
+fails, and retries a watch-note save to check editor locking and draft retention.
+It also launches a second real Electron process against the same isolated user-data directory,
+checking that single-instance ownership blocks it before service/window initialization.
+Offline failure tests use SQLite triggers and controlled streams to exercise rejected writes,
+content rewrites with unchanged metadata, stalled body reads and ignored cancellation.
 
 Desktop smoke checks load production resources in a hidden Electron window with isolated preload
 and application data under a unique `.test-data/` directory. Packaged checks run the generated

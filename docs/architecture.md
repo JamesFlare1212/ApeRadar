@@ -40,6 +40,11 @@ game files, settings, watch entries, and IPC arguments at runtime.
 Browser development mode mounts the same Node service in Vite. The HTTP interface binds to loopback,
 checks Host and Origin, requires a local-client header for writes, and publishes state through SSE.
 Production desktop builds run the service inside Electron without an HTTP server.
+The desktop host takes a single-instance lock for its user-data directory before opening storage.
+A second launch exits and brings the existing production window forward.
+
+The [state-machine contracts and regression coverage](state-machines.md) document asynchronous
+ownership, snapshot ordering, shared settings writes, shutdown, and remaining test gaps.
 
 ## Game client discovery and region selection
 
@@ -79,7 +84,8 @@ isolated database, matching the desktop test workflow.
 1. Read bounded JSON or the first replay block and validate the roster schema.
 2. Resolve the primary and secondary regions and enrich ships from the local catalog.
    Vehicle IDs are not account IDs.
-3. Cancel the previous controller when importing a battle and save an unqueried local snapshot.
+3. Commit the previous query's accepted progress and the new roster/current pointer together.
+   Then cancel the previous controller and replace the active battle.
 4. Reuse unexpired player caches. Missing entries use the configured HTTP concurrency limit
    (default six) and request spacing from [API configuration](api-configuration.md#fields).
 5. Apply each player result only when the controller, battle ID, and player key still match.
@@ -88,8 +94,15 @@ isolated database, matching the desktop test workflow.
    hidden profiles or zero win rates, and failures are excluded from valid cache entries.
 
 Partial ship-mode responses retain public account data and report missing details. Cancellation keeps
-completed results. Changing the win-rate display or theme does not cancel a query; changing routing
+completed results, including before opening another snapshot or shutting down. Cache resolution and
+provider work share query cleanup so a cache read failure cannot leave the query loading indefinitely.
+Changing the win-rate display or theme does not cancel a query; changing routing
 clears statistics from the previous route.
+
+Replacement rosters and routing changes are staged before live state changes. Settings and their
+cleared battle snapshot commit together. A failed write preserves the previous live owner and
+permits retry. Monitoring deduplicates bounded file contents by path and SHA-256 digest, so an
+equal-size rewrite with an unchanged timestamp still loads.
 
 Imported and stored snapshots retain their player-array order. The UI sorts a separate display copy
 according to [Team roster display order](roster-order.md); statistics updates and win-rate selection
@@ -129,6 +142,10 @@ point; `styles/` groups application layout, battle tables, settings, help, and a
 The [design system](../design-system/aperadar-next/MASTER.md) owns token, Lucide icon, typography,
 component-state, and interaction rules. Desktop smoke checks live in `apps/desktop/src/smoke/`;
 their scope and evidence handling are described in [Verification](verification.md).
+
+Workspace and updater snapshots use one bridge synchronization implementation. A newer push,
+newer request, or new subscription lifetime supersedes an older invoke response. Settings controls
+across routes submit patches through one autosave queue, preserving drafts while a page unmounts.
 
 ## API and packaging dependencies
 

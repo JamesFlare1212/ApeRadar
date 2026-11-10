@@ -49,7 +49,7 @@ New game rosters trigger queries automatically by default. Disable automatic que
 - Automatic roster JSON loading handles UTF-8, BOM, whitespace, and incomplete game files.
 - 亚/美/欧/俄服，以及按阵营分配区服的混合房间。
 - Vortex、WG 公共 API。WG 使用批量昵称、账号、军团查询；俄服自动使用 Vortex。
-- 全局请求并发上限、启动间隔、超时、429/5xx 退避、逐玩家错误恢复和取消。
+- Per-provider request concurrency limits, request spacing, timeouts, 429/5xx backoff, player-level error recovery, and cancellation.
 - SQLite 设置、对局快照、关注名单与有时效的战绩缓存；参数化 SQL 与 WAL。
 - 已验证的胜率算法、精英/海猴阈值、双方均值和升序胜率折线图。缺数据、隐藏与错误分别呈现。
 - Light, dark, and system themes; name privacy; editable text summaries.

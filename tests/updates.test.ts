@@ -1,11 +1,11 @@
 import { EventEmitter } from 'node:events'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { UpdateController, type UpdateEngine } from '../apps/desktop/src/updates/controller'
 import { updateConfiguration } from '../apps/desktop/src/updates/config'
 import { readInstallRecord, writeInstallRecord } from '../apps/desktop/src/updates/install-record'
-import { removeTemp, tempDirectory } from './helpers'
+import { deferred, removeTemp, tempDirectory } from './helpers'
 
 type UpdateCheckResult = NonNullable<Awaited<ReturnType<UpdateEngine['checkForUpdates']>>>
 
@@ -38,6 +38,27 @@ function setup(overrides: Partial<ConstructorParameters<typeof UpdateController>
 afterEach(() => { controllers.splice(0).forEach(controller => controller.dispose()); vi.useRealTimers() })
 
 describe('desktop update lifecycle', () => {
+  it.each(['resolve', 'reject'] as const)('ignores an obsolete installation preparation that later %ss after a retry', async outcome => {
+    vi.useFakeTimers()
+    const first = deferred<void>(), second = deferred<void>()
+    const prepareInstall = vi.fn().mockImplementationOnce(() => first.promise).mockImplementationOnce(() => second.promise)
+    const { controller, engine } = setup({ prepareInstall })
+    await controller.check(); await controller.download(); controller.install()
+    await vi.advanceTimersByTimeAsync(0)
+    engine.emit('error', new Error('First attempt interrupted'))
+    expect(controller.status().status).toBe('downloaded')
+    controller.install()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(prepareInstall).toHaveBeenCalledTimes(2)
+    if (outcome === 'resolve') first.resolve()
+    else first.reject(new Error('Obsolete preparation failed'))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(engine.quitAndInstall).not.toHaveBeenCalled()
+    expect(controller.status()).toMatchObject({ status: 'installing', error: null })
+    second.resolve()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(engine.quitAndInstall).toHaveBeenCalledTimes(1)
+  })
   it('only offers stable updates and never downloads or installs implicitly', async () => {
     const { controller, engine } = setup()
     expect(engine).toMatchObject({ autoDownload: false, autoInstallOnAppQuit: false, allowPrerelease: false, allowDowngrade: false, channel: 'latest' })
@@ -208,6 +229,15 @@ describe('update configuration and installation record', () => {
       expect(await readInstallRecord(file, '3.0.0')).toBe('3.1.0')
       expect(await readInstallRecord(file, '3.1.0')).toBeNull()
       await expect(readFile(file)).rejects.toMatchObject({ code: 'ENOENT' })
+    } finally { removeTemp(directory) }
+  })
+  it('keeps concurrent installation receipt writes independent and leaves no temporary files', async () => {
+    const directory = tempDirectory(), file = path.join(directory, 'update-install.json')
+    try {
+      const results = await Promise.allSettled(Array.from({ length: 8 }, () => writeInstallRecord(file, '3.0.0', '3.1.0')))
+      expect(results.filter(result => result.status === 'rejected')).toEqual([])
+      expect(await readInstallRecord(file, '3.0.0')).toBe('3.1.0')
+      expect(await readdir(directory)).toEqual(['update-install.json'])
     } finally { removeTemp(directory) }
   })
 })

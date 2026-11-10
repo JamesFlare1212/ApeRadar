@@ -26,6 +26,7 @@ const errorMessage = (error: unknown) => error instanceof Error ? error.message 
 export class UpdateController {
   private state: UpdateState
   private action: 'check' | 'download' | 'install' | null = null
+  private installRevision = 0
   private timers: Array<ReturnType<typeof setTimeout>> = []
   private listeners: Array<['download-progress' | 'error', (value: unknown) => void]> = []
   private started = false
@@ -119,24 +120,26 @@ export class UpdateController {
       return this.status()
     }
     this.action = 'install'
+    const revision = ++this.installRevision
     this.set({ status: 'installing', error: null, errorContext: null })
     // Let IPC return before the updater closes the application.
-    this.timers.push(setTimeout(() => void this.applyInstall(), 0))
+    this.timers.push(setTimeout(() => void this.applyInstall(revision), 0))
     return this.status()
   }
 
-  private async applyInstall(): Promise<void> {
+  private async applyInstall(revision: number): Promise<void> {
     try {
-      if (this.disposed) return
+      if (this.disposed || revision !== this.installRevision || this.action !== 'install') return
       if (!this.options.canInstall()) throw new Error('查询已开始，请完成后重新安装更新')
       await this.options.prepareInstall(this.state.availableVersion!)
-      if (this.disposed || this.action !== 'install') return
+      if (this.disposed || revision !== this.installRevision || this.action !== 'install') return
       if (!this.options.canInstall()) throw new Error('查询已开始，请完成后重新安装更新')
       this.options.engine!.quitAndInstall(true, true)
-    } catch (error) { this.installFailure(error) }
+    } catch (error) { if (!this.disposed && revision === this.installRevision) this.installFailure(error) }
   }
 
   private installFailure(error: unknown): void {
+    this.installRevision++
     this.action = null
     // The host keeps its service open until before-quit, so the user can retry.
     this.set({ status: 'downloaded', error: errorMessage(error), errorContext: 'install' })

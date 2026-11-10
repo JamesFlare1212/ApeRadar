@@ -52,10 +52,12 @@ pnpm dev
 - `wgApplicationId`: WG Public API application identifier; letters and digits, up to 64 characters.
 - `endpoints.wg`: `ASIA`, `NA`, and `EU` base URLs, including the `/wows/` path.
 - `endpoints.vortex`: `ASIA`, `NA`, `EU`, and `RU` account base URLs, including `/api/accounts/`.
-- `requests.timeoutMs`: player-query request timeout, from 1 to 120000 milliseconds.
+- `requests.timeoutMs`: player-query request timeout across headers and body reads, from 1 to
+  120000 milliseconds. Cancellation and timeout settle even if a transport stream ignores its signal.
 - `requests.spacingMs`: minimum spacing between player-query request starts, from 0 to 60000 milliseconds.
-- `requests.concurrency`: maximum simultaneous player-query requests, from 1 to 32. Health probes
-  also respect this value, with an additional cap of four simultaneous probes.
+- `requests.concurrency`: maximum simultaneous requests per player-query or catalog API instance,
+  from 1 to 32. Health probes use a separate pool bounded by this value and a cap of four.
+  Simultaneous provider instances do not share one process-wide semaphore or request-spacing clock.
 - `requests.healthTimeoutMs`: health-probe timeout, from 1 to 120000 milliseconds.
 - `requests.healthIntervalMs`: periodic health-check interval, from 1000 to 3600000 milliseconds.
 
