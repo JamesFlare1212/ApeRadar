@@ -22,7 +22,7 @@ import { readInstallRecord, writeInstallRecord } from './updates/install-record'
 import { validateApiConnectionAlerts, validateUi } from './smoke/ui'
 import { validateNarrowNavigation } from './smoke/navigation'
 import { validateUpdatePresentation } from './smoke/updates'
-import { validateAppearance, validateTypography } from './smoke/appearance'
+import { validateAppearance, validateShipTiers, validateTypography } from './smoke/appearance'
 import { validatePendingWatchSave, validateSnapshotOrdering } from './smoke/state-machines'
 import { validateSingleInstance } from './smoke/single-instance'
 
@@ -188,10 +188,19 @@ async function createWindow() {
         return result;
       })()`) as { valid: boolean; region: string; installationRealm: string; invalidRejected: boolean; regionVisible: boolean; pathVisible: boolean; discoveryBridge: boolean; waitingForArena: boolean; quietMonitoring: boolean }
       if (!gameClientResult.valid || gameClientResult.region !== 'NA' || gameClientResult.installationRealm !== 'WW' || !gameClientResult.invalidRejected || !gameClientResult.regionVisible || !gameClientResult.pathVisible || !gameClientResult.discoveryBridge || !gameClientResult.waitingForArena || !gameClientResult.quietMonitoring) throw new Error('Desktop game-client detection assertion failed')
-      service!.saveSettings(originalGameSettings)
+      // Keep UI checks on an empty synthetic client so discovery cannot load a real arena.
+      service!.saveSettings({ ...originalGameSettings, gamePath: gameFixture })
+      service!.loadDemo()
       await mainWindow.webContents.executeJavaScript("location.hash='/overview'")
       // Let the restored workspace finish its mount-time IPC requests before exiting.
       await new Promise(resolve => setTimeout(resolve, 400))
+      const shipTiers = await validateShipTiers(mainWindow, async theme => {
+        await mainWindow.webContents.executeJavaScript('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))')
+        // Let the hidden window commit the new theme and typography before capturing pixels.
+        await new Promise(resolve => setTimeout(resolve, 100))
+        const clip = await mainWindow.webContents.executeJavaScript("(() => { const card = document.querySelector('.team-ally').getBoundingClientRect(); const row = document.querySelectorAll('.team-ally tbody tr')[2].getBoundingClientRect(); return { x: Math.floor(card.x), y: Math.floor(card.y), width: Math.ceil(card.width), height: Math.ceil(row.bottom - card.y) }; })()")
+        await writeFile(path.join(dataPath, `desktop-ship-tiers-${theme}.png`), (await mainWindow.webContents.capturePage(clip)).toPNG())
+      })
       const ui = await validateUi(mainWindow, service!.database)
       const snapshotOrdering = await validateSnapshotOrdering(mainWindow, service!, handle)
       const pendingWatchSave = await validatePendingWatchSave(mainWindow, service!, handle)
@@ -213,7 +222,7 @@ async function createWindow() {
       const narrowNavigation = await validateNarrowNavigation(mainWindow)
       const narrowDialog = await mainWindow.webContents.executeJavaScript("(async()=>{location.hash='/overview';for(let i=0;i<40&&!document.querySelector('.player-name-button');i++) await new Promise(resolve=>setTimeout(resolve,50));document.querySelector('.player-name-button').click();for(let i=0;i<40&&!document.querySelector('[role=dialog]');i++) await new Promise(resolve=>setTimeout(resolve,50));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))));const rect=document.querySelector('[role=dialog]').getBoundingClientRect();return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:innerWidth,height:innerHeight};})()") as { left: number; right: number; top: number; bottom: number; width: number; height: number }
       if (narrowDialog.left < 0 || narrowDialog.right > narrowDialog.width || narrowDialog.top < 0 || narrowDialog.bottom > narrowDialog.height) throw new Error('The narrow player dialog is outside the viewport')
-      const report = { status: 'passed', result, singleInstance, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, snapshotOrdering, pendingWatchSave, apiAlerts, updatePresentation, appearance, typography, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
+      const report = { status: 'passed', result, singleInstance, updates: updateResult, apiConfiguration: apiConfigResult, gameClient: gameClientResult, ui, snapshotOrdering, pendingWatchSave, apiAlerts, updatePresentation, appearance, typography, shipTiers, narrowLayout, narrowNavigation, narrowDialog, lightStyle, darkStyle, versions: process.versions, sqliteHeader: sqlite.subarray(0, 16).toString(), dataPath }
       await writeFile(path.join(dataPath, 'smoke-result.json'), JSON.stringify(report, null, 2))
       service?.dispose(); service = null
       app.exit(0)

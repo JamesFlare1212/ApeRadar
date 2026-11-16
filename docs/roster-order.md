@@ -20,6 +20,14 @@ account statistics. Query completion, hidden statistics, self flags, and changes
 the win-rate metric therefore cannot move a row. Imported snapshots retain their
 original player arrays, and the win-rate chart keeps its independent ranking.
 
+Tier XI superships use a solid, upright five-pointed star inline with the ship
+name, sized to the surrounding text. The marker uses sharp, regular pentagram
+geometry to match the game rather than a rounded icon. Other tiers retain their
+Roman numerals. The supership marker is separate from the outlined star used for
+watch actions.
+
 The shared implementation is `packages/shared/src/roster.ts`. Regression coverage
 is in `tests/roster.test.ts`, and the desktop smoke test checks the displayed order
-and its stability when switching win-rate metrics.
+and its stability when switching win-rate metrics. It also checks supership marker
+geometry, fill, size, and alignment in both teams, including hidden-statistics rows, across
+light and dark themes, desktop and narrow widths, and 12, 14, and 20 px font sizes.

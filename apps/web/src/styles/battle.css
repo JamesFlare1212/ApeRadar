@@ -33,6 +33,7 @@
 .player-ship-line { display: flex; min-width: 0; align-items: center; gap: 8px; margin-top: 2px; }
 .ship-name { display: block; min-width: 0; color: var(--text-muted); font-size: 0.75rem; }
 .tier { margin-right: 2px; color: var(--text-secondary); }
+.tier > svg { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; }
 .rate { display: block; font: 600 0.875rem/1.4 var(--font-numeric); font-variant-numeric: tabular-nums; }
 .rate-elite { color: var(--elite); }
 .rate-strong, .watch-positive { color: var(--success); }

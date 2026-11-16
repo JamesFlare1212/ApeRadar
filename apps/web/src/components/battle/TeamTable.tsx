@@ -1,4 +1,4 @@
-import { CircleAlert, Ellipsis, EyeOff, Flag, Star } from 'lucide-react'
+import { CircleAlert, createLucideIcon, Ellipsis, EyeOff, Flag } from 'lucide-react'
 import type { RadarPlayer, Settings, Team, WatchEntry, WatchInput } from '@aperadar/shared/types'
 import { SHIP_LABELS } from '@aperadar/shared/types'
 import { formatNumber, formatPercent, playerRate, skillLevel, SKILL_LABELS } from '@aperadar/shared/statistics'
@@ -13,6 +13,10 @@ import { Spinner } from '../ui/spinner.js'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui/table.js'
 import { ShipGlyph } from './ShipGlyph.js'
 import { WatchMenu } from './WatchMenu.js'
+
+const SupershipStar = createLucideIcon('SupershipStar', [
+  ['polygon', { points: '12 1.146 14.694 9.438 23.413 9.438 16.359 14.563 19.053 22.854 12 17.729 4.947 22.854 7.641 14.563 .587 9.438 9.306 9.438', key: 'star' }],
+])
 
 export function TeamTable({ team, players, averageWinrate, settings, watchlist, onPlayer, onWatch, onRetry, querying }: { team: Team; players: RadarPlayer[]; averageWinrate: number | null; settings: Settings; watchlist: WatchEntry[]; onPlayer: (key: string) => void; onWatch: (input: WatchInput) => Promise<boolean>; onRetry: () => void; querying: boolean }) {
   const orderedPlayers = sortRosterPlayers(players)
@@ -42,7 +46,7 @@ export function TeamTable({ team, players, averageWinrate, settings, watchlist, 
               <span className={cn('ship-glyph', `ship-${player.ship.type}`)}><span className="sr-only">{SHIP_LABELS[player.ship.type]}</span><ShipGlyph type={player.ship.type} /></span>
               <Hint content={`${name} · ${player.ship.name}`}><Button variant="plain" className="player-name-button" aria-label={`${name} · ${player.ship.name}，查看详细统计`} onClick={() => onPlayer(player.key)}>
                 <span className="player-name-line"><span className="player-name truncate">{settings.showNames && player.clanTag && <span className="clan-tag">[{player.clanTag}] </span>}{masked}</span>{player.isSelf && <Badge tone="brand" className="shrink-0 px-1 py-0">你</Badge>}</span>
-                <span className="player-ship-line"><span className="ship-name truncate"><span className="tier">{player.ship.tier === 11 ? <Icon icon={Star} /> : ['','I','II','III','IV','V','VI','VII','VIII','IX','X'][player.ship.tier] ?? '?'}</span> {player.ship.name}</span>
+                <span className="player-ship-line"><span className="ship-name truncate"><span className="tier">{player.ship.tier === 11 ? <Icon icon={SupershipStar} fill="currentColor" strokeWidth={0} /> : ['','I','II','III','IV','V','VI','VII','VIII','IX','X'][player.ship.tier] ?? '?'}</span> {player.ship.name}</span>
                   {player.status === 'hidden' && <Badge className="player-status border-0 px-1 py-0 leading-[inherit]"><Icon icon={EyeOff} />战绩已隐藏</Badge>}
                 </span>
               </Button></Hint>

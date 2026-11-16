@@ -1,4 +1,5 @@
 import type { BrowserWindow } from 'electron'
+import type { AppState } from '@aperadar/shared/types'
 
 // Run inside Chromium so color-mix, alpha, SVG fills, and inherited colors are resolved.
 function inspectAppearance() {
@@ -222,4 +223,58 @@ export async function validateTypography(window: BrowserWindow) {
     window.setMinimumSize(minimumSize[0], minimumSize[1])
   }
   return { views: results.reduce((sum, result) => sum + result.views, 0), sizes: [12, 20], widths: [1440, 390], themes: ['light', 'dark'] }
+}
+
+export async function validateShipTiers(window: BrowserWindow, capture?: (theme: 'light' | 'dark') => Promise<void>) {
+  const original = await window.webContents.executeJavaScript('window.aperadar.getState()') as AppState
+  if (!original.battle?.isDemo) throw new Error('Ship-tier validation requires a synthetic battle')
+  const originalHash = await window.webContents.executeJavaScript('location.hash') as string
+  const bounds = window.getContentBounds(), minimumSize = window.getMinimumSize()
+  const battle = { ...original.battle, players: original.battle.players.map((player, index) => ({ ...player, ship: { ...player.ship, tier: player.status === 'hidden' ? 11 : [11, 10, 9][index % 3], name: '测试' } })) }
+  let views = 0
+  window.setMinimumSize(320, 560)
+  try {
+    await window.webContents.executeJavaScript("location.hash = '/overview'")
+    for (const width of [1440, 390]) for (const fontSize of [12, 14, 20]) for (const theme of ['light', 'dark'] as const) {
+      window.setContentSize(width, 1000)
+      window.webContents.send('radar:changed', { ...original, battle, settings: { ...original.settings, theme, fontSize } })
+      await window.webContents.executeJavaScript(`(async () => {
+        const waitForLayout = ${waitForAppearanceLayout.toString()};
+        for (let attempt = 0; attempt < 60; attempt++) {
+          if (document.querySelectorAll('.tier svg').length && Math.abs(parseFloat(getComputedStyle(document.body).fontSize) - ${fontSize}) < .1 && document.documentElement.classList.contains('dark') === ${theme === 'dark'}) break;
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+        await waitForLayout(${width}, '.tier svg');
+        if (Math.abs(parseFloat(getComputedStyle(document.body).fontSize) - ${fontSize}) >= .1 || document.documentElement.classList.contains('dark') !== ${theme === 'dark'}) throw new Error('Ship-tier appearance did not settle');
+        const stars = [...document.querySelectorAll('.tier svg')];
+        if (stars.length !== ${battle.players.filter(player => player.ship.tier === 11).length} || !document.querySelector('.team-ally .tier svg') || !document.querySelector('.team-enemy .tier svg') || !document.querySelector('.player-hidden .tier svg')) throw new Error('Supership fixtures must cover both teams and hidden statistics');
+        for (const star of stars) {
+          const polygon = star.querySelector('polygon');
+          if (!polygon || polygon.points.numberOfItems !== 10 || getComputedStyle(star).strokeWidth !== '0px') throw new Error('Supership markers must use a sharp, solid five-pointed polygon without an outline');
+          const vertices = Array.from({ length: 10 }, (_, index) => polygon.points.getItem(index));
+          const center = vertices.reduce((sum, point) => ({ x: sum.x + point.x / 10, y: sum.y + point.y / 10 }), { x: 0, y: 0 });
+          const radii = vertices.map(point => Math.hypot(point.x - center.x, point.y - center.y));
+          if (Math.abs(vertices[0].x - center.x) > .01 || vertices[0].y >= center.y || radii.some((radius, index) => Math.abs(radius / radii[0] - (index % 2 ? (3 - Math.sqrt(5)) / 2 : 1)) > .001)) throw new Error('Supership markers must retain the upright regular-star proportions used by the game');
+          const ship = star.closest('.ship-name');
+          const style = getComputedStyle(star), shipStyle = getComputedStyle(ship);
+          const icon = star.getBoundingClientRect(), line = ship.getBoundingClientRect();
+          const range = document.createRange(); range.selectNodeContents(ship.lastChild);
+          const text = range.getBoundingClientRect();
+          if (style.fill !== style.color || Math.abs(icon.width - parseFloat(shipStyle.fontSize)) > .5 || Math.abs(icon.height - icon.width) > .5 || line.height > parseFloat(shipStyle.lineHeight) + .5 || text.left < icon.right || Math.abs(icon.top + icon.height / 2 - text.top - text.height / 2) > 2) {
+            throw new Error('Supership stars must be solid, text-sized, and inline with the ship name: ' + JSON.stringify({ width: innerWidth, fontSize: ${fontSize}, theme: '${theme}', fill: style.fill, color: style.color, icon: icon.toJSON(), line: line.toJSON(), text: text.toJSON() }));
+          }
+        }
+        const romanTiers = [...document.querySelectorAll('.tier')].filter(tier => !tier.querySelector('svg'));
+        if (!romanTiers.some(tier => tier.textContent === 'X') || !romanTiers.some(tier => tier.textContent === 'IX')) throw new Error('Standard ship tiers must retain Roman numerals');
+      })()`)
+      if (width === 1440 && fontSize === 14) await capture?.(theme)
+      views++
+    }
+  } finally {
+    window.webContents.send('radar:changed', original)
+    await window.webContents.executeJavaScript(`location.hash = ${JSON.stringify(originalHash)}`)
+    window.setContentBounds(bounds)
+    window.setMinimumSize(minimumSize[0], minimumSize[1])
+  }
+  return { views, gameStyleStars: true, solidInlineStars: true, romanTiersPreserved: true, sizes: [12, 14, 20], widths: [1440, 390], themes: ['light', 'dark'] }
 }

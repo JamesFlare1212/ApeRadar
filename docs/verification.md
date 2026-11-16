@@ -44,9 +44,10 @@ Offline failure tests use SQLite triggers and controlled streams to exercise rej
 content rewrites with unchanged metadata, stalled body reads and ignored cancellation.
 
 Desktop smoke checks load production resources in a hidden Electron window with isolated preload
-and application data under a unique `.test-data/` directory. Packaged checks run the generated
-portable executable with similarly isolated data. Coverage includes navigation, keyboard controls,
-settings, roster and watch workflows, and simulated update states.
+and application data under a unique `.test-data/` directory. UI checks retain an empty synthetic
+game-client directory so automatic client discovery cannot replace the demo with a real arena.
+Packaged checks run the generated portable executable with similarly isolated data. Coverage includes
+navigation, keyboard controls, settings, roster and watch workflows, and simulated update states.
 
 Appearance checks exercise routes and dialogs across both themes and all six palettes at desktop
 and narrow widths, plus typography settings. Chromium resolves rendered text colors, alpha blending,
@@ -73,6 +74,7 @@ or a version-to-version Windows installation. Record actual installation checks 
 | `artifacts/live-api-probe.json` | The latest separately run live API diagnostics and per-route outcomes. |
 
 Successful desktop smoke runs also refresh the `artifacts/desktop-*.png` screenshots.
+Focused light and dark ship-tier screenshots remain in that run's isolated data directory.
 These files are rolling outputs: later runs overwrite earlier results, and reports from different
 commands may describe different revisions. A failed run may also leave a previous successful report
 in place. Use the command's exit status and newly produced report together.
