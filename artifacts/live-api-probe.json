@@ -1,11 +1,11 @@
 {
-  "startedAt": "2026-11-10T14:48:11.537Z",
+  "startedAt": "2026-11-16T05:09:31.174Z",
   "configurationFile": "C:\\Users\\james\\.t3\\projects\\aperadar\\config\\api.json",
   "applicationIdSuffix": "56a0b8",
   "health": {
-    "status": "healthy",
+    "status": "degraded",
     "checking": false,
-    "checkedAt": "2026-11-10T14:48:13.278Z",
+    "checkedAt": "2026-11-16T05:09:33.856Z",
     "intervalMs": 60000,
     "checks": [
       {
@@ -15,7 +15,7 @@
         "active": false,
         "ok": true,
         "status": "healthy",
-        "latencyMs": 457,
+        "latencyMs": 380,
         "httpStatus": 200,
         "message": "连接正常",
         "failure": null
@@ -27,7 +27,7 @@
         "active": true,
         "ok": true,
         "status": "healthy",
-        "latencyMs": 411,
+        "latencyMs": 436,
         "httpStatus": 200,
         "message": "连接正常",
         "failure": null
@@ -39,7 +39,7 @@
         "active": false,
         "ok": true,
         "status": "healthy",
-        "latencyMs": 650,
+        "latencyMs": 790,
         "httpStatus": 200,
         "message": "连接正常",
         "failure": null
@@ -51,7 +51,7 @@
         "active": true,
         "ok": true,
         "status": "healthy",
-        "latencyMs": 646,
+        "latencyMs": 848,
         "httpStatus": 200,
         "message": "连接正常",
         "failure": null
@@ -63,7 +63,7 @@
         "active": false,
         "ok": true,
         "status": "healthy",
-        "latencyMs": 1054,
+        "latencyMs": 1130,
         "httpStatus": 200,
         "message": "连接正常",
         "failure": null
@@ -73,12 +73,12 @@
         "region": "ASIA",
         "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
         "active": true,
-        "ok": true,
-        "status": "healthy",
-        "latencyMs": 1283,
-        "httpStatus": 200,
-        "message": "连接正常",
-        "failure": null
+        "ok": false,
+        "status": "error",
+        "latencyMs": 2186,
+        "httpStatus": null,
+        "message": "网络连接失败",
+        "failure": "network"
       },
       {
         "source": "VORTEX",
@@ -87,7 +87,7 @@
         "active": true,
         "ok": true,
         "status": "healthy",
-        "latencyMs": 510,
+        "latencyMs": 1059,
         "httpStatus": 200,
         "message": "连接正常",
         "failure": null
@@ -138,8 +138,8 @@
       "warning": null,
       "profilePassed": true,
       "pipelineRequests": 4,
-      "accountBattles": 10307,
-      "accountWinrate": 55.41864752110216,
+      "accountBattles": 10311,
+      "accountWinrate": 55.42624381728252,
       "shipBattles": 748,
       "shipAverageDamage": 95591.41577540107,
       "shipAvailable": true,
@@ -204,8 +204,8 @@
       "warning": null,
       "profilePassed": true,
       "pipelineRequests": 7,
-      "accountBattles": 10307,
-      "accountWinrate": 55.41864752110216,
+      "accountBattles": 10311,
+      "accountWinrate": 55.42624381728252,
       "shipBattles": 748,
       "shipAverageDamage": 95591.41577540107,
       "shipAvailable": true,
@@ -281,7 +281,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 457
+      "latencyMs": 377
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/account/list/",
@@ -294,7 +294,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 409
+      "latencyMs": 435
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/search/:nickname/",
@@ -302,7 +302,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 650
+      "latencyMs": 790
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/account/list/",
@@ -315,7 +315,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 645
+      "latencyMs": 847
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/search/:nickname/",
@@ -323,7 +323,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 1054
+      "latencyMs": 1130
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
@@ -333,10 +333,13 @@
         "limit",
         "application_id"
       ],
-      "httpStatus": 200,
-      "apiStatus": "ok",
-      "error": null,
-      "latencyMs": 1283
+      "httpStatus": null,
+      "error": {
+        "message": "fetch failed",
+        "code": "ECONNRESET",
+        "cause": "read ECONNRESET"
+      },
+      "latencyMs": 2186
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/search/:nickname/",
@@ -344,7 +347,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 510
+      "latencyMs": 1059
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/account/info/",
@@ -362,7 +365,7 @@
         "status",
         "error"
       ],
-      "latencyMs": 40
+      "latencyMs": 151
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/encyclopedia/ships/",
@@ -376,7 +379,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 147
+      "latencyMs": 207
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/encyclopedia/ships/",
@@ -390,7 +393,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 53
+      "latencyMs": 159
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/account/list/",
@@ -402,7 +405,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 236
+      "latencyMs": 323
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/account/info/",
@@ -414,7 +417,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 525
+      "latencyMs": 360
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/ships/stats/",
@@ -426,7 +429,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 251
+      "latencyMs": 250
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/account/list/",
@@ -438,7 +441,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 230
+      "latencyMs": 232
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/account/info/",
@@ -450,7 +453,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 258
+      "latencyMs": 347
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/clans/accountinfo/",
@@ -463,7 +466,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 61
+      "latencyMs": 234
     },
     {
       "endpoint": "https://api.worldofwarships.com/wows/ships/stats/",
@@ -476,7 +479,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 249
+      "latencyMs": 263
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/account/list/",
@@ -488,7 +491,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 203
+      "latencyMs": 727
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/account/info/",
@@ -500,7 +503,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 261
+      "latencyMs": 485
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/ships/stats/",
@@ -512,7 +515,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 936
+      "latencyMs": 1088
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/account/list/",
@@ -524,7 +527,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 173
+      "latencyMs": 218
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/account/info/",
@@ -536,7 +539,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 582
+      "latencyMs": 670
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/clans/accountinfo/",
@@ -549,7 +552,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 168
+      "latencyMs": 288
     },
     {
       "endpoint": "https://api.worldofwarships.eu/wows/ships/stats/",
@@ -562,7 +565,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 204
+      "latencyMs": 236
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
@@ -574,7 +577,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 1226
+      "latencyMs": 2743
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/account/info/",
@@ -586,7 +589,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 652
+      "latencyMs": 1510
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/ships/stats/",
@@ -598,7 +601,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 671
+      "latencyMs": 3828
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/account/list/",
@@ -610,7 +613,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 772
+      "latencyMs": 2050
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/account/info/",
@@ -622,7 +625,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 1620
+      "latencyMs": 2320
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/clans/accountinfo/",
@@ -635,7 +638,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 946
+      "latencyMs": 2159
     },
     {
       "endpoint": "https://api.worldofwarships.asia/wows/ships/stats/",
@@ -648,7 +651,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 620
+      "latencyMs": 641
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/search/:nickname/",
@@ -656,7 +659,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 621
+      "latencyMs": 952
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/:id/",
@@ -664,7 +667,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 1517
+      "latencyMs": 307
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/search/:nickname/",
@@ -672,7 +675,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 498
+      "latencyMs": 280
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/:id/",
@@ -680,7 +683,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 80
+      "latencyMs": 83
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/:id/clans/",
@@ -692,7 +695,7 @@
         "status",
         "error"
       ],
-      "latencyMs": 72
+      "latencyMs": 79
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/:id/ships/4292785968/pvp/",
@@ -700,7 +703,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 71
+      "latencyMs": 80
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/:id/ships/4292785968/pvp_solo/",
@@ -708,7 +711,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 72
+      "latencyMs": 95
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/:id/ships/4292785968/pvp_div2/",
@@ -716,7 +719,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 72
+      "latencyMs": 71
     },
     {
       "endpoint": "https://vortex.worldofwarships.com/api/accounts/:id/ships/4292785968/pvp_div3/",
@@ -724,7 +727,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 76
+      "latencyMs": 288
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/search/:nickname/",
@@ -732,7 +735,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 566
+      "latencyMs": 726
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/:id/",
@@ -740,7 +743,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 983
+      "latencyMs": 1310
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/search/:nickname/",
@@ -748,7 +751,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 401
+      "latencyMs": 246
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/:id/",
@@ -756,7 +759,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 381
+      "latencyMs": 266
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/:id/clans/",
@@ -764,7 +767,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 177
+      "latencyMs": 325
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/:id/ships/3530504176/pvp/",
@@ -772,7 +775,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 177
+      "latencyMs": 233
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/:id/ships/3530504176/pvp_solo/",
@@ -780,7 +783,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 740
+      "latencyMs": 657
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/:id/ships/3530504176/pvp_div2/",
@@ -788,7 +791,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 174
+      "latencyMs": 652
     },
     {
       "endpoint": "https://vortex.worldofwarships.eu/api/accounts/:id/ships/3530504176/pvp_div3/",
@@ -796,7 +799,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 174
+      "latencyMs": 660
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/search/:nickname/",
@@ -804,7 +807,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 1214
+      "latencyMs": 1573
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/:id/",
@@ -812,7 +815,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 1139
+      "latencyMs": 1092
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/search/:nickname/",
@@ -820,7 +823,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 708
+      "latencyMs": 640
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/:id/",
@@ -836,7 +839,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 284
+      "latencyMs": 289
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/:id/ships/4076746448/pvp/",
@@ -844,7 +847,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 306
+      "latencyMs": 274
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/:id/ships/4076746448/pvp_solo/",
@@ -852,7 +855,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 972
+      "latencyMs": 767
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/:id/ships/4076746448/pvp_div2/",
@@ -860,7 +863,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 927
+      "latencyMs": 774
     },
     {
       "endpoint": "https://vortex.worldofwarships.asia/api/accounts/:id/ships/4076746448/pvp_div3/",
@@ -868,7 +871,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 359
+      "latencyMs": 278
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/search/:nickname/",
@@ -876,7 +879,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 703
+      "latencyMs": 1272
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/:id/",
@@ -884,7 +887,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 768
+      "latencyMs": 647
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/search/:nickname/",
@@ -892,7 +895,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 179
+      "latencyMs": 155
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/:id/",
@@ -900,7 +903,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 207
+      "latencyMs": 183
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/:id/clans/",
@@ -912,7 +915,7 @@
         "error",
         "status"
       ],
-      "latencyMs": 160
+      "latencyMs": 153
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/:id/ships/4276041424/pvp/",
@@ -920,7 +923,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 149
+      "latencyMs": 155
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/:id/ships/4276041424/pvp_solo/",
@@ -928,7 +931,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 499
+      "latencyMs": 170
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/:id/ships/4276041424/pvp_div2/",
@@ -936,7 +939,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 158
+      "latencyMs": 229
     },
     {
       "endpoint": "https://vortex.korabli.su/api/accounts/:id/ships/4276041424/pvp_div3/",
@@ -944,7 +947,7 @@
       "httpStatus": 200,
       "apiStatus": "ok",
       "error": null,
-      "latencyMs": 153
+      "latencyMs": 509
     }
   ],
   "shipCatalog": {
@@ -958,5 +961,5 @@
     "returned": 3
   },
   "officialPassed": true,
-  "finishedAt": "2026-11-10T14:48:37.762Z"
+  "finishedAt": "2026-11-16T05:10:08.774Z"
 }

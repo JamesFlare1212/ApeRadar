@@ -100,6 +100,7 @@ a new build requires new validation.
 
 | Version | Recorded results | Evidence at the release commit |
 | --- | --- | --- |
+| v2.0.3 | [Release notes](releases/v2.0.3.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/v2.0.3/artifacts/packaged-validation.json) |
 | v2.0.2 | [Release notes](releases/v2.0.2.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/06e9c777718c4209435e338c331d9eb35d85ee50/artifacts/packaged-validation.json) |
 | v2.0.1 | [Release notes](releases/v2.0.1.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/1902a7bdb8f5c742488bb355a64f7fcdaff2fa77/artifacts/packaged-validation.json) |
 | v2.0.0 | [Release notes](releases/v2.0.0.md) | [Packaged report](https://github.com/JamesFlare1212/ApeRadar/blob/f0ca33279776577fd42c70938b9112c7b33820ae/artifacts/packaged-validation.json) |

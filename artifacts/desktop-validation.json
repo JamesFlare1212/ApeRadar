@@ -14,7 +14,7 @@
   },
   "updates": {
     "mode": "disabled",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "downloadBridge": "function",
     "control": true
   },
@@ -100,7 +100,7 @@
   "appearance": {
     "views": 240,
     "dialogViews": 144,
-    "textChecks": 11664,
+    "textChecks": 11304,
     "minimumTextContrast": 4.70046540062233,
     "minimumControlContrast": 3.470932120091245,
     "widths": [
@@ -114,6 +114,25 @@
     "views": 16,
     "sizes": [
       12,
+      20
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "shipTiers": {
+    "views": 12,
+    "gameStyleStars": true,
+    "solidInlineStars": true,
+    "romanTiersPreserved": true,
+    "sizes": [
+      12,
+      14,
       20
     ],
     "widths": [
@@ -152,7 +171,7 @@
     "button": "oklab(0.698561 -0.00606236 -0.0229068 / 0.3)"
   },
   "versions": {
-    "node": "24.22.1",
+    "node": "24.22.2",
     "acorn": "8.18.0",
     "ada": "4.0.0",
     "amaro": "1.1.11",
@@ -178,12 +197,12 @@
     "unicode": "17.0",
     "uv": "1.52.1",
     "uvwasi": "0.0.23",
-    "v8": "15.6.75.19-electron.0",
+    "v8": "15.6.75.27-electron.0",
     "zlib": "1.3.2.1-motley",
     "zstd": "1.6.0",
-    "electron": "45.1.0",
-    "chrome": "156.0.8078.49"
+    "electron": "45.2.3",
+    "chrome": "156.0.8078.80"
   },
   "sqliteHeader": "SQLite format 3\u0000",
-  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1794323574148"
+  "dataPath": "C:\\Users\\james\\.t3\\projects\\aperadar\\.test-data\\desktop-1794806011603"
 }
